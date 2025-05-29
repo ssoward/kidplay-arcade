@@ -18,8 +18,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
-    "incremental": true
+    "jsx": "react-jsx",
+    "types": ["jest", "@testing-library/jest-dom", "node"]
   },
   "include": [
     "src"
