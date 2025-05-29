@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import './Chess.css';
+// import './Chess.css';
 
 type Grid = (number | null)[][];
 
@@ -39,7 +39,7 @@ const SlidePuzzle: React.FC = () => {
     
     // Perform 1000 random moves to shuffle
     for (let i = 0; i < 1000; i++) {
-      const possibleMoves = [];
+      const possibleMoves: [number, number][] = [];
       
       // Check possible moves
       if (emptyRow > 0) possibleMoves.push([-1, 0]);
