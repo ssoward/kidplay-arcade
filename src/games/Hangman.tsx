@@ -76,74 +76,139 @@ const Hangman: React.FC = () => {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-pink-100 via-yellow-100 to-purple-100 p-6">
-      <div className="text-center mb-6">
-        <h1 className="text-4xl font-bold mb-2 font-comic drop-shadow-lg">Word Detective 🔍</h1>
-        <p className="text-lg opacity-90">Guess the word before the hangman is complete!</p>
+    <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+      <div className="text-center mb-8">
+        <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg">
+          Word Detective 🔍
+        </h1>
+        <p className="text-xl text-gray-600">Guess the word before the hangman is complete!</p>
       </div>
-      <div className="mb-6 flex flex-col items-center">
-        <svg height="120" width="120" className="mb-2">
-          {/* Gallows */}
-          <line x1="10" y1="110" x2="110" y2="110" stroke="#444" strokeWidth="6" />
-          <line x1="30" y1="110" x2="30" y2="20" stroke="#444" strokeWidth="6" />
-          <line x1="30" y1="20" x2="80" y2="20" stroke="#444" strokeWidth="6" />
-          <line x1="80" y1="20" x2="80" y2="35" stroke="#444" strokeWidth="6" />
-          {/* Head */}
-          {wrong.length > 0 && <circle cx="80" cy="45" r="10" stroke="#222" strokeWidth="4" fill="none" />}
-          {/* Body */}
-          {wrong.length > 1 && <line x1="80" y1="55" x2="80" y2="80" stroke="#222" strokeWidth="4" />}
-          {/* Left Arm */}
-          {wrong.length > 2 && <line x1="80" y1="60" x2="70" y2="70" stroke="#222" strokeWidth="4" />}
-          {/* Right Arm */}
-          {wrong.length > 3 && <line x1="80" y1="60" x2="90" y2="70" stroke="#222" strokeWidth="4" />}
-          {/* Left Leg */}
-          {wrong.length > 4 && <line x1="80" y1="80" x2="70" y2="95" stroke="#222" strokeWidth="4" />}
-          {/* Right Leg */}
-          {wrong.length > 5 && <line x1="80" y1="80" x2="90" y2="95" stroke="#222" strokeWidth="4" />}
-        </svg>
-        <div className="text-3xl font-mono tracking-widest mb-2 text-gray-800">{displayWord}</div>
-        <div className="mb-2 text-lg text-gray-700">Wrong guesses: {wrong.join(', ')}</div>
-        <div className="mb-4 flex flex-col items-center gap-2">
-          {alphabet.map(l => (
-            <button
-              key={l}
-              onClick={() => handleGuess(l)}
-              className={`chess-btn m-1 w-8 h-8 rounded-full font-bold text-lg transition-all
-                ${guessed.includes(l) || wrong.includes(l) ? 'bg-gray-300 text-gray-400' : 'bg-gradient-to-br from-pink-400 to-purple-400 text-white hover:scale-110'}`}
-              disabled={guessed.includes(l) || wrong.includes(l) || gameStatus !== 'playing'}
-              aria-label={`Guess letter ${l}`}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
-        <div className="mb-4 flex flex-col items-center gap-2">
-          <button
-            onClick={handleHint}
-            className="chess-btn bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2"
-            disabled={hintLoading || gameStatus !== 'playing'}
-          >
-            {hintLoading ? 'Getting Hint...' : 'Hint'}
-          </button>
-          {hint && (
-            <div className="text-md text-purple-700 bg-yellow-100 rounded-lg px-4 py-2 shadow max-w-xs text-center">{hint}</div>
+      
+      <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 mb-6 border border-white/20">
+        <div className="flex flex-col items-center">
+          <div className="mb-6">
+            <svg height="140" width="140" className="drop-shadow-md">
+              {/* Gallows with enhanced styling */}
+              <line x1="15" y1="120" x2="125" y2="120" stroke="#4a5568" strokeWidth="8" strokeLinecap="round" />
+              <line x1="35" y1="120" x2="35" y2="25" stroke="#4a5568" strokeWidth="8" strokeLinecap="round" />
+              <line x1="35" y1="25" x2="90" y2="25" stroke="#4a5568" strokeWidth="8" strokeLinecap="round" />
+              <line x1="90" y1="25" x2="90" y2="40" stroke="#4a5568" strokeWidth="8" strokeLinecap="round" />
+              {/* Head */}
+              {wrong.length > 0 && <circle cx="90" cy="50" r="12" stroke="#e53e3e" strokeWidth="4" fill="#fed7d7" />}
+              {/* Body */}
+              {wrong.length > 1 && <line x1="90" y1="62" x2="90" y2="95" stroke="#e53e3e" strokeWidth="4" strokeLinecap="round" />}
+              {/* Left Arm */}
+              {wrong.length > 2 && <line x1="90" y1="70" x2="75" y2="85" stroke="#e53e3e" strokeWidth="4" strokeLinecap="round" />}
+              {/* Right Arm */}
+              {wrong.length > 3 && <line x1="90" y1="70" x2="105" y2="85" stroke="#e53e3e" strokeWidth="4" strokeLinecap="round" />}
+              {/* Left Leg */}
+              {wrong.length > 4 && <line x1="90" y1="95" x2="75" y2="115" stroke="#e53e3e" strokeWidth="4" strokeLinecap="round" />}
+              {/* Right Leg */}
+              {wrong.length > 5 && <line x1="90" y1="95" x2="105" y2="115" stroke="#e53e3e" strokeWidth="4" strokeLinecap="round" />}
+            </svg>
+          </div>
+          
+          <div className="text-4xl font-mono tracking-[0.3em] mb-4 text-gray-800 bg-gray-100 px-6 py-3 rounded-xl shadow-inner">
+            {displayWord}
+          </div>
+          
+          {wrong.length > 0 && (
+            <div className="mb-4 text-lg text-red-600 bg-red-50 px-4 py-2 rounded-lg border border-red-200">
+              <span className="font-semibold">Wrong guesses:</span> {wrong.join(', ').toUpperCase()}
+            </div>
           )}
         </div>
-        {gameStatus === 'won' && <div className="text-2xl font-bold text-green-600 mb-2">You solved it! 🎉</div>}
-        {gameStatus === 'lost' && <div className="text-2xl font-bold text-red-600 mb-2">Game Over! The word was <span className="underline">{word}</span></div>}
+      </div>
+        <div className="mb-6 max-w-lg">
+          <div className="grid grid-cols-6 gap-2 sm:grid-cols-8 md:grid-cols-10">
+            {alphabet.map(l => (
+              <button
+                key={l}
+                onClick={() => handleGuess(l)}
+                className={`w-10 h-10 rounded-full font-bold text-lg transition-all transform shadow-md
+                  ${guessed.includes(l) || wrong.includes(l) 
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                    : 'bg-gradient-to-br from-blue-400 to-purple-500 text-white hover:scale-110 hover:shadow-lg active:scale-95'
+                  }`}
+                disabled={guessed.includes(l) || wrong.includes(l) || gameStatus !== 'playing'}
+                aria-label={`Guess letter ${l.toUpperCase()}`}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mb-6 flex flex-col items-center gap-4">
+          <button
+            onClick={handleHint}
+            className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-white font-bold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-yellow-300 disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={hintLoading || gameStatus !== 'playing'}
+          >
+            {hintLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Getting Hint...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                💡 Get Hint
+              </span>
+            )}
+          </button>
+          {hint && (
+            <div className="animate-bounce-in bg-gradient-to-r from-yellow-100 to-orange-100 border-l-4 border-yellow-400 text-gray-800 p-4 rounded-lg shadow-md max-w-xs text-center">
+              <div className="flex items-center gap-2 justify-center mb-1">
+                <span className="text-yellow-600">💡</span>
+                <span className="font-semibold text-sm text-yellow-700">HINT</span>
+              </div>
+              <div className="text-sm">{hint}</div>
+            </div>
+          )}
+        </div>
+        {gameStatus === 'won' && (
+          <div className="mb-4 p-6 bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-300 rounded-2xl shadow-lg text-center animate-bounce-in">
+            <div className="text-4xl mb-2">🎉</div>
+            <div className="text-2xl font-bold text-green-700 mb-1">Congratulations!</div>
+            <div className="text-green-600">You solved the word!</div>
+          </div>
+        )}
+        {gameStatus === 'lost' && (
+          <div className="mb-4 p-6 bg-gradient-to-r from-red-100 to-pink-100 border-2 border-red-300 rounded-2xl shadow-lg text-center">
+            <div className="text-4xl mb-2">😞</div>
+            <div className="text-2xl font-bold text-red-700 mb-1">Game Over!</div>
+            <div className="text-red-600">The word was <span className="font-bold underline">{word}</span></div>
+          </div>
+        )}
         <button
           onClick={resetGame}
-          className="chess-btn bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2"
+          className="px-8 py-3 bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-green-300"
         >
-          New Word
+          <span className="flex items-center gap-2">
+            🔄 New Word
+          </span>
         </button>
-      </div>
-      <div className="mt-8 bg-white/60 rounded-2xl p-6 max-w-md text-center shadow">
-        <h3 className="font-bold text-lg mb-2 text-gray-800">How to Play 🔍</h3>
-        <ul className="text-gray-700 space-y-1 text-left">
-          <li>• Guess the word by clicking letters</li>
-          <li>• Each wrong guess draws part of the hangman</li>
-          <li>• You win by guessing all letters before the hangman is complete</li>
+      
+      <div className="mt-8 bg-white/70 backdrop-blur-sm rounded-2xl p-6 max-w-md shadow-lg border border-white/30">
+        <h3 className="font-bold text-xl mb-4 text-gray-800 text-center flex items-center justify-center gap-2">
+          <span>📖</span> How to Play
+        </h3>
+        <ul className="text-gray-700 space-y-2">
+          <li className="flex items-start gap-2">
+            <span className="text-blue-500 font-bold">1.</span>
+            <span>Guess the word by clicking letters</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-blue-500 font-bold">2.</span>
+            <span>Each wrong guess draws part of the hangman</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-blue-500 font-bold">3.</span>
+            <span>Win by guessing all letters before the drawing is complete</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-yellow-500 font-bold">💡</span>
+            <span>Use the hint button if you get stuck!</span>
+          </li>
         </ul>
       </div>
     </div>

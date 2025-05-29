@@ -109,55 +109,123 @@ const Chess: React.FC = () => {
   }, [vsAI, currentPlayer, game, gameOver]);
 
   return (
-    <div className="chess-bg">
-      <div className="chess-container">
-        <div className="chess-header">
-          <div className="chess-title-row">
-            <span className="chess-icon">♛</span>
-            <h1 className="chess-title">Chess Master</h1>
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-100 to-indigo-100 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <span className="text-6xl">♛</span>
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg">
+              Chess Master
+            </h1>
           </div>
-          <p className="chess-subtitle">
-            Classic chess for two players or challenge the AI! Drag and drop pieces to move. Toggle below to play with a friend or against the AI.
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
+            Classic chess for two players or challenge the AI! Drag and drop pieces to move.
           </p>
         </div>
-        <div className="chess-board-section">
-          <Chessboard
-            position={fen}
-            onPieceDrop={onPieceDrop}
-            onSquareClick={onSquareClick}
-            boardWidth={360}
-            customBoardStyle={{ boxShadow: '0 8px 32px rgba(80,0,120,0.10)', borderRadius: 18, border: '2px solid #e0e7ff' }}
-            customSquareStyles={selectedSquare ? { [selectedSquare]: { boxShadow: '0 0 0 4px #f9d423 inset' } } : {}}
-          />
-          <div className="chess-status-bar">
-            <span className={status.includes('White') ? 'chess-status-white' : status.includes('Black') ? 'chess-status-black' : 'chess-status-neutral'}>
-              {status}
-            </span>
-            <button 
-              className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2"
-              onClick={onNewGame}
-            >
-              New Game
-            </button>
+
+        {/* Main Game Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Chess Board */}
+          <div className="lg:col-span-2 flex flex-col items-center">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+              <Chessboard
+                position={fen}
+                onPieceDrop={onPieceDrop}
+                onSquareClick={onSquareClick}
+                boardWidth={Math.min(400, window.innerWidth - 100)}
+                customBoardStyle={{ 
+                  boxShadow: '0 8px 32px rgba(80,0,120,0.10)', 
+                  borderRadius: 18, 
+                  border: '2px solid #e0e7ff' 
+                }}
+                customSquareStyles={selectedSquare ? { 
+                  [selectedSquare]: { boxShadow: '0 0 0 4px #f9d423 inset' } 
+                } : {}}
+              />
+            </div>
+            
+            {/* Status Bar */}
+            <div className="mt-6 bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-xl w-full max-w-md">
+              <div className="text-center">
+                <div className={`text-lg font-bold mb-3 ${
+                  status.includes('White') ? 'text-blue-600' : 
+                  status.includes('Black') ? 'text-purple-600' : 
+                  'text-gray-600'
+                }`}>
+                  {status}
+                </div>
+                <button 
+                  onClick={onNewGame}
+                  className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center gap-2 mx-auto"
+                >
+                  🔄 New Game
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="chess-info-card">
-          <h3 className="chess-info-title">How to Play <span role="img" aria-label="book">📚</span></h3>
-          <ul className="chess-info-list">
-            <li>• Drag and drop pieces to move</li>
-            <li>• Standard chess rules apply</li>
-            <li>• Play with a friend <b>or</b> vs AI</li>
-            <li>• Click "New Game" to reset</li>
-            <li>• Use the toggle below to switch between AI and friend mode</li>
-          </ul>
-        </div>
-        <div className="chess-controls flex justify-center gap-4 mt-6">
-          <button 
-            className="chess-btn bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold px-6 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 disabled:opacity-60"
-            onClick={() => setVsAI(!vsAI)}
-          >
-            {vsAI ? 'Play vs Friend' : 'Play vs AI'}
-          </button>
+
+          {/* Game Info Sidebar */}
+          <div className="space-y-6">
+            {/* How to Play */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+              <h3 className="text-xl font-bold mb-4 text-center text-purple-700 flex items-center justify-center gap-2">
+                📚 How to Play
+              </h3>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start gap-2">
+                  <span className="w-6 h-6 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center text-white text-xs font-bold">1</span>
+                  Drag and drop pieces to move
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-6 h-6 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center text-white text-xs font-bold">2</span>
+                  Standard chess rules apply
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-6 h-6 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center text-white text-xs font-bold">3</span>
+                  Play with a friend or vs AI
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-6 h-6 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center text-white text-xs font-bold">4</span>
+                  Click "New Game" to reset
+                </li>
+              </ul>
+            </div>
+
+            {/* Game Mode Toggle */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+              <h3 className="text-xl font-bold mb-4 text-center text-green-700 flex items-center justify-center gap-2">
+                🎮 Game Mode
+              </h3>
+              <div className="text-center">
+                <div className="mb-4">
+                  <div className="text-lg font-semibold text-gray-700">
+                    Currently: <span className="text-purple-600">{vsAI ? 'vs AI' : 'vs Friend'}</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setVsAI(!vsAI)}
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center gap-2 mx-auto"
+                >
+                  {vsAI ? '👥 Play vs Friend' : '🤖 Play vs AI'}
+                </button>
+              </div>
+            </div>
+
+            {/* Tips */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+              <h3 className="text-xl font-bold mb-4 text-center text-orange-700 flex items-center justify-center gap-2">
+                💡 Chess Tips
+              </h3>
+              <ul className="space-y-2 text-sm text-gray-700">
+                <li>• Control the center of the board</li>
+                <li>• Develop knights before bishops</li>
+                <li>• Castle early for king safety</li>
+                <li>• Look for tactics: pins, forks, skewers</li>
+                <li>• Think before you move!</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>

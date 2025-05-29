@@ -278,157 +278,117 @@ const Solitaire: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-green-100 via-yellow-100 to-blue-100 p-6">
-      <div className="text-center mb-6">
-        <h1 className="text-4xl font-bold mb-2 font-comic drop-shadow-lg">Solitaire ♠️♥️♦️♣️</h1>
-        <p className="text-lg opacity-90">A relaxing game of classic Solitaire.</p>
+    <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 p-6">
+      <div className="text-center mb-8">
+        <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent drop-shadow-lg">
+          Solitaire ♠️♥️♦️♣️
+        </h1>
+        <p className="text-xl text-gray-600">A relaxing game of classic Klondike Solitaire</p>
       </div>
-      {/* --- Top Row: Stock, Waste, Foundations --- */}
-      <div className="solitaire-top-row" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        maxWidth: '900px',
-        margin: '0 auto 2vw auto',
-        padding: '0 2vw',
-        minHeight: '70px',
-        gap: '2vw',
-      }}>
+      
+      {/* Top Row: Stock, Waste, Foundations */}
+      <div className="flex justify-between items-center w-full max-w-4xl mx-auto mb-6 px-4 gap-4">
         {/* Stock pile */}
-        <div className="solitaire-stock" style={{
-          width: '64px', height: '88px', borderRadius: '10px', border: '2px solid #64748b', background: stock.length ? '#64748b' : '#e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '1.5rem', userSelect: 'none', position: 'relative', marginRight: '2vw', cursor: 'pointer', opacity: stock.length ? 1 : 0.5
-        }} onClick={handleStockClick} aria-label="Stock pile" tabIndex={0}>
+        <div 
+          className={`w-16 h-22 rounded-xl border-2 shadow-lg flex items-center justify-center font-bold text-2xl cursor-pointer transition-all duration-200 transform hover:scale-105 ${
+            stock.length 
+              ? 'bg-slate-600 border-slate-700 text-white hover:bg-slate-700' 
+              : 'bg-gray-200 border-gray-300 text-gray-400 opacity-50'
+          }`}
+          onClick={handleStockClick} 
+          aria-label="Stock pile" 
+          tabIndex={0}
+        >
           <span>{stock.length ? '🂠' : '↺'}</span>
         </div>
+        
         {/* Waste pile */}
-        <div className="solitaire-waste" style={{
-          width: '64px', height: '88px', borderRadius: '10px', border: '2px solid #64748b', background: waste.length ? '#fff' : '#e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', color: '#64748b', fontWeight: 'bold', fontSize: '1.5rem', userSelect: 'none', position: 'relative', marginRight: '4vw', cursor: waste.length ? 'grab' : 'default', opacity: waste.length ? 1 : 0.5, overflow: 'visible'
-        }}>
+        <div className="w-16 h-22 rounded-xl border-2 border-slate-400 bg-gray-100 shadow-lg flex items-center justify-start relative overflow-visible">
           {waste.length === 0 ? (
-            <span style={{ opacity: 0.3 }}>🂠</span>
+            <span className="opacity-30 text-2xl ml-2">🂠</span>
           ) : (
             waste.slice(-3).map((card, i, arr) => {
               const isTop = i === arr.length - 1;
               return (
-                <span
+                <div
                   key={card.id}
-                  style={{
-                    position: 'absolute',
-                    left: `${i * 18}px`,
-                    zIndex: i,
-                    fontWeight: 700,
-                    color: card.suit === '♥' || card.suit === '♦' ? '#ef4444' : '#222',
-                    background: '#fff',
-                    borderRadius: '8px',
-                    border: isTop ? '2px solid #334155' : '1px solid #cbd5e1',
-                    boxShadow: isTop ? '0 2px 8px rgba(0,0,0,0.10)' : 'none',
-                    width: '48px',
-                    height: '72px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.2em',
-                    cursor: isTop ? 'grab' : 'default',
-                    pointerEvents: isTop ? 'auto' : 'none',
-                    opacity: isTop ? 1 : 0.7,
-                    transition: 'box-shadow 0.2s, background 0.2s',
-                  }}
+                  className={`absolute w-12 h-18 rounded-lg border-2 flex flex-col items-center justify-center font-bold text-sm transition-all duration-200 ${
+                    card.suit === '♥' || card.suit === '♦' ? 'text-red-500' : 'text-gray-800'
+                  } ${
+                    isTop 
+                      ? 'bg-white border-slate-600 shadow-md cursor-grab hover:shadow-lg z-10' 
+                      : 'bg-white border-slate-300 shadow-sm opacity-70'
+                  }`}
+                  style={{ left: `${i * 18}px`, zIndex: i }}
                   draggable={isTop}
                   onDragStart={isTop ? (e) => onWasteDragStart(e) : undefined}
                   aria-label={isTop ? `Waste: ${card.rank}${card.suit}` : undefined}
                   tabIndex={isTop ? 0 : -1}
                 >
-                  {card.rank}{card.suit}
-                </span>
+                  <span className="text-xs">{card.rank}</span>
+                  <span className="text-lg leading-none">{card.suit}</span>
+                </div>
               );
             })
           )}
         </div>
+        
         {/* Foundations */}
-        <div className="solitaire-foundations" style={{ display: 'flex', gap: '2vw', flex: 1, justifyContent: 'flex-end' }}>
+        <div className="flex gap-4 flex-1 justify-end">
           {foundations.map((pile, fIdx) => (
             <div
               key={fIdx}
-              className="solitaire-foundation"
-              style={{
-                width: '64px', height: '88px', borderRadius: '10px', border: '2px solid #64748b', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontWeight: 'bold', fontSize: '1.5rem', userSelect: 'none', position: 'relative', marginLeft: fIdx === 0 ? 0 : '2vw'
-              }}
+              className="w-16 h-22 rounded-xl border-2 border-slate-400 bg-white shadow-lg flex flex-col items-center justify-center font-bold text-lg transition-all duration-200 hover:shadow-xl"
               onDragOver={e => onFoundationDragOver(fIdx, e)}
               onDrop={e => onFoundationDrop(fIdx, e)}
             >
               {pile.length === 0 ? (
-                <span style={{ opacity: 0.3 }}>{foundationSuits[fIdx]}</span>
+                <span className="opacity-30 text-slate-500">{foundationSuits[fIdx]}</span>
               ) : (
-                <span style={{ fontWeight: 700, color: pile[pile.length-1].suit === '♥' || pile[pile.length-1].suit === '♦' ? '#ef4444' : '#222' }}>
-                  {pile[pile.length-1].rank}{pile[pile.length-1].suit}
-                </span>
+                <>
+                  <span className="text-xs">{pile[pile.length-1].rank}</span>
+                  <span className={`text-xl leading-none ${
+                    pile[pile.length-1].suit === '♥' || pile[pile.length-1].suit === '♦' ? 'text-red-500' : 'text-gray-800'
+                  }`}>
+                    {pile[pile.length-1].suit}
+                  </span>
+                </>
               )}
             </div>
           ))}
         </div>
       </div>
-      {/* Remove the placeholder and always show the game board */}
-      {/* --- Tableau --- */}
-      <div className="solitaire-board" style={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        gap: '2vw',
-        maxWidth: '98vw',
-        width: '100%',
-        minHeight: '60vw',
-        background: 'linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%)',
-        border: '4px solid #334155',
-        borderRadius: '18px',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-        margin: '0 auto',
-        padding: '2vw',
-        boxSizing: 'border-box',
-      }}>
+      {/* Tableau */}
+      <div className="flex flex-row items-start justify-center gap-2 max-w-6xl w-full min-h-96 bg-gradient-to-br from-green-100 to-emerald-200 border-4 border-green-600 rounded-2xl shadow-xl mx-auto p-4 mb-6">
         {tableau && tableau.map((col, colIdx) => (
           <div
             key={colIdx}
-            className="solitaire-column"
-            style={{ minHeight: '40vw', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', position: 'relative' }}
+            className="min-h-80 w-full flex flex-col items-center justify-start relative"
             onDragOver={e => onDragOver(colIdx, e)}
             onDrop={e => onDrop(colIdx, e)}
           >
-            {/* Make the entire column (including the top) a drop target by adding a drop zone at the top */}
+            {/* Drop zone at the top */}
             <div
-              style={{ height: '64px', minWidth: '36px', background: 'transparent', width: '100%' }}
+              className="h-16 min-w-12 bg-transparent w-full"
               onDragOver={e => onDragOver(colIdx, e)}
               onDrop={e => onDrop(colIdx, e)}
             />
             {col.map((card, cardIdx) => (
               <div
                 key={card.id || `${colIdx}-${cardIdx}`}
-                className={`solitaire-card${card.faceUp ? ' faceup' : ' facedown'}`}
+                className={`w-full max-w-16 min-w-9 aspect-[3/4] relative rounded-xl shadow-lg border-2 font-bold flex items-center justify-center select-none transition-all duration-200 overflow-hidden ${
+                  card.faceUp 
+                    ? `bg-white border-slate-600 cursor-grab hover:shadow-xl ${
+                        card.suit === '♥' || card.suit === '♦' ? 'text-red-500' : 'text-gray-800'
+                      }` 
+                    : 'bg-slate-600 border-slate-700 cursor-default'
+                } ${
+                  dragged && dragged.col === colIdx && dragged.cardIdx === cardIdx ? 'opacity-50' : 'opacity-100'
+                }`}
                 style={{
-                  width: '100%',
-                  maxWidth: '64px',
-                  minWidth: '36px',
-                  aspectRatio: '3/4',
                   marginTop: cardIdx === 0 ? 0 : '-2.2vw',
                   zIndex: cardIdx,
-                  position: 'relative',
-                  borderRadius: '10px',
-                  boxShadow: card.faceUp ? '0 2px 12px rgba(0,0,0,0.10)' : '0 1px 4px rgba(0,0,0,0.08)',
-                  background: card.faceUp ? '#fff' : '#64748b',
-                  border: card.faceUp ? '2px solid #334155' : '2px solid #64748b',
-                  color: card.suit === '♥' || card.suit === '♦' ? '#ef4444' : '#222',
-                  fontWeight: 'bold',
                   fontSize: 'min(5vw, 1.5rem)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  userSelect: 'none',
-                  touchAction: 'manipulation',
-                  transition: 'box-shadow 0.2s, background 0.2s',
-                  cursor: card.faceUp ? 'grab' : 'default',
-                  overflow: 'hidden',
-                  opacity: dragged && dragged.col === colIdx && dragged.cardIdx === cardIdx ? 0.5 : 1,
                 }}
                 draggable={card.faceUp && cardIdx === col.length - 1}
                 onDragStart={e => onDragStart(colIdx, cardIdx, e)}
@@ -437,50 +397,53 @@ const Solitaire: React.FC = () => {
                 aria-label={card.faceUp ? `${card.rank}${card.suit}` : 'Face down card'}
               >
                 {card.faceUp ? (
-                  <span style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}>
-                    <span style={{ fontSize: '1.1em', fontWeight: 700 }}>{card.rank}</span>
-                    <span style={{ fontSize: '1.5em', lineHeight: 1 }}>{card.suit}</span>
-                  </span>
+                  <div className="flex flex-col items-center w-full">
+                    <span className="text-lg font-bold">{card.rank}</span>
+                    <span className="text-2xl leading-none">{card.suit}</span>
+                  </div>
                 ) : (
-                  <span style={{ width: '100%', height: '100%' }} />
+                  <div className="w-full h-full bg-blue-800 rounded-lg flex items-center justify-center">
+                    <span className="text-blue-300 text-xl">🂠</span>
+                  </div>
                 )}
               </div>
             ))}
           </div>
         ))}
       </div>
-      <div className="solitaire-controls" style={{
-        marginTop: '24px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '16px',
-        justifyContent: 'center',
-      }}>
+      <div className="flex flex-wrap gap-4 justify-center mb-8">
         <button
-          className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2"
-          style={{
-            padding: '12px 28px',
-            fontSize: '1.2rem',
-            fontWeight: 'bold',
-            borderRadius: '8px',
-            border: '2px solid #64748b',
-            background: '#fff',
-            color: '#2563eb',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            cursor: 'pointer',
-            userSelect: 'none',
-            touchAction: 'manipulation',
-          }}
+          className="px-8 py-3 bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white font-bold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-green-300"
           onClick={restartGame}
         >
-          Restart
+          <span className="flex items-center gap-2">
+            🔄 New Game
+          </span>
         </button>
-        {/* Add more controls as needed */}
+      </div>
+      
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 max-w-md shadow-lg border border-white/30">
+        <h3 className="font-bold text-xl mb-4 text-gray-800 text-center flex items-center justify-center gap-2">
+          <span>🎯</span> How to Play
+        </h3>
+        <ul className="text-gray-700 space-y-2">
+          <li className="flex items-start gap-2">
+            <span className="text-green-500 font-bold">1.</span>
+            <span>Build foundation piles by suit from Ace to King</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-green-500 font-bold">2.</span>
+            <span>Stack cards in tableau in descending order, alternating colors</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-green-500 font-bold">3.</span>
+            <span>Click stock pile to deal 3 cards to waste pile</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-green-500 font-bold">4.</span>
+            <span>Drag cards between tableau columns and to foundations</span>
+          </li>
+        </ul>
       </div>
     </div>
   );
