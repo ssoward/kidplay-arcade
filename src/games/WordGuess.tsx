@@ -49,6 +49,22 @@ const WordGuess: React.FC = () => {
     startNewGame();
   }, [startNewGame]);
 
+  // Add keyboard event listener
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        handleKeyPress('ENTER');
+      } else if (event.key === 'Backspace') {
+        handleKeyPress('BACKSPACE');
+      } else if (/^[a-zA-Z]$/.test(event.key)) {
+        handleKeyPress(event.key.toUpperCase());
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameOver, currentGuess, targetWord]);
+
   const getGuessResult = (guess: string): GuessResult[] => {
     const result: GuessResult[] = [];
     const targetLetters = targetWord.split('');
@@ -130,20 +146,142 @@ const WordGuess: React.FC = () => {
     <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-pink-100 via-blue-100 to-yellow-100 p-6">
       <div className="text-center mb-6">
         <h1 className="text-4xl font-bold mb-2 font-comic drop-shadow-lg">Word Guess 📝</h1>
-        <p className="text-lg opacity-90">Guess the hidden word! (Full game coming soon!)</p>
-      </div>
-      <div className="flex flex-col items-center justify-center min-h-[300px]">
-        <div className="bg-white/80 rounded-2xl p-8 shadow-lg text-center text-2xl text-gray-500">
-          Word Guess coming soon!<br />
-          (A full-featured version is in development.)
+        <p className="text-lg opacity-90">Guess the hidden word!</p>
+        
+        {/* Difficulty selector */}
+        <div className="mt-4 flex justify-center space-x-2">
+          {(['easy', 'medium', 'hard'] as const).map((level) => (
+            <button
+              key={level}
+              onClick={() => setDifficulty(level)}
+              className={`px-4 py-2 rounded-lg font-comic text-sm transition-colors ${
+                difficulty === level
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-white/70 text-gray-700 hover:bg-white/90'
+              }`}
+            >
+              {level.charAt(0).toUpperCase() + level.slice(1)}
+            </button>
+          ))}
         </div>
       </div>
-      <div className="mt-8 bg-white/60 rounded-2xl p-6 max-w-md text-center shadow">
+
+      {/* Game Board */}
+      <div className="bg-white/90 rounded-2xl p-6 shadow-lg mb-6">
+        <div className="grid gap-2 mb-6">
+          {Array.from({ length: maxGuesses }, (_, rowIndex) => (
+            <div key={rowIndex} className="flex gap-2 justify-center">
+              {Array.from({ length: targetWord.length }, (_, colIndex) => {
+                const guess = guesses[rowIndex];
+                const isCurrentRow = rowIndex === guesses.length && !gameOver;
+                const letter = isCurrentRow && currentGuess[colIndex] ? currentGuess[colIndex] : (guess ? guess[colIndex] : '');
+                const result = guess ? getGuessResult(guess)[colIndex] : null;
+                
+                let bgColor = 'bg-gray-100 border-gray-300';
+                if (result) {
+                  switch (result.status) {
+                    case 'correct':
+                      bgColor = 'bg-green-500 text-white border-green-500';
+                      break;
+                    case 'present':
+                      bgColor = 'bg-yellow-500 text-white border-yellow-500';
+                      break;
+                    case 'absent':
+                      bgColor = 'bg-gray-400 text-white border-gray-400';
+                      break;
+                  }
+                } else if (isCurrentRow && currentGuess[colIndex]) {
+                  bgColor = 'bg-blue-100 border-blue-300';
+                }
+                
+                return (
+                  <div
+                    key={colIndex}
+                    className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center font-bold text-lg ${bgColor}`}
+                  >
+                    {letter}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Game Status */}
+        {gameOver && (
+          <div className="text-center mb-4">
+            {won ? (
+              <div className="text-green-600 font-bold text-xl">
+                🎉 Congratulations! You won! 🎉
+              </div>
+            ) : (
+              <div className="text-red-600 font-bold text-xl">
+                😔 Game Over! The word was: <span className="text-primary-600">{targetWord}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Virtual Keyboard */}
+        <div className="space-y-2">
+          {keyboard.map((row, rowIndex) => (
+            <div key={rowIndex} className="flex justify-center gap-1">
+              {row.map((key) => {
+                const status = key.length === 1 ? getLetterStatus(key) : 'unused';
+                let keyClass = 'px-3 py-2 rounded font-bold text-sm transition-colors ';
+                
+                if (key === 'ENTER' || key === 'BACKSPACE') {
+                  keyClass += 'bg-gray-500 text-white hover:bg-gray-600 px-4';
+                } else {
+                  switch (status) {
+                    case 'correct':
+                      keyClass += 'bg-green-500 text-white';
+                      break;
+                    case 'present':
+                      keyClass += 'bg-yellow-500 text-white';
+                      break;
+                    case 'absent':
+                      keyClass += 'bg-gray-400 text-white';
+                      break;
+                    default:
+                      keyClass += 'bg-gray-200 text-gray-800 hover:bg-gray-300';
+                  }
+                }
+                
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleKeyPress(key)}
+                    disabled={gameOver}
+                    className={keyClass}
+                  >
+                    {key === 'BACKSPACE' ? '⌫' : key}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* New Game Button */}
+        <div className="text-center mt-4">
+          <button
+            onClick={startNewGame}
+            className="bg-primary-500 text-white px-6 py-2 rounded-lg font-comic hover:bg-primary-600 transition-colors"
+          >
+            New Game
+          </button>
+        </div>
+      </div>
+
+      {/* Instructions */}
+      <div className="bg-white/60 rounded-2xl p-6 max-w-md text-center shadow">
         <h3 className="font-bold text-lg mb-2 text-gray-800">How to Play 📝</h3>
         <ul className="text-gray-700 space-y-1 text-left">
-          <li>• Guess the word by entering letters</li>
-          <li>• Each correct letter is revealed</li>
-          <li>• Try to solve the word in as few guesses as possible!</li>
+          <li>• Guess the {targetWord.length}-letter word in {maxGuesses} tries</li>
+          <li>• 🟩 Green = correct letter in correct position</li>
+          <li>• 🟨 Yellow = correct letter in wrong position</li>
+          <li>• ⬜ Gray = letter not in the word</li>
         </ul>
       </div>
     </div>

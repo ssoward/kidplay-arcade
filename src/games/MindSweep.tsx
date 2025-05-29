@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-// import './Chess.css';
 
 type Cell = {
   isMine: boolean;
@@ -13,31 +12,23 @@ type Grid = Cell[][];
 type Difficulty = 'easy' | 'medium' | 'hard';
 
 const difficulties = {
-  easy: { rows: 9, cols: 9, mines: 10 },
-  medium: { rows: 12, cols: 12, mines: 20 },
-  hard: { rows: 15, cols: 15, mines: 40 }
+  easy: { rows: 9, cols: 9, mines: 10, name: 'Beginner' },
+  medium: { rows: 12, cols: 12, mines: 20, name: 'Intermediate' },
+  hard: { rows: 15, cols: 15, mines: 40, name: 'Expert' }
 };
 
 const MindSweep: React.FC = () => {
-  const defaultConfig = difficulties['easy'];
-  const [grid, setGrid] = useState<Grid>(
-    Array(defaultConfig.rows).fill(null).map(() =>
-      Array(defaultConfig.cols).fill(null).map(() => ({
-        isMine: false,
-        isRevealed: false,
-        isFlagged: false,
-        neighborCount: 0
-      }))
-    )
-  );
-  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
-  const [mineCount, setMineCount] = useState(10);
-  const [flagCount, setFlagCount] = useState(0);
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
+  const [grid, setGrid] = useState<Grid>([]);
+  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
+  const [flagCount, setFlagCount] = useState(0);
   const [firstClick, setFirstClick] = useState(true);
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
 
+  const config = difficulties[difficulty];
+
+  // Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isRunning && gameStatus === 'playing') {
@@ -99,9 +90,7 @@ const MindSweep: React.FC = () => {
               const newCol = col + dc;
               
               if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols) {
-                if (newGrid[newRow][newCol].isMine) {
-                  count++;
-                }
+                if (newGrid[newRow][newCol].isMine) count++;
               }
             }
           }
@@ -114,29 +103,18 @@ const MindSweep: React.FC = () => {
     return newGrid;
   }, []);
 
-  const initializeGame = useCallback(() => {
-    const config = difficulties[difficulty];
-    const emptyGrid = createEmptyGrid(config.rows, config.cols);
-    
-    setGrid(emptyGrid);
-    setGameStatus('playing');
-    setMineCount(config.mines);
-    setFlagCount(0);
-    setFirstClick(true);
-    setTimer(0);
-    setIsRunning(false);
-  }, [difficulty, createEmptyGrid]);
-
   const revealCellRecursively = useCallback((grid: Grid, row: number, col: number): Grid => {
     const rows = grid.length;
     const cols = grid[0].length;
     
     if (row < 0 || row >= rows || col < 0 || col >= cols) return grid;
-    if (grid[row][col].isRevealed || grid[row][col].isFlagged) return grid;
     
-    grid[row][col].isRevealed = true;
+    const cell = grid[row][col];
+    if (cell.isRevealed || cell.isFlagged || cell.isMine) return grid;
     
-    if (grid[row][col].neighborCount === 0 && !grid[row][col].isMine) {
+    cell.isRevealed = true;
+    
+    if (cell.neighborCount === 0) {
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
           if (dr === 0 && dc === 0) continue;
@@ -148,6 +126,16 @@ const MindSweep: React.FC = () => {
     return grid;
   }, []);
 
+  const initializeGame = useCallback(() => {
+    const newGrid = createEmptyGrid(config.rows, config.cols);
+    setGrid(newGrid);
+    setGameStatus('playing');
+    setFlagCount(0);
+    setFirstClick(true);
+    setTimer(0);
+    setIsRunning(false);
+  }, [config.rows, config.cols, createEmptyGrid]);
+
   const handleCellClick = useCallback((row: number, col: number) => {
     if (gameStatus !== 'playing') return;
     
@@ -155,7 +143,7 @@ const MindSweep: React.FC = () => {
       let newGrid = prevGrid.map(r => r.map(c => ({ ...c })));
       
       if (firstClick) {
-        newGrid = placeMines(newGrid, mineCount, row, col);
+        newGrid = placeMines(newGrid, config.mines, row, col);
         newGrid = calculateNeighbors(newGrid);
         setFirstClick(false);
         setIsRunning(true);
@@ -196,7 +184,7 @@ const MindSweep: React.FC = () => {
       
       return newGrid;
     });
-  }, [gameStatus, firstClick, mineCount, placeMines, calculateNeighbors, revealCellRecursively]);
+  }, [gameStatus, firstClick, config.mines, placeMines, calculateNeighbors, revealCellRecursively]);
 
   const handleRightClick = useCallback((e: React.MouseEvent, row: number, col: number) => {
     e.preventDefault();
@@ -228,6 +216,12 @@ const MindSweep: React.FC = () => {
     initializeGame();
   }, [initializeGame]);
 
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   const getCellContent = (cell: Cell): string => {
     if (cell.isRevealed) {
       return cell.isMine ? '💣' : cell.neighborCount > 0 ? cell.neighborCount.toString() : '';
@@ -235,65 +229,190 @@ const MindSweep: React.FC = () => {
     return cell.isFlagged ? '🚩' : '';
   };
 
+  const getCellStyles = (cell: Cell): string => {
+    let baseStyles = 'w-full h-full border border-gray-400 flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-150 cursor-pointer select-none';
+    
+    if (cell.isRevealed) {
+      if (cell.isMine) {
+        baseStyles += ' bg-red-500 text-white';
+      } else {
+        baseStyles += ' bg-gray-200 hover:bg-gray-300';
+        // Number colors
+        if (cell.neighborCount === 1) baseStyles += ' text-blue-600';
+        else if (cell.neighborCount === 2) baseStyles += ' text-green-600';
+        else if (cell.neighborCount === 3) baseStyles += ' text-red-600';
+        else if (cell.neighborCount === 4) baseStyles += ' text-purple-600';
+        else if (cell.neighborCount === 5) baseStyles += ' text-yellow-600';
+        else if (cell.neighborCount === 6) baseStyles += ' text-pink-600';
+        else if (cell.neighborCount === 7) baseStyles += ' text-black';
+        else if (cell.neighborCount === 8) baseStyles += ' text-gray-600';
+      }
+    } else {
+      if (cell.isFlagged) {
+        baseStyles += ' bg-yellow-300 hover:bg-yellow-400';
+      } else {
+        baseStyles += ' bg-gray-400 hover:bg-gray-500 active:bg-gray-300';
+      }
+    }
+    
+    return baseStyles;
+  };
+
+  const getGridSize = (): string => {
+    if (config.rows <= 9) return 'max-w-md';
+    if (config.rows <= 12) return 'max-w-lg';
+    return 'max-w-2xl';
+  };
+
   return (
-    <div className="mind-sweep">
-      <h1>Mind Sweep</h1>
-      <div className="game-info">
-        <div>Timer: {timer}s</div>
-        <div>Mines Left: {mineCount - flagCount}</div>
-        <div>Status: {gameStatus === 'playing' ? 'In Progress' : gameStatus === 'won' ? 'You Won!' : 'You Lost!'}</div>
-      </div>
-      <div className="difficulty">
-        <button className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2" onClick={() => changeDifficulty('easy')}>Easy</button>
-        <button className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2" onClick={() => changeDifficulty('medium')}>Medium</button>
-        <button className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2" onClick={() => changeDifficulty('hard')}>Hard</button>
-      </div>
-      <div className="grid" style={{
-        display: 'grid',
-        gridTemplateRows: `repeat(${grid.length}, 1fr)`,
-        gridTemplateColumns: `repeat(${grid[0]?.length || 0}, minmax(32px, 1fr))`,
-        border: '2px solid #888',
-        background: '#bdbdbd',
-        minHeight: '40vw',
-        minWidth: '40vw',
-        maxWidth: '98vw',
-        maxHeight: '98vw',
-        width: '100%',
-        aspectRatio: '1/1',
-        boxSizing: 'border-box',
-        gap: '2vw',
-        margin: '0 auto',
-        touchAction: 'manipulation',
-      }}>
-        {grid.length > 0 && grid[0]?.length > 0 && grid.map((rowArr, row) =>
-          rowArr.map((cell, col) => (
-            <div
-              key={`${row}-${col}`}
-              className={`cell ${cell.isRevealed ? 'revealed' : ''} ${cell.isFlagged ? 'flagged' : ''}`}
-              style={{
-                border: '1px solid #888',
-                background: cell.isRevealed ? '#e0e0e0' : '#9e9e9e',
-                width: '100%',
-                aspectRatio: '1/1',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 'bold',
-                fontSize: 'min(6vw, 2.2rem)',
-                userSelect: 'none',
-                touchAction: 'manipulation',
-                boxSizing: 'border-box',
-                transition: 'background 0.2s',
-              }}
-              onClick={() => handleCellClick(row, col)}
-              onContextMenu={e => handleRightClick(e, row, col)}
-            >
-              {getCellContent(cell)}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">💣 Mind Sweep</h1>
+          <p className="text-gray-600">Clear the field without hitting any mines!</p>
+        </div>
+
+        {/* Game Controls */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          {/* Difficulty Selection */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">Difficulty</h3>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(difficulties).map(([key, difficultyConfig]) => (
+                <button
+                  key={key}
+                  onClick={() => changeDifficulty(key as Difficulty)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    difficulty === key
+                      ? 'bg-blue-500 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {difficultyConfig.name}
+                  <span className="block text-xs opacity-75">
+                    {difficultyConfig.rows}×{difficultyConfig.cols}, {difficultyConfig.mines} mines
+                  </span>
+                </button>
+              ))}
             </div>
-          ))
-        )}
+          </div>
+
+          {/* Game Stats */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl">⏱️</span>
+                <span className="font-mono text-lg font-semibold text-gray-700">
+                  {formatTime(timer)}
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl">🚩</span>
+                <span className="font-mono text-lg font-semibold text-gray-700">
+                  {flagCount}/{config.mines}
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <span className="text-2xl">💣</span>
+                <span className="font-mono text-lg font-semibold text-gray-700">
+                  {Math.max(0, config.mines - flagCount)}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={initializeGame}
+              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold px-6 py-2 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105"
+            >
+              New Game
+            </button>
+          </div>
+
+          {/* Game Status */}
+          {gameStatus !== 'playing' && (
+            <div className={`text-center p-4 rounded-lg mb-4 ${
+              gameStatus === 'won' 
+                ? 'bg-green-100 text-green-800 border border-green-200' 
+                : 'bg-red-100 text-red-800 border border-red-200'
+            }`}>
+              <div className="text-2xl mb-2">
+                {gameStatus === 'won' ? '🎉' : '💥'}
+              </div>
+              <div className="font-bold text-lg">
+                {gameStatus === 'won' ? 'Congratulations! You Won!' : 'Game Over! You Hit a Mine!'}
+              </div>
+              <div className="text-sm mt-1">
+                {gameStatus === 'won' 
+                  ? `Completed in ${formatTime(timer)}` 
+                  : 'Better luck next time!'
+                }
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Game Grid */}
+        <div className="flex justify-center">
+          <div className={`${getGridSize()} w-full`}>
+            <div 
+              className="bg-white rounded-xl shadow-lg p-4 inline-block"
+              style={{
+                display: 'grid',
+                gridTemplateRows: `repeat(${config.rows}, 1fr)`,
+                gridTemplateColumns: `repeat(${config.cols}, 1fr)`,
+                gap: '1px',
+                backgroundColor: '#374151'
+              }}
+            >
+              {grid.map((rowArr, row) =>
+                rowArr.map((cell, col) => (
+                  <div
+                    key={`${row}-${col}`}
+                    className={getCellStyles(cell)}
+                    style={{
+                      minWidth: difficulty === 'hard' ? '20px' : '30px',
+                      minHeight: difficulty === 'hard' ? '20px' : '30px',
+                      maxWidth: '40px',
+                      maxHeight: '40px',
+                      aspectRatio: '1/1'
+                    }}
+                    onClick={() => handleCellClick(row, col)}
+                    onContextMenu={e => handleRightClick(e, row, col)}
+                  >
+                    {getCellContent(cell)}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">How to Play</h3>
+          <div className="grid sm:grid-cols-2 gap-4 text-sm text-gray-600">
+            <div>
+              <h4 className="font-medium text-gray-700 mb-1">Basic Controls:</h4>
+              <ul className="space-y-1">
+                <li>• <strong>Left click</strong> to reveal a cell</li>
+                <li>• <strong>Right click</strong> to flag/unflag a mine</li>
+                <li>• Numbers show nearby mine count</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-700 mb-1">Objective:</h4>
+              <ul className="space-y-1">
+                <li>• Reveal all cells without mines</li>
+                <li>• Use numbers to deduce mine locations</li>
+                <li>• Flag suspected mines with 🚩</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
-      <button className="chess-btn bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 disabled:opacity-60 mt-4" onClick={initializeGame}>Restart</button>
     </div>
   );
 };
