@@ -171,24 +171,193 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
   }, [playerScore, aiScore]);
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-blue-100 via-yellow-100 to-pink-100 p-6">
-      <div className="text-center mb-6">
-        <h1 className="text-4xl font-bold mb-2 font-comic drop-shadow-lg">Pong 🏓</h1>
-        <p className="text-lg opacity-90">Classic arcade action! (Full game coming soon!)</p>
-      </div>
-      <div className="flex flex-col items-center justify-center min-h-[300px]">
-        <div className="bg-white/80 rounded-2xl p-8 shadow-lg text-center text-2xl text-gray-500">
-          Pong coming soon!<br />
-          (A full-featured version is in development.)
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+            🏓 Pong Classic
+          </h1>
+          <p className="text-xl text-gray-700">
+            The classic arcade game! First to 5 points wins!
+          </p>
         </div>
-      </div>
-      <div className="mt-8 bg-white/60 rounded-2xl p-6 max-w-md text-center shadow">
-        <h3 className="font-bold text-lg mb-2 text-gray-800">How to Play 🏓</h3>
-        <ul className="text-gray-700 space-y-1 text-left">
-          <li>• Use your paddle to bounce the ball</li>
-          <li>• Try to score against your opponent</li>
-          <li>• First to 10 points wins!</li>
-        </ul>
+
+        {/* Game Controls */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <button
+              onClick={onExit}
+              className="bg-white/80 hover:bg-white text-gray-700 font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
+            >
+              ← Back
+            </button>
+            
+            <div className="flex space-x-4">
+              <select
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-700 font-medium"
+                disabled={gameRunning}
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+
+              {!gameRunning && (playerScore < 5 && aiScore < 5) && (
+                <button
+                  onClick={startGame}
+                  className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
+                >
+                  🚀 Start Game
+                </button>
+              )}
+
+              {gameRunning && (
+                <button
+                  onClick={pauseGame}
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
+                >
+                  ⏸️ Pause
+                </button>
+              )}
+
+              <button
+                onClick={resetGame}
+                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                🔄 Reset
+              </button>
+            </div>
+          </div>
+
+          {/* Score Board */}
+          <div className="flex justify-center items-center space-x-8 mb-6">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-blue-600">{aiScore}</div>
+              <div className="text-gray-600 font-medium">AI</div>
+            </div>
+            <div className="text-2xl font-bold text-gray-400">VS</div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-purple-600">{playerScore}</div>
+              <div className="text-gray-600 font-medium">You</div>
+            </div>
+          </div>
+
+          {/* Game Area */}
+          <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl mx-auto" style={{ width: gameWidth, height: gameHeight }}>
+            {/* Game Canvas */}
+            <div 
+              className="absolute inset-0 cursor-none"
+              onMouseMove={handleMouseMove}
+              style={{ width: '100%', height: '100%' }}
+            >
+              {/* Center Line */}
+              <div className="absolute top-0 left-1/2 w-0.5 h-full bg-white/30 transform -translate-x-1/2" />
+              
+              {/* Ball */}
+              <div
+                className="absolute bg-white rounded-full shadow-lg"
+                style={{
+                  width: ballSize,
+                  height: ballSize,
+                  left: ballPosition.x,
+                  top: ballPosition.y,
+                  transition: gameRunning ? 'none' : 'all 0.3s ease'
+                }}
+              />
+              
+              {/* Player Paddle (Right) */}
+              <div
+                className="absolute bg-white rounded-sm shadow-lg"
+                style={{
+                  width: paddleWidth,
+                  height: paddleHeight,
+                  right: 0,
+                  top: playerPaddle,
+                  transition: 'top 0.1s ease'
+                }}
+              />
+              
+              {/* AI Paddle (Left) */}
+              <div
+                className="absolute bg-white rounded-sm shadow-lg"
+                style={{
+                  width: paddleWidth,
+                  height: paddleHeight,
+                  left: 0,
+                  top: aiPaddle,
+                  transition: 'top 0.1s ease'
+                }}
+              />
+
+              {/* Game Status Overlay */}
+              {!gameRunning && (playerScore >= 5 || aiScore >= 5) && (
+                <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4">
+                      {playerScore >= 5 ? '🎉' : '🤖'}
+                    </div>
+                    <div className="text-4xl font-bold text-white mb-4">
+                      {playerScore >= 5 ? 'You Win!' : 'AI Wins!'}
+                    </div>
+                    <button
+                      onClick={resetGame}
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
+                    >
+                      Play Again
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {!gameRunning && playerScore < 5 && aiScore < 5 && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-white mb-4">
+                      Ready to Play?
+                    </div>
+                    <p className="text-white/80 mb-6">Move your mouse to control the right paddle</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+          <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+            🎮 How to Play
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-700">
+            <div className="text-center">
+              <div className="text-4xl mb-3">🖱️</div>
+              <h4 className="font-semibold text-gray-800 mb-2">Control</h4>
+              <p>Move your mouse up and down to control the right paddle</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-3">🎯</div>
+              <h4 className="font-semibold text-gray-800 mb-2">Objective</h4>
+              <p>Hit the ball past the AI paddle to score points</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-3">🏆</div>
+              <h4 className="font-semibold text-gray-800 mb-2">Win Condition</h4>
+              <p>First player to reach 5 points wins the game</p>
+            </div>
+          </div>
+
+          <div className="mt-6 text-center">
+            <h4 className="font-semibold text-gray-800 mb-2">💡 Tips:</h4>
+            <div className="text-sm text-gray-600 space-y-1">
+              <p>• Hit the ball with different parts of your paddle to change its angle</p>
+              <p>• The AI gets faster and smarter on higher difficulties</p>
+              <p>• Try to predict where the ball will go and position your paddle early</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
