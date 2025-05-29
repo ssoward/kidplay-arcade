@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './Chess.css';
+// import './Chess.css';
 
 const getAIWord = async () => {
   // Ask backend AI for a random word

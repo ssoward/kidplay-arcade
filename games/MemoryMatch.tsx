@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Chess.css';
+// import './Chess.css';
 
 interface Card {
   id: number;

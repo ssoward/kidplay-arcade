@@ -1,1 +1,128 @@
-{}
+{
+  "components/GamePage.tsx -> ../games/Blackjack": {
+    "id": "components/GamePage.tsx -> ../games/Blackjack",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_Blackjack_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/Checkers": {
+    "id": "components/GamePage.tsx -> ../games/Checkers",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_Checkers_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/Chess": {
+    "id": "components/GamePage.tsx -> ../games/Chess",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_Chess_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/ConnectFour": {
+    "id": "components/GamePage.tsx -> ../games/ConnectFour",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_ConnectFour_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/DotsAndBoxes": {
+    "id": "components/GamePage.tsx -> ../games/DotsAndBoxes",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_DotsAndBoxes_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/Hangman": {
+    "id": "components/GamePage.tsx -> ../games/Hangman",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_Hangman_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/MazeEscape": {
+    "id": "components/GamePage.tsx -> ../games/MazeEscape",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_MazeEscape_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/MemoryMatch": {
+    "id": "components/GamePage.tsx -> ../games/MemoryMatch",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_MemoryMatch_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/MindSweep": {
+    "id": "components/GamePage.tsx -> ../games/MindSweep",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_MindSweep_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/Pong": {
+    "id": "components/GamePage.tsx -> ../games/Pong",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_Pong_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/QuickMath": {
+    "id": "components/GamePage.tsx -> ../games/QuickMath",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_QuickMath_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/RockPaperScissors": {
+    "id": "components/GamePage.tsx -> ../games/RockPaperScissors",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_RockPaperScissors_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/SlidePuzzle": {
+    "id": "components/GamePage.tsx -> ../games/SlidePuzzle",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_SlidePuzzle_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/Solitaire": {
+    "id": "components/GamePage.tsx -> ../games/Solitaire",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_Solitaire_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/SpotDifference": {
+    "id": "components/GamePage.tsx -> ../games/SpotDifference",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_SpotDifference_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/Storyteller": {
+    "id": "components/GamePage.tsx -> ../games/Storyteller",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_Storyteller_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/Sudoku": {
+    "id": "components/GamePage.tsx -> ../games/Sudoku",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_Sudoku_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/TicTacToe": {
+    "id": "components/GamePage.tsx -> ../games/TicTacToe",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_TicTacToe_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/TriviaBlitz": {
+    "id": "components/GamePage.tsx -> ../games/TriviaBlitz",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_TriviaBlitz_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/TwentyQuestions": {
+    "id": "components/GamePage.tsx -> ../games/TwentyQuestions",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_TwentyQuestions_tsx.js"
+    ]
+  },
+  "components/GamePage.tsx -> ../games/WordGuess": {
+    "id": "components/GamePage.tsx -> ../games/WordGuess",
+    "files": [
+      "static/chunks/_pages-dir-browser_games_WordGuess_tsx.js"
+    ]
+  }
+}

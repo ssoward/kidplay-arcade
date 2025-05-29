@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import './Storyteller.css';
+// import './Storyteller.css';
 // import './Chess.css';
 
 const GENRES = [

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import './Chess.css';
+// import './Chess.css';
 
 const ROWS = 6;
 const COLS = 7;

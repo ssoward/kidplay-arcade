@@ -45,6 +45,7 @@
     ]
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.8",
     "@types/chess.js": "^0.13.7",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.4",

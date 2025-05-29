@@ -2,7 +2,6 @@
 // This is a placeholder for a modern Solitaire UI. For a real implementation, a full solitaire engine would be needed.
 // --- Solitaire game state and logic ---
 import React, { useState, useCallback, useRef } from 'react';
-import './Chess.css';
 
 // Card and game types
 const suits = ['♠', '♥', '♦', '♣'] as const;
