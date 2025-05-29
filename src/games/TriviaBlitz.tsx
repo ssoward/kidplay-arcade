@@ -80,7 +80,7 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 					Final Score: {score} / {QUESTIONS.length}
 				</div>
 				<button
-					className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow mt-2"
+					className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transform hover:scale-105"
 					onClick={restart}
 				>
 					Play Again
@@ -103,14 +103,14 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 					{QUESTIONS[current].options.map((opt, idx) => (
 						<button
 							key={idx}
-							className={`chess-btn px-4 py-2 rounded-lg font-bold text-lg shadow transition duration-150 ${
+							className={`px-4 py-2 rounded-lg font-bold text-lg shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 ${
 								showAnswer
 									? idx === QUESTIONS[current].answer
-										? 'bg-green-400 text-white'
+										? 'bg-green-400 text-white focus:ring-green-300'
 										: idx === selected
-										? 'bg-red-400 text-white'
-										: 'bg-gray-200 text-gray-700'
-									: 'bg-gray-200 text-gray-700 hover:bg-blue-200'
+										? 'bg-red-400 text-white focus:ring-red-300'
+										: 'bg-gray-200 text-gray-700 focus:ring-gray-400'
+									: 'bg-gray-200 text-gray-700 hover:bg-blue-200 focus:ring-blue-400'
 							}`}
 							onClick={() => handleOption(idx)}
 							disabled={showAnswer}
@@ -121,7 +121,7 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 				</div>
 				{showAnswer && (
 					<button
-						className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-4 py-2 rounded-xl shadow mt-4"
+						className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-4 py-2 rounded-xl shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transform hover:scale-105 mt-4"
 						onClick={next}
 					>
 						{current + 1 < QUESTIONS.length ? 'Next' : 'Finish'}

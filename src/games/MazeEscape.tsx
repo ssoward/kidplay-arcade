@@ -88,7 +88,7 @@ const MazeEscape: React.FC = () => {
       {won && <div className="text-2xl font-bold text-green-600 mb-2">You escaped the maze! 🎉</div>}
       <button
         onClick={reset}
-        className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow mt-2"
+        className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transform hover:scale-105"
       >New Maze</button>
       <div className="mt-8 bg-white/60 rounded-2xl p-6 max-w-md text-center shadow">
         <h3 className="font-bold text-lg mb-2 text-gray-800">How to Play 🌀</h3>

@@ -198,11 +198,11 @@ const DotsAndBoxes: React.FC = () => {
       <div className="mb-4 flex justify-center gap-8">
         <button
           onClick={() => setIsVsAI(false)}
-          className={`chess-btn px-4 py-2 mr-2 ${!isVsAI ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+          className={`px-4 py-2 mr-2 rounded-lg font-semibold transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 ${!isVsAI ? 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-400' : 'bg-gray-200 hover:bg-gray-300 text-gray-700 focus:ring-gray-400'}`}
         >Play vs Friend</button>
         <button
           onClick={() => setIsVsAI(true)}
-          className={`chess-btn px-4 py-2 ${isVsAI ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+          className={`px-4 py-2 rounded-lg font-semibold transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 ${isVsAI ? 'bg-purple-500 hover:bg-purple-600 text-white focus:ring-purple-400' : 'bg-gray-200 hover:bg-gray-300 text-gray-700 focus:ring-gray-400'}`}
         >Play vs AI</button>
       </div>
       <div className="mb-4 flex justify-center gap-8">
@@ -310,7 +310,7 @@ const DotsAndBoxes: React.FC = () => {
       </div>
       <button
         onClick={restart}
-        className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2"
+        className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 disabled:opacity-60 transform hover:scale-105 mt-4"
       >
         Restart
       </button>

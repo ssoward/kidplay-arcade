@@ -272,43 +272,14 @@ const Sudoku: React.FC = () => {
         {[1,2,3,4,5,6,7,8,9].map(n => (
           <button
             key={n}
-            className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2"
-            style={{
-              width: '44px',
-              height: '44px',
-              fontSize: '1.3rem',
-              fontWeight: 'bold',
-              borderRadius: '8px',
-              border: '2px solid #64748b',
-              background: '#fff',
-              color: '#2563eb',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-              userSelect: 'none',
-              touchAction: 'manipulation',
-            }}
+            className="w-11 h-11 text-xl font-bold rounded-lg border-2 border-slate-400 bg-white text-blue-600 shadow-sm hover:bg-blue-50 hover:border-blue-400 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 select-none touch-manipulation"
             onClick={() => handleNumberInput(n)}
           >
             {n}
           </button>
         ))}
         <button
-          className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2"
-          style={{
-            width: '44px',
-            height: '44px',
-            fontSize: '1.3rem',
-            fontWeight: 'bold',
-            borderRadius: '8px',
-            border: '2px solid #64748b',
-            background: '#fff',
-            color: '#ef4444',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            cursor: 'pointer',
-            userSelect: 'none',
-            touchAction: 'manipulation',
-          }}
+          className="w-11 h-11 text-xl font-bold rounded-lg border-2 border-slate-400 bg-white text-red-500 shadow-sm hover:bg-red-50 hover:border-red-400 active:scale-95 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 select-none touch-manipulation"
           onClick={handleClear}
         >
           ⌫

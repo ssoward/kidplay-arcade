@@ -50,7 +50,7 @@ const RockPaperScissors: React.FC = () => {
           {CHOICES.map(choice => (
             <button
               key={choice}
-              className={`chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow ${playerChoice === choice ? 'ring-4 ring-purple-300' : ''}`}
+              className={`bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 transform hover:scale-105 ${playerChoice === choice ? 'ring-4 ring-purple-300' : ''}`}
               onClick={() => play(choice)}
               disabled={!!result}
             >
@@ -71,7 +71,7 @@ const RockPaperScissors: React.FC = () => {
         <div className="mb-2 text-lg font-semibold">Score: You {score.player} - {score.ai} AI</div>
         <button
           onClick={reset}
-          className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow mt-2"
+          className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transform hover:scale-105"
         >Reset</button>
       </div>
       <div className="mt-8 bg-white/60 rounded-2xl p-6 max-w-md text-center shadow">

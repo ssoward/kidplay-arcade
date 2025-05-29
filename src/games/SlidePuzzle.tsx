@@ -179,7 +179,7 @@ const SlidePuzzle: React.FC = () => {
           <button
             key={gridSize}
             onClick={() => setSize(gridSize)}
-            className={`chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2 ${
+            className={`bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 transform hover:scale-105 ${
               size === gridSize 
                 ? 'bg-white text-purple-600' 
                 : 'bg-white/20 hover:bg-white/30'
@@ -229,9 +229,9 @@ const SlidePuzzle: React.FC = () => {
                 onClick={() => makeMove(rowIndex, colIndex)}
                 disabled={isCompleted || value === null}
                 className={`
-                  chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2
-                  w-16 h-16 text-xl font-bold rounded-lg border-2 border-white/30
-                  transition-all duration-200 active:scale-95
+                  bg-gradient-to-br from-white to-gray-100 hover:from-gray-50 hover:to-gray-200 text-gray-800 font-bold shadow-lg border-2 border-white/30
+                  w-16 h-16 text-xl font-bold rounded-lg
+                  transition-all duration-200 active:scale-95 hover:scale-105
                   ${getTileColor(value, rowIndex, colIndex)}
                 `}
               >
@@ -246,7 +246,7 @@ const SlidePuzzle: React.FC = () => {
       <div className="flex space-x-4 mb-6">
         <button
           onClick={initializeGame}
-          className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 py-3 rounded-full shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60"
+          className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold px-6 py-3 rounded-full shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 disabled:opacity-60 transform hover:scale-105"
         >
           New Game
         </button>

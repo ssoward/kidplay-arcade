@@ -115,7 +115,7 @@ const Storyteller: React.FC = () => {
     <div className="storyteller-container min-h-screen flex flex-col items-center bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 p-4 md:p-8">
       <div className="storyteller-header w-full max-w-2xl flex flex-col md:flex-row items-center justify-between mb-6">
         <h1 className="game-title text-3xl md:text-4xl font-bold font-comic drop-shadow-lg text-center md:text-left mb-4 md:mb-0">AI Storyteller</h1>
-        <button className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2" onClick={reset} disabled={aiThinking}>
+        <button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60" onClick={reset} disabled={aiThinking}>
           New Story
         </button>
       </div>
@@ -134,7 +134,7 @@ const Storyteller: React.FC = () => {
               </option>
             ))}
           </select>
-          <button className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2" onClick={startStory} disabled={aiThinking}>
+          <button className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 disabled:opacity-60 transform hover:scale-105" onClick={startStory} disabled={aiThinking}>
             Start Story
           </button>
         </div>
@@ -176,14 +176,14 @@ const Storyteller: React.FC = () => {
                 }}
               />
               <button
-                className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 transform hover:scale-105"
                 onClick={addToStory}
                 disabled={aiThinking || !input.trim()}
               >
                 Continue
               </button>
               <button
-                className="chess-btn bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-60 mt-2 ml-2"
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold px-5 py-2 rounded-xl shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-60 transform hover:scale-105"
                 onClick={endStory}
                 disabled={aiThinking || story.length < 4}
               >
