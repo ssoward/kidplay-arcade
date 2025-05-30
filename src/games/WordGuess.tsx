@@ -13,8 +13,14 @@ const WordGuess: React.FC = () => {
   const [won, setWon] = useState(false);
   const [maxGuesses] = useState(6);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [hint, setHint] = useState<string>('');
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [maxHints] = useState(3);
+  const [loadingHint, setLoadingHint] = useState(false);
+  const [loadingWord, setLoadingWord] = useState(false);
 
-  const wordLists = {
+  // Fallback word lists in case AI is unavailable
+  const fallbackWordLists = {
     easy: [
       'HAPPY', 'SMILE', 'DANCE', 'MUSIC', 'BEACH', 'SUNNY', 'PLANT', 'HEART',
       'SWEET', 'LIGHT', 'MAGIC', 'PEACE', 'BRAVE', 'DREAM', 'GRACE', 'LAUGH',
@@ -31,18 +37,90 @@ const WordGuess: React.FC = () => {
     ]
   };
 
+  const getAIWord = async () => {
+    setLoadingWord(true);
+    try {
+      const difficultyDescriptions = {
+        easy: '4-5 letter common words that are simple and familiar (like HAPPY, SMILE, MUSIC)',
+        medium: '5-6 letter words that are moderately challenging (like PUZZLE, CASTLE, GARDEN)',
+        hard: '6-7 letter complex or uncommon words (like QUARTZ, MYSTERY, QUANTUM)'
+      };
+
+      const systemPrompt = `You are a word generator for a word guessing game (like Wordle). 
+      Generate a single word for ${difficulty} difficulty.
+      
+      Requirements:
+      - ${difficultyDescriptions[difficulty]}
+      - Must be a real English word
+      - Must be appropriate for all ages
+      - Must be exactly one word (no phrases or hyphenated words)
+      - Must contain only letters A-Z
+      - Respond with ONLY the word in uppercase, nothing else
+      
+      Examples for ${difficulty}: ${fallbackWordLists[difficulty].slice(0, 3).join(', ')}`;
+
+      const response = await fetch('/api/ask-ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          game: 'word-guess-generator',
+          difficulty: difficulty,
+          systemPrompt: systemPrompt,
+          userMessage: `Generate a single ${difficulty} difficulty word for the word guessing game.`
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        let aiWord = (data.response || data.word || '').trim().toUpperCase();
+        
+        // Clean the response to extract just the word
+        aiWord = aiWord.replace(/[^A-Z]/g, '').trim();
+        
+        // Validate the word length based on difficulty
+        const expectedLengths = {
+          easy: [4, 5],
+          medium: [5, 6],
+          hard: [6, 7]
+        };
+        
+        if (aiWord.length >= expectedLengths[difficulty][0] && 
+            aiWord.length <= expectedLengths[difficulty][1] && 
+            aiWord.length > 0) {
+          setTargetWord(aiWord);
+          console.log(`AI generated word: ${aiWord} (${difficulty})`);
+        } else {
+          throw new Error(`Invalid word length: ${aiWord.length}`);
+        }
+      } else {
+        throw new Error('AI request failed');
+      }
+    } catch (error) {
+      console.error('Error getting AI word:', error);
+      // Fallback to predefined word list
+      const words = fallbackWordLists[difficulty];
+      const randomWord = words[Math.floor(Math.random() * words.length)];
+      setTargetWord(randomWord);
+      console.log(`Using fallback word: ${randomWord} (${difficulty})`);
+    } finally {
+      setLoadingWord(false);
+    }
+  };
+
   const selectRandomWord = useCallback(() => {
-    const words = wordLists[difficulty];
-    const randomWord = words[Math.floor(Math.random() * words.length)];
-    setTargetWord(randomWord);
+    getAIWord();
   }, [difficulty]);
 
-  const startNewGame = useCallback(() => {
-    selectRandomWord();
+  const startNewGame = useCallback(async () => {
     setGuesses([]);
     setCurrentGuess('');
     setGameOver(false);
     setWon(false);
+    setHint('');
+    setHintsUsed(0);
+    await selectRandomWord();
   }, [selectRandomWord]);
 
   React.useEffect(() => {
@@ -136,6 +214,83 @@ const WordGuess: React.FC = () => {
     return 'unused';
   };
 
+  const getAIHint = async () => {
+    if (hintsUsed >= maxHints || gameOver || !targetWord || loadingHint) return;
+    
+    setLoadingHint(true);
+    try {
+      // Prepare the game state for the AI
+      const gameState = {
+        targetWord,
+        guesses,
+        currentGuess,
+        difficulty,
+        hintsUsed,
+        maxGuesses,
+        guessesRemaining: maxGuesses - guesses.length
+      };
+
+      const systemPrompt = `You are a helpful assistant for a word guessing game (like Wordle). 
+      The player is trying to guess a ${targetWord.length}-letter word: "${targetWord}".
+      
+      Game state:
+      - Difficulty: ${difficulty}
+      - Guesses made: ${guesses.length}/${maxGuesses}
+      - Previous guesses: ${guesses.join(', ') || 'None'}
+      - Hints used: ${hintsUsed}/${maxHints}
+      
+      Provide a helpful hint that gives the player a clue about the word without directly revealing it. 
+      You can hint about:
+      - The category or theme of the word
+      - A synonym or related concept
+      - The first letter or last letter
+      - Number of vowels
+      - A definition or description
+      
+      Keep the hint concise (1-2 sentences) and helpful but not too obvious.`;
+
+      const response = await fetch('/api/ask-ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          game: 'word-guess',
+          state: gameState,
+          systemPrompt: systemPrompt,
+          userMessage: `Please give me a hint for the word "${targetWord}". This is hint ${hintsUsed + 1} of ${maxHints}.`
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setHint(data.response || data.hint || 'Try thinking about common letter patterns!');
+        setHintsUsed(prev => prev + 1);
+      } else {
+        // Fallback hints if AI is not available
+        const fallbackHints = [
+          `This word has ${targetWord.split('').filter(letter => 'AEIOU'.includes(letter)).length} vowel(s).`,
+          `The word starts with the letter "${targetWord[0]}".`,
+          `The word ends with the letter "${targetWord[targetWord.length - 1]}".`
+        ];
+        setHint(fallbackHints[hintsUsed] || 'Keep trying! You can do this!');
+        setHintsUsed(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error getting AI hint:', error);
+      // Fallback hint
+      const fallbackHints = [
+        `This word has ${targetWord.split('').filter(letter => 'AEIOU'.includes(letter)).length} vowel(s).`,
+        `The word starts with "${targetWord[0]}".`,
+        `The word ends with "${targetWord[targetWord.length - 1]}".`
+      ];
+      setHint(fallbackHints[hintsUsed] || 'Keep trying! You can do this!');
+      setHintsUsed(prev => prev + 1);
+    } finally {
+      setLoadingHint(false);
+    }
+  };
+
   const keyboard = [
     ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
     ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
@@ -153,7 +308,11 @@ const WordGuess: React.FC = () => {
           {(['easy', 'medium', 'hard'] as const).map((level) => (
             <button
               key={level}
-              onClick={() => setDifficulty(level)}
+              onClick={() => {
+                setDifficulty(level);
+                setHint('');
+                setHintsUsed(0);
+              }}
               className={`px-4 py-2 rounded-lg font-comic text-sm transition-colors ${
                 difficulty === level
                   ? 'bg-primary-500 text-white'
@@ -166,110 +325,165 @@ const WordGuess: React.FC = () => {
         </div>
       </div>
 
+      {/* Hint Display */}
+      {hint && (
+        <div className="bg-blue-100 border-l-4 border-blue-500 p-4 mb-4 rounded-r-lg max-w-lg mx-auto">
+          <div className="flex items-center">
+            <span className="text-2xl mr-2">💡</span>
+            <div>
+              <p className="text-blue-700 font-semibold">AI Hint:</p>
+              <p className="text-blue-600">{hint}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Game Board */}
       <div className="bg-white/90 rounded-2xl p-6 shadow-lg mb-6">
-        <div className="grid gap-2 mb-6">
-          {Array.from({ length: maxGuesses }, (_, rowIndex) => (
-            <div key={rowIndex} className="flex gap-2 justify-center">
-              {Array.from({ length: targetWord.length }, (_, colIndex) => {
-                const guess = guesses[rowIndex];
-                const isCurrentRow = rowIndex === guesses.length && !gameOver;
-                const letter = isCurrentRow && currentGuess[colIndex] ? currentGuess[colIndex] : (guess ? guess[colIndex] : '');
-                const result = guess ? getGuessResult(guess)[colIndex] : null;
-                
-                let bgColor = 'bg-gray-100 border-gray-300';
-                if (result) {
-                  switch (result.status) {
-                    case 'correct':
-                      bgColor = 'bg-green-500 text-white border-green-500';
-                      break;
-                    case 'present':
-                      bgColor = 'bg-yellow-500 text-white border-yellow-500';
-                      break;
-                    case 'absent':
-                      bgColor = 'bg-gray-400 text-white border-gray-400';
-                      break;
-                  }
-                } else if (isCurrentRow && currentGuess[colIndex]) {
-                  bgColor = 'bg-blue-100 border-blue-300';
-                }
-                
-                return (
-                  <div
-                    key={colIndex}
-                    className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center font-bold text-lg ${bgColor}`}
-                  >
-                    {letter}
-                  </div>
-                );
-              })}
+        {loadingWord ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin text-4xl mb-4">🎯</div>
+            <p className="text-lg font-semibold text-gray-600">AI is generating a new word...</p>
+            <p className="text-sm text-gray-500 mt-2">Difficulty: {difficulty}</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-2 mb-6">
+              {Array.from({ length: maxGuesses }, (_, rowIndex) => (
+                <div key={rowIndex} className="flex gap-2 justify-center">
+                  {Array.from({ length: targetWord.length }, (_, colIndex) => {
+                    const guess = guesses[rowIndex];
+                    const isCurrentRow = rowIndex === guesses.length && !gameOver;
+                    const letter = isCurrentRow && currentGuess[colIndex] ? currentGuess[colIndex] : (guess ? guess[colIndex] : '');
+                    const result = guess ? getGuessResult(guess)[colIndex] : null;
+                    
+                    let bgColor = 'bg-gray-100 border-gray-300';
+                    if (result) {
+                      switch (result.status) {
+                        case 'correct':
+                          bgColor = 'bg-green-500 text-white border-green-500';
+                          break;
+                        case 'present':
+                          bgColor = 'bg-yellow-500 text-white border-yellow-500';
+                          break;
+                        case 'absent':
+                          bgColor = 'bg-gray-400 text-white border-gray-400';
+                          break;
+                      }
+                    } else if (isCurrentRow && currentGuess[colIndex]) {
+                      bgColor = 'bg-blue-100 border-blue-300';
+                    }
+                    
+                    return (
+                      <div
+                        key={colIndex}
+                        className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center font-bold text-lg ${bgColor}`}
+                      >
+                        {letter}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Game Status */}
-        {gameOver && (
-          <div className="text-center mb-4">
-            {won ? (
-              <div className="text-green-600 font-bold text-xl">
-                🎉 Congratulations! You won! 🎉
-              </div>
-            ) : (
-              <div className="text-red-600 font-bold text-xl">
-                😔 Game Over! The word was: <span className="text-primary-600">{targetWord}</span>
+            {/* Game Status */}
+            {gameOver && (
+              <div className="text-center mb-4">
+                {won ? (
+                  <div className="text-green-600 font-bold text-xl">
+                    🎉 Congratulations! You won! 🎉
+                  </div>
+                ) : (
+                  <div className="text-red-600 font-bold text-xl">
+                    😔 Game Over! The word was: <span className="text-primary-600">{targetWord}</span>
+                  </div>
+                )}
               </div>
             )}
-          </div>
+
+            {/* Virtual Keyboard */}
+            <div className="space-y-2">
+              {keyboard.map((row, rowIndex) => (
+                <div key={rowIndex} className="flex justify-center gap-1">
+                  {row.map((key) => {
+                    const status = key.length === 1 ? getLetterStatus(key) : 'unused';
+                    let keyClass = 'px-3 py-2 rounded font-bold text-sm transition-colors ';
+                    
+                    if (key === 'ENTER' || key === 'BACKSPACE') {
+                      keyClass += 'bg-gray-500 text-white hover:bg-gray-600 px-4';
+                    } else {
+                      switch (status) {
+                        case 'correct':
+                          keyClass += 'bg-green-500 text-white';
+                          break;
+                        case 'present':
+                          keyClass += 'bg-yellow-500 text-white';
+                          break;
+                        case 'absent':
+                          keyClass += 'bg-gray-400 text-white';
+                          break;
+                        default:
+                          keyClass += 'bg-gray-200 text-gray-800 hover:bg-gray-300';
+                      }
+                    }
+                    
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => handleKeyPress(key)}
+                        disabled={gameOver}
+                        className={keyClass}
+                      >
+                        {key === 'BACKSPACE' ? '⌫' : key}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
-        {/* Virtual Keyboard */}
-        <div className="space-y-2">
-          {keyboard.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex justify-center gap-1">
-              {row.map((key) => {
-                const status = key.length === 1 ? getLetterStatus(key) : 'unused';
-                let keyClass = 'px-3 py-2 rounded font-bold text-sm transition-colors ';
-                
-                if (key === 'ENTER' || key === 'BACKSPACE') {
-                  keyClass += 'bg-gray-500 text-white hover:bg-gray-600 px-4';
-                } else {
-                  switch (status) {
-                    case 'correct':
-                      keyClass += 'bg-green-500 text-white';
-                      break;
-                    case 'present':
-                      keyClass += 'bg-yellow-500 text-white';
-                      break;
-                    case 'absent':
-                      keyClass += 'bg-gray-400 text-white';
-                      break;
-                    default:
-                      keyClass += 'bg-gray-200 text-gray-800 hover:bg-gray-300';
-                  }
-                }
-                
-                return (
-                  <button
-                    key={key}
-                    onClick={() => handleKeyPress(key)}
-                    disabled={gameOver}
-                    className={keyClass}
-                  >
-                    {key === 'BACKSPACE' ? '⌫' : key}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* New Game Button */}
-        <div className="text-center mt-4">
+        {/* Control Buttons */}
+        <div className="flex justify-center gap-4 mt-4 flex-wrap">
+          <button
+            onClick={getAIHint}
+            disabled={gameOver || hintsUsed >= maxHints || loadingHint || loadingWord || !targetWord}
+            className={`px-6 py-2 rounded-lg font-comic transition-colors flex items-center gap-2 ${
+              gameOver || hintsUsed >= maxHints || loadingHint || loadingWord || !targetWord
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
+          >
+            {loadingHint ? (
+              <>
+                <span className="animate-spin">🤔</span>
+                Thinking...
+              </>
+            ) : (
+              <>
+                💡 Get AI Hint ({hintsUsed}/{maxHints})
+              </>
+            )}
+          </button>
           <button
             onClick={startNewGame}
-            className="bg-primary-500 text-white px-6 py-2 rounded-lg font-comic hover:bg-primary-600 transition-colors"
+            disabled={loadingWord}
+            className={`px-6 py-2 rounded-lg font-comic transition-colors flex items-center gap-2 ${
+              loadingWord
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-primary-500 text-white hover:bg-primary-600'
+            }`}
           >
-            New Game
+            {loadingWord ? (
+              <>
+                <span className="animate-spin">🎯</span>
+                Generating...
+              </>
+            ) : (
+              'New Game'
+            )}
           </button>
         </div>
       </div>

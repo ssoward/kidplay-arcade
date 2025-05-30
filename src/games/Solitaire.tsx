@@ -79,6 +79,166 @@ const Solitaire: React.FC = () => {
     setStock(deck.filter(card => !tableauCards.includes(card.id)));
   }, []);
 
+  // --- Auto-move logic for double-click ---
+  const canMoveToFoundation = (card: Card): number | null => {
+    const rankOrder = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    
+    for (let fIdx = 0; fIdx < 4; fIdx++) {
+      if (card.suit !== foundationSuits[fIdx]) continue;
+      
+      const foundation = foundations[fIdx];
+      
+      // Foundation must start with Ace
+      if (foundation.length === 0 && card.rank === 'A') {
+        return fIdx;
+      }
+      
+      // Must be next rank in sequence
+      if (foundation.length > 0) {
+        const topCard = foundation[foundation.length - 1];
+        const currentRankIndex = rankOrder.indexOf(topCard.rank);
+        const cardRankIndex = rankOrder.indexOf(card.rank);
+        if (cardRankIndex === currentRankIndex + 1) {
+          return fIdx;
+        }
+      }
+    }
+    
+    return null;
+  };
+
+  const canMoveToTableauColumn = (card: Card, fromCol: number): number | null => {
+    const isRed = (s: Suit) => s === '♥' || s === '♦';
+    const rankOrder = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    
+    for (let colIdx = 0; colIdx < tableau.length; colIdx++) {
+      if (colIdx === fromCol) continue; // Can't move to same column
+      
+      const destCol = tableau[colIdx];
+      
+      if (destCol.length === 0) {
+        // Empty column - only Kings can be placed
+        if (card.rank === 'K') {
+          return colIdx;
+        }
+      } else {
+        // Check tableau rules: alternating colors and descending rank
+        const destCard = destCol[destCol.length - 1];
+        
+        // Must be different color
+        if (isRed(destCard.suit) === isRed(card.suit)) continue;
+        
+        // Must be one rank lower
+        const destRankIndex = rankOrder.indexOf(destCard.rank);
+        const cardRankIndex = rankOrder.indexOf(card.rank);
+        if (cardRankIndex === destRankIndex - 1) {
+          return colIdx;
+        }
+      }
+    }
+    
+    return null;
+  };
+
+  const autoMoveCard = (fromCol: number, fromIdx: number) => {
+    const card = tableau[fromCol][fromIdx];
+    if (!card.faceUp) return false;
+    
+    // Only allow moving the top card or sequences that can be moved together
+    const cardsToMove = tableau[fromCol].slice(fromIdx);
+    
+    // For auto-move, prioritize foundation moves for single cards
+    if (cardsToMove.length === 1) {
+      const foundationIdx = canMoveToFoundation(card);
+      if (foundationIdx !== null) {
+        // Move to foundation
+        setTableau(prev => {
+          const newTab = prev.map(col => [...col]);
+          newTab[fromCol] = newTab[fromCol].slice(0, fromIdx);
+          
+          // Flip the next card if it exists and is face down
+          if (newTab[fromCol].length > 0) {
+            const lastCard = newTab[fromCol][newTab[fromCol].length - 1];
+            if (!lastCard.faceUp) {
+              lastCard.faceUp = true;
+            }
+          }
+          
+          return newTab;
+        });
+        
+        setFoundations(f => {
+          const newF = f.map(arr => [...arr]);
+          newF[foundationIdx].push(card);
+          return newF;
+        });
+        
+        return true;
+      }
+    }
+    
+    // Try to move to another tableau column
+    const destCol = canMoveToTableauColumn(card, fromCol);
+    if (destCol !== null) {
+      setTableau(prev => {
+        const newTab = prev.map(col => [...col]);
+        const moving = newTab[fromCol].slice(fromIdx);
+        newTab[fromCol] = newTab[fromCol].slice(0, fromIdx);
+        
+        // Flip the next card if it exists and is face down
+        if (newTab[fromCol].length > 0) {
+          const lastCard = newTab[fromCol][newTab[fromCol].length - 1];
+          if (!lastCard.faceUp) {
+            lastCard.faceUp = true;
+          }
+        }
+        
+        newTab[destCol] = [...newTab[destCol], ...moving];
+        return newTab;
+      });
+      
+      return true;
+    }
+    
+    return false;
+  };
+
+  const autoMoveFromWaste = () => {
+    if (waste.length === 0) return false;
+    
+    const card = waste[waste.length - 1];
+    const foundationIdx = canMoveToFoundation(card);
+    
+    if (foundationIdx !== null) {
+      // Move from waste to foundation
+      setWaste(w => w.slice(0, -1));
+      setFoundations(f => {
+        const newF = f.map(arr => [...arr]);
+        newF[foundationIdx].push(card);
+        return newF;
+      });
+      return true;
+    }
+    
+    return false;
+  };
+
+  // --- Double-click handlers ---
+  const handleCardDoubleClick = (colIdx: number, cardIdx: number) => {
+    const card = tableau[colIdx][cardIdx];
+    if (!card.faceUp) return;
+    
+    // Check if there are any face-down cards below this card
+    const hasHiddenCardsBelow = tableau[colIdx].slice(cardIdx + 1).some(c => !c.faceUp);
+    if (hasHiddenCardsBelow) return;
+    
+    autoMoveCard(colIdx, cardIdx);
+  };
+
+  const handleWasteDoubleClick = () => {
+    autoMoveFromWaste();
+  };
+
   // --- Card click handler (flip top card face up if not already) ---
   const handleCardClick = useCallback((colIdx: number, cardIdx: number) => {
     setTableau(prev => {
@@ -394,8 +554,10 @@ const Solitaire: React.FC = () => {
                   style={{ left: `${i * 18}px`, zIndex: i }}
                   draggable={isTop}
                   onDragStart={isTop ? (e) => onWasteDragStart(e) : undefined}
+                  onDoubleClick={isTop ? handleWasteDoubleClick : undefined}
                   aria-label={isTop ? `Waste: ${card.rank}${card.suit}` : undefined}
                   tabIndex={isTop ? 0 : -1}
+                  title={isTop ? "Double-click to auto-move" : undefined}
                 >
                   <span className="text-xs">{card.rank}</span>
                   <span className="text-lg leading-none">{card.suit}</span>
@@ -447,6 +609,7 @@ const Solitaire: React.FC = () => {
             />
             {col.map((card, cardIdx) => {
               const canDrag = card.faceUp && !tableau[colIdx].slice(cardIdx + 1).some(c => !c.faceUp);
+              const canAutoMove = canDrag && (canMoveToFoundation(card) !== null || canMoveToTableauColumn(card, colIdx) !== null);
               
               return (
                 <div
@@ -455,7 +618,7 @@ const Solitaire: React.FC = () => {
                     card.faceUp 
                       ? `bg-white border-slate-600 ${canDrag ? 'cursor-grab hover:shadow-xl' : 'cursor-default'} ${
                           card.suit === '♥' || card.suit === '♦' ? 'text-red-500' : 'text-gray-800'
-                        }` 
+                        } ${canAutoMove ? 'ring-2 ring-blue-300 ring-opacity-50' : ''}` 
                       : 'bg-slate-600 border-slate-700 cursor-pointer'
                   } ${
                     dragged && dragged.col === colIdx && dragged.cardIdx === cardIdx ? 'opacity-50' : 'opacity-100'
@@ -469,8 +632,10 @@ const Solitaire: React.FC = () => {
                   onDragStart={e => onDragStart(colIdx, cardIdx, e)}
                   onDragEnd={onDragEnd}
                   onClick={() => !card.faceUp && cardIdx === col.length - 1 ? handleCardClick(colIdx, cardIdx) : undefined}
+                  onDoubleClick={() => card.faceUp ? handleCardDoubleClick(colIdx, cardIdx) : undefined}
                   tabIndex={card.faceUp ? 0 : -1}
                   aria-label={card.faceUp ? `${card.rank}${card.suit}` : 'Face down card'}
+                  title={canAutoMove ? "Double-click to auto-move" : card.faceUp ? `${card.rank}${card.suit}` : "Click to flip"}
                 >
                   {card.faceUp ? (
                     <div className="flex flex-col items-center w-full">

@@ -203,6 +203,104 @@ app.post('/api/ask-ai', async (req, res) => {
     }
   }
 
+  // Word Guess Word Generator AI request
+  if (req.body.game === 'word-guess-generator' && req.body.difficulty && req.body.systemPrompt) {
+    console.log('--- WORD GUESS GENERATOR AI REQUEST ---');
+    const { difficulty, systemPrompt, userMessage } = req.body;
+    console.log('Difficulty:', difficulty);
+    console.log('System prompt:', systemPrompt);
+    console.log('User message:', userMessage);
+    
+    try {
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage || `Generate a ${difficulty} difficulty word.` }
+      ];
+      
+      const response = await axios.post(
+        AZURE_ENDPOINT,
+        {
+          messages,
+          max_tokens: 20,
+          temperature: 0.8,
+          top_p: 0.95,
+          frequency_penalty: 0.5,
+          presence_penalty: 0.5,
+        },
+        {
+          headers: {
+            'api-key': AZURE_API_KEY,
+            'Ocp-Apim-Subscription-Key': AZURE_API_KEY,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      const word = response.data.choices?.[0]?.message?.content || '';
+      console.log('AI word response:', word);
+      return res.json({ response: word, word: word });
+    } catch (err) {
+      console.error('Word Generator AI ERROR:', err.response?.data || err.message);
+      // Fallback words
+      const fallbackWords = {
+        easy: ['HAPPY', 'SMILE', 'MUSIC', 'PEACE', 'LIGHT'],
+        medium: ['PUZZLE', 'CASTLE', 'GARDEN', 'BRIDGE', 'GOLDEN'],
+        hard: ['MYSTERY', 'QUANTUM', 'CRYSTAL', 'HARMONY', 'PHOENIX']
+      };
+      const fallbackWord = fallbackWords[difficulty][Math.floor(Math.random() * fallbackWords[difficulty].length)];
+      return res.json({ response: fallbackWord, word: fallbackWord, error: 'AI call failed, used fallback word.' });
+    }
+  }
+
+  // Word Guess AI request
+  if (req.body.game === 'word-guess' && req.body.state && req.body.systemPrompt) {
+    console.log('--- WORD GUESS AI REQUEST ---');
+    const { state, systemPrompt, userMessage } = req.body;
+    console.log('Game state:', JSON.stringify(state));
+    console.log('System prompt:', systemPrompt);
+    console.log('User message:', userMessage);
+    
+    try {
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage || `Please provide a hint for the word "${state.targetWord}".` }
+      ];
+      
+      const response = await axios.post(
+        AZURE_ENDPOINT,
+        {
+          messages,
+          max_tokens: 100,
+          temperature: 0.7,
+          top_p: 0.95,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+        },
+        {
+          headers: {
+            'api-key': AZURE_API_KEY,
+            'Ocp-Apim-Subscription-Key': AZURE_API_KEY,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      const hint = response.data.choices?.[0]?.message?.content || '';
+      console.log('AI hint response:', hint);
+      return res.json({ response: hint, hint: hint });
+    } catch (err) {
+      console.error('Word Guess AI ERROR:', err.response?.data || err.message);
+      // Fallback hints
+      const fallbackHints = [
+        `This word has ${state.targetWord.split('').filter(letter => 'AEIOU'.includes(letter)).length} vowel(s).`,
+        `The word starts with the letter "${state.targetWord[0]}".`,
+        `The word ends with the letter "${state.targetWord[state.targetWord.length - 1]}".`
+      ];
+      const fallbackHint = fallbackHints[state.hintsUsed] || 'Keep trying! You can do this!';
+      return res.json({ response: fallbackHint, hint: fallbackHint, error: 'AI call failed, used fallback hint.' });
+    }
+  }
+
   // Chat-based AI request (default)
   if (Array.isArray(history)) {
     console.log('--- AI REQUEST ---');
