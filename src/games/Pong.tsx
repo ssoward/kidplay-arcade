@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 interface PongProps {
   onExit?: () => void;
@@ -22,14 +22,18 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
   const [aiPaddle, setAiPaddle] = useState(175);
   const [playerScore, setPlayerScore] = useState(0);
   const [aiScore, setAiScore] = useState(0);
-  const [gameSpeed, setGameSpeed] = useState(1);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [isMobile, setIsMobile] = useState(false);
+  const gameAreaRef = useRef<HTMLDivElement>(null);
 
-  const gameWidth = 800;
-  const gameHeight = 400;
-  const paddleHeight = 80;
-  const paddleWidth = 10;
-  const ballSize = 10;
+  // Responsive game dimensions
+  const baseGameWidth = 800;
+  const baseGameHeight = 400;
+  const [gameWidth, setGameWidth] = useState(baseGameWidth);
+  const [gameHeight, setGameHeight] = useState(baseGameHeight);
+  const paddleHeight = Math.max(60, gameHeight * 0.2); // Responsive paddle height
+  const paddleWidth = Math.max(8, gameWidth * 0.0125); // Responsive paddle width
+  const ballSize = Math.max(8, Math.min(gameWidth, gameHeight) * 0.025); // Responsive ball size
 
   const difficultySettings = {
     easy: { aiSpeed: 2, ballSpeedMultiplier: 0.8 },
@@ -37,15 +41,44 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
     hard: { aiSpeed: 4, ballSpeedMultiplier: 1.2 }
   };
 
+  // Detect mobile and update game dimensions
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      
+      if (mobile) {
+        const width = Math.min(window.innerWidth - 32, 600); // 32px for padding
+        const height = Math.min(width * 0.6, 360); // Maintain aspect ratio
+        setGameWidth(width);
+        setGameHeight(height);
+      } else {
+        setGameWidth(baseGameWidth);
+        setGameHeight(baseGameHeight);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Update ball and paddle positions when game dimensions change
+  useEffect(() => {
+    setBallPosition({ x: gameWidth / 2, y: gameHeight / 2 });
+    setPlayerPaddle((gameHeight - paddleHeight) / 2);
+    setAiPaddle((gameHeight - paddleHeight) / 2);
+  }, [gameWidth, gameHeight, paddleHeight]);
+
   const resetBall = useCallback(() => {
     setBallPosition({ x: gameWidth / 2, y: gameHeight / 2 });
     const angle = (Math.random() - 0.5) * Math.PI / 3; // Random angle between -30 and 30 degrees
-    const speed = 3 * difficultySettings[difficulty].ballSpeedMultiplier;
+    const speed = (gameWidth / 267) * difficultySettings[difficulty].ballSpeedMultiplier; // Scale speed with game size
     setBallVelocity({
       x: Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1),
       y: Math.sin(angle) * speed
     });
-  }, [difficulty]);
+  }, [difficulty, gameWidth, gameHeight]);
 
   const startGame = () => {
     setGameRunning(true);
@@ -64,8 +97,8 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
     setAiScore(0);
     setBallPosition({ x: gameWidth / 2, y: gameHeight / 2 });
     setBallVelocity({ x: 0, y: 0 });
-    setPlayerPaddle(175);
-    setAiPaddle(175);
+    setPlayerPaddle((gameHeight - paddleHeight) / 2);
+    setAiPaddle((gameHeight - paddleHeight) / 2);
   };
 
   // Handle mouse movement for player paddle
@@ -75,7 +108,18 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
     const mouseY = e.clientY - rect.top;
     const paddleY = Math.max(0, Math.min(gameHeight - paddleHeight, mouseY - paddleHeight / 2));
     setPlayerPaddle(paddleY);
-  }, [gameRunning]);
+  }, [gameRunning, gameHeight, paddleHeight]);
+
+  // Handle touch movement for mobile
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!gameRunning) return;
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const touch = e.touches[0];
+    const touchY = touch.clientY - rect.top;
+    const paddleY = Math.max(0, Math.min(gameHeight - paddleHeight, touchY - paddleHeight / 2));
+    setPlayerPaddle(paddleY);
+  }, [gameRunning, gameHeight, paddleHeight]);
 
   // Game loop
   useEffect(() => {
@@ -83,74 +127,85 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
 
     const gameLoop = setInterval(() => {
       setBallPosition(prevPos => {
-        const newX = prevPos.x + ballVelocity.x;
-        const newY = prevPos.y + ballVelocity.y;
+        let newX = prevPos.x + ballVelocity.x;
+        let newY = prevPos.y + ballVelocity.y;
+        let newVelX = ballVelocity.x;
+        let newVelY = ballVelocity.y;
 
         // Ball collision with top and bottom walls
-        if (newY <= 0 || newY >= gameHeight - ballSize) {
-          setBallVelocity(prev => ({ ...prev, y: -prev.y }));
-          return { x: newX, y: Math.max(0, Math.min(gameHeight - ballSize, newY)) };
+        if (newY <= 0) {
+          newY = 0;
+          newVelY = Math.abs(newVelY);
+          setBallVelocity(prev => ({ ...prev, y: newVelY }));
+        } else if (newY >= gameHeight - ballSize) {
+          newY = gameHeight - ballSize;
+          newVelY = -Math.abs(newVelY);
+          setBallVelocity(prev => ({ ...prev, y: newVelY }));
         }
 
         // Ball collision with player paddle (right side)
-        if (newX >= gameWidth - paddleWidth - ballSize &&
+        if (newX + ballSize >= gameWidth - paddleWidth &&
             newX <= gameWidth - paddleWidth &&
-            newY >= playerPaddle &&
-            newY <= playerPaddle + paddleHeight) {
+            newY + ballSize >= playerPaddle &&
+            newY <= playerPaddle + paddleHeight &&
+            ballVelocity.x > 0) {
           
           // Calculate hit position for angle variation
-          const hitPos = (newY - playerPaddle) / paddleHeight - 0.5; // -0.5 to 0.5
-          const angle = hitPos * Math.PI / 3; // Max 60 degree angle
+          const hitPos = ((newY + ballSize/2) - (playerPaddle + paddleHeight/2)) / (paddleHeight/2); // -1 to 1
+          const angle = hitPos * Math.PI / 4; // Max 45 degree angle
           const speed = Math.sqrt(ballVelocity.x * ballVelocity.x + ballVelocity.y * ballVelocity.y);
           
-          setBallVelocity({
-            x: -Math.abs(Math.cos(angle) * speed),
-            y: Math.sin(angle) * speed
-          });
+          newVelX = -Math.abs(Math.cos(angle) * speed);
+          newVelY = Math.sin(angle) * speed;
+          newX = gameWidth - paddleWidth - ballSize;
           
-          return { x: gameWidth - paddleWidth - ballSize, y: newY };
+          setBallVelocity({ x: newVelX, y: newVelY });
         }
 
         // Ball collision with AI paddle (left side)
         if (newX <= paddleWidth &&
-            newX >= 0 &&
-            newY >= aiPaddle &&
-            newY <= aiPaddle + paddleHeight) {
+            newX + ballSize >= 0 &&
+            newY + ballSize >= aiPaddle &&
+            newY <= aiPaddle + paddleHeight &&
+            ballVelocity.x < 0) {
           
-          const hitPos = (newY - aiPaddle) / paddleHeight - 0.5;
-          const angle = hitPos * Math.PI / 3;
+          const hitPos = ((newY + ballSize/2) - (aiPaddle + paddleHeight/2)) / (paddleHeight/2); // -1 to 1
+          const angle = hitPos * Math.PI / 4; // Max 45 degree angle
           const speed = Math.sqrt(ballVelocity.x * ballVelocity.x + ballVelocity.y * ballVelocity.y);
           
-          setBallVelocity({
-            x: Math.abs(Math.cos(angle) * speed),
-            y: Math.sin(angle) * speed
-          });
+          newVelX = Math.abs(Math.cos(angle) * speed);
+          newVelY = Math.sin(angle) * speed;
+          newX = paddleWidth;
           
-          return { x: paddleWidth, y: newY };
+          setBallVelocity({ x: newVelX, y: newVelY });
         }
 
-        // Ball goes off screen (scoring)
-        if (newX < 0) {
+        // Ball goes off screen (scoring) - with safety bounds
+        if (newX < -ballSize * 2) {
           setPlayerScore(prev => prev + 1);
           setTimeout(resetBall, 1000);
           return { x: gameWidth / 2, y: gameHeight / 2 };
         }
 
-        if (newX > gameWidth) {
+        if (newX > gameWidth + ballSize * 2) {
           setAiScore(prev => prev + 1);
           setTimeout(resetBall, 1000);
           return { x: gameWidth / 2, y: gameHeight / 2 };
         }
 
+        // Ensure ball never goes completely off bounds
+        newX = Math.max(-ballSize, Math.min(gameWidth + ballSize, newX));
+        newY = Math.max(0, Math.min(gameHeight - ballSize, newY));
+
         return { x: newX, y: newY };
       });
 
-      // AI paddle movement
+      // AI paddle movement - scaled for game size
       setAiPaddle(prevPaddle => {
         const ballCenterY = ballPosition.y + ballSize / 2;
         const paddleCenterY = prevPaddle + paddleHeight / 2;
         const diff = ballCenterY - paddleCenterY;
-        const aiSpeed = difficultySettings[difficulty].aiSpeed;
+        const aiSpeed = (difficultySettings[difficulty].aiSpeed * gameHeight) / 400; // Scale AI speed
         
         if (Math.abs(diff) < aiSpeed) return prevPaddle;
         
@@ -161,7 +216,7 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
     }, 16); // ~60 FPS
 
     return () => clearInterval(gameLoop);
-  }, [gameRunning, ballVelocity, ballPosition, playerPaddle, aiPaddle, difficulty, resetBall]);
+  }, [gameRunning, ballVelocity, ballPosition, playerPaddle, aiPaddle, difficulty, resetBall, gameWidth, gameHeight, paddleHeight, paddleWidth, ballSize]);
 
   // Check for game end
   useEffect(() => {
@@ -184,20 +239,20 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
         </div>
 
         {/* Game Controls */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-4 md:p-6 mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
             <button
               onClick={onExit}
-              className="bg-white/80 hover:bg-white text-gray-700 font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
+              className="bg-white/80 hover:bg-white text-gray-700 font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-200 hover:scale-105 w-full md:w-auto"
             >
               ← Back
             </button>
             
-            <div className="flex space-x-4">
+            <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 w-full md:w-auto">
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-700 font-medium"
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-700 font-medium w-full md:w-auto"
                 disabled={gameRunning}
               >
                 <option value="easy">Easy</option>
@@ -205,30 +260,32 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
                 <option value="hard">Hard</option>
               </select>
 
-              {!gameRunning && (playerScore < 5 && aiScore < 5) && (
-                <button
-                  onClick={startGame}
-                  className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
-                >
-                  🚀 Start Game
-                </button>
-              )}
+              <div className="flex space-x-2 w-full md:w-auto">
+                {!gameRunning && (playerScore < 5 && aiScore < 5) && (
+                  <button
+                    onClick={startGame}
+                    className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-2 px-4 md:px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105 flex-1 md:flex-none text-sm md:text-base"
+                  >
+                    🚀 Start Game
+                  </button>
+                )}
 
-              {gameRunning && (
-                <button
-                  onClick={pauseGame}
-                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
-                >
-                  ⏸️ Pause
-                </button>
-              )}
+                {gameRunning && (
+                  <button
+                    onClick={pauseGame}
+                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-2 px-4 md:px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105 flex-1 md:flex-none text-sm md:text-base"
+                  >
+                    ⏸️ Pause
+                  </button>
+                )}
 
-              <button
-                onClick={resetGame}
-                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105"
-              >
-                🔄 Reset
-              </button>
+                <button
+                  onClick={resetGame}
+                  className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-2 px-4 md:px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105 flex-1 md:flex-none text-sm md:text-base"
+                >
+                  🔄 Reset
+                </button>
+              </div>
             </div>
           </div>
 
@@ -246,12 +303,15 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
           </div>
 
           {/* Game Area */}
-          <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl mx-auto" style={{ width: gameWidth, height: gameHeight }}>
+          <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl mx-auto" style={{ width: gameWidth, height: gameHeight, maxWidth: '100%' }}>
             {/* Game Canvas */}
             <div 
-              className="absolute inset-0 cursor-none"
+              ref={gameAreaRef}
+              className="absolute inset-0 cursor-none select-none"
               onMouseMove={handleMouseMove}
-              style={{ width: '100%', height: '100%' }}
+              onTouchMove={handleTouchMove}
+              onTouchStart={(e) => e.preventDefault()}
+              style={{ width: '100%', height: '100%', touchAction: 'none' }}
             >
               {/* Center Line */}
               <div className="absolute top-0 left-1/2 w-0.5 h-full bg-white/30 transform -translate-x-1/2" />
@@ -314,11 +374,13 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
 
               {!gameRunning && playerScore < 5 && aiScore < 5 && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-white mb-4">
+                  <div className="text-center px-4">
+                    <div className="text-2xl md:text-4xl font-bold text-white mb-4">
                       Ready to Play?
                     </div>
-                    <p className="text-white/80 mb-6">Move your mouse to control the right paddle</p>
+                    <p className="text-white/80 mb-6 text-sm md:text-base">
+                      {isMobile ? 'Touch and drag to control the right paddle' : 'Move your mouse to control the right paddle'}
+                    </p>
                   </div>
                 </div>
               )}
@@ -333,9 +395,14 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-700">
             <div className="text-center">
-              <div className="text-4xl mb-3">🖱️</div>
+              <div className="text-4xl mb-3">{isMobile ? '👆' : '🖱️'}</div>
               <h4 className="font-semibold text-gray-800 mb-2">Control</h4>
-              <p>Move your mouse up and down to control the right paddle</p>
+              <p>
+                {isMobile 
+                  ? 'Touch and drag on the game area to move the right paddle up and down' 
+                  : 'Move your mouse up and down to control the right paddle'
+                }
+              </p>
             </div>
             <div className="text-center">
               <div className="text-4xl mb-3">🎯</div>
@@ -355,6 +422,7 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
               <p>• Hit the ball with different parts of your paddle to change its angle</p>
               <p>• The AI gets faster and smarter on higher difficulties</p>
               <p>• Try to predict where the ball will go and position your paddle early</p>
+              {isMobile && <p>• For best experience, play in landscape mode on mobile devices</p>}
             </div>
           </div>
         </div>
