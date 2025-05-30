@@ -53,6 +53,7 @@ const Solitaire: React.FC = () => {
     const deck = shuffle(createDeck());
     return dealTableau(deck);
   });
+  
   // --- Foundation, stock, and waste piles for Solitaire UI ---
   const [foundations, setFoundations] = useState<Array<Card[]>>([
     [], [], [], []
@@ -61,7 +62,7 @@ const Solitaire: React.FC = () => {
 
   const [stock, setStock] = useState<Card[]>(() => {
     const deck = shuffle(createDeck());
-    // Remove tableau cards from deck
+    // Remove tableau cards from deck  
     const tableauCards = dealTableau(deck).flat().map(c => c.id);
     return deck.filter(card => !tableauCards.includes(card.id));
   });
@@ -70,9 +71,9 @@ const Solitaire: React.FC = () => {
   // --- Reset all state on restart ---
   const restartGame = useCallback(() => {
     const deck = shuffle(createDeck());
-    const tableau = dealTableau(deck);
-    const tableauCards = tableau.flat().map(c => c.id);
-    setTableau(tableau);
+    const newTableau = dealTableau(deck);
+    const tableauCards = newTableau.flat().map(c => c.id);
+    setTableau(newTableau);
     setFoundations([[], [], [], []]);
     setWaste([]);
     setStock(deck.filter(card => !tableauCards.includes(card.id)));
@@ -115,50 +116,74 @@ const Solitaire: React.FC = () => {
     e.preventDefault();
     const data = e.dataTransfer.getData('text/plain');
     if (!data) return;
+    
     let fromCol: number, fromIdx: number;
+    let movingCard: Card;
+    
     if (data.startsWith('waste')) {
+      if (waste.length === 0) return;
       fromCol = -1;
       fromIdx = waste.length - 1;
+      movingCard = waste[waste.length - 1];
     } else {
       [fromCol, fromIdx] = data.split(',').map(Number);
+      if (!tableau[fromCol] || !tableau[fromCol][fromIdx]) return;
+      movingCard = tableau[fromCol][fromIdx];
     }
-    setTableau(prev => {
-      const newTab = prev.map(col => Array.isArray(col) ? [...col] : []);
-      let moving;
-      if (fromCol === -1) {
-        moving = [waste[waste.length - 1]];
-      } else {
-        moving = newTab[fromCol].slice(fromIdx);
-      }
-      if (moving.length !== 1) return prev;
-      const card = moving[0];
-      if (card.suit !== foundationSuits[fIdx]) return prev;
-      const foundation = foundations[fIdx];
-      const rankOrder = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-      if (foundation.length === 0 && card.rank !== 'A') return prev;
-      if (foundation.length > 0) {
-        const top = foundation[foundation.length - 1];
-        if (rankOrder.indexOf(card.rank) !== rankOrder.indexOf(top.rank) + 1) return prev;
-      }
-      if (fromCol !== -1) {
-        newTab[fromCol] = newTab[fromCol].slice(0, fromIdx);
-        for (let i = 0; i < newTab.length; i++) {
-          if (!Array.isArray(newTab[i]) || newTab[i].length === 0) newTab[i] = [];
-        }
-        if (newTab[fromCol].length && !newTab[fromCol][newTab[fromCol].length-1].faceUp) {
-          newTab[fromCol][newTab[fromCol].length-1].faceUp = true;
-        }
-      }
-      setFoundations(f => {
-        const newF = f.map(arr => [...arr]);
-        newF[fIdx].push(card);
-        return newF;
-      });
-      return [...newTab];
-    });
+    
+    // Only allow moving single cards to foundations (not sequences)
+    if (fromCol !== -1) {
+      const cardsToMove = tableau[fromCol].slice(fromIdx);
+      if (cardsToMove.length !== 1) return; // Only single cards to foundations
+    }
+    
+    // Check if card can be placed on this foundation
+    const foundation = foundations[fIdx];
+    const rankOrder = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    
+    // Must match foundation suit
+    if (movingCard.suit !== foundationSuits[fIdx]) return;
+    
+    // Foundation must start with Ace
+    if (foundation.length === 0 && movingCard.rank !== 'A') return;
+    
+    // Must be next rank in sequence
+    if (foundation.length > 0) {
+      const topCard = foundation[foundation.length - 1];
+      const currentRankIndex = rankOrder.indexOf(topCard.rank);
+      const movingRankIndex = rankOrder.indexOf(movingCard.rank);
+      if (movingRankIndex !== currentRankIndex + 1) return;
+    }
+    
+    // Valid move - update state
     if (fromCol === -1) {
+      // Moving from waste
       setWaste(w => w.slice(0, -1));
+    } else {
+      // Moving from tableau
+      setTableau(prev => {
+        const newTab = prev.map(col => [...col]);
+        newTab[fromCol] = newTab[fromCol].slice(0, fromIdx);
+        
+        // Flip the next card if it exists and is face down
+        if (newTab[fromCol].length > 0) {
+          const lastCard = newTab[fromCol][newTab[fromCol].length - 1];
+          if (!lastCard.faceUp) {
+            lastCard.faceUp = true;
+          }
+        }
+        
+        return newTab;
+      });
     }
+    
+    // Add card to foundation
+    setFoundations(f => {
+      const newF = f.map(arr => [...arr]);
+      newF[fIdx].push(movingCard);
+      return newF;
+    });
+    
     setDragged(null);
   };
 
@@ -168,11 +193,26 @@ const Solitaire: React.FC = () => {
 
   // --- Drag handlers ---
   const onDragStart = (colIdx: number, cardIdx: number, e: React.DragEvent) => {
+    // Allow dragging any face-up card that has no face-down cards below it
+    const card = tableau[colIdx][cardIdx];
+    if (!card.faceUp) {
+      e.preventDefault();
+      return;
+    }
+    
+    // Check if there are any face-down cards below this card
+    const hasHiddenCardsBelow = tableau[colIdx].slice(cardIdx + 1).some(c => !c.faceUp);
+    if (hasHiddenCardsBelow) {
+      e.preventDefault();
+      return;
+    }
+    
     setDragged({ col: colIdx, cardIdx });
     dragCardRef.current = e.currentTarget as HTMLDivElement;
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', `${colIdx},${cardIdx}`);
   };
+  
   const onDragEnd = () => {
     setDragged(null);
     dragCardRef.current = null;
@@ -185,6 +225,7 @@ const Solitaire: React.FC = () => {
     e.preventDefault();
     const data = e.dataTransfer.getData('text/plain');
     if (!data) return;
+    
     let fromCol: number, fromIdx: number;
     if (data.startsWith('waste')) {
       fromCol = -1;
@@ -192,40 +233,71 @@ const Solitaire: React.FC = () => {
     } else {
       [fromCol, fromIdx] = data.split(',').map(Number);
     }
-    if (fromCol === colIdx) return;
-    let movedFromWaste = false;
+    
+    if (fromCol === colIdx) return; // Can't drop on same column
+    
     setTableau(prev => {
       const newTab = prev.map(col => [...col]);
-      let moving;
+      let moving: Card[];
+      
       if (fromCol === -1) {
+        // Moving from waste
+        if (waste.length === 0) return prev;
         moving = [waste[waste.length - 1]];
-        movedFromWaste = true;
       } else {
+        // Moving from tableau - get all cards from this position to end
         moving = newTab[fromCol].slice(fromIdx);
       }
+      
       if (!moving[0]?.faceUp) return prev;
+      
       const dest = newTab[colIdx];
+      const movingCard = moving[0];
+      
+      // Check if move is valid
       if (dest.length === 0) {
-        if (moving[0].rank !== 'K') return prev;
+        // Empty column - only Kings can be placed
+        if (movingCard.rank !== 'K') return prev;
       } else {
+        // Check tableau rules: alternating colors and descending rank
         const destCard = dest[dest.length - 1];
-        const color = (s: Suit) => s === '♥' || s === '♦' ? 'red' : 'black';
+        const isRed = (s: Suit) => s === '♥' || s === '♦';
         const rankOrder = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-        if (color(destCard.suit) === color(moving[0].suit)) return prev;
-        if (rankOrder.indexOf(destCard.rank) !== rankOrder.indexOf(moving[0].rank) + 1) return prev;
+        
+        // Must be different color
+        if (isRed(destCard.suit) === isRed(movingCard.suit)) return prev;
+        
+        // Must be one rank lower
+        const destRankIndex = rankOrder.indexOf(destCard.rank);
+        const movingRankIndex = rankOrder.indexOf(movingCard.rank);
+        if (movingRankIndex !== destRankIndex - 1) return prev;
       }
+      
+      // Valid move - update tableau
       if (fromCol !== -1) {
+        // Remove cards from source column
         newTab[fromCol] = newTab[fromCol].slice(0, fromIdx);
-        if (newTab[fromCol].length && !newTab[fromCol][newTab[fromCol].length-1].faceUp) {
-          newTab[fromCol][newTab[fromCol].length-1].faceUp = true;
+        
+        // Flip the next card if it exists and is face down
+        if (newTab[fromCol].length > 0) {
+          const lastCard = newTab[fromCol][newTab[fromCol].length - 1];
+          if (!lastCard.faceUp) {
+            lastCard.faceUp = true;
+          }
         }
       }
+      
+      // Add cards to destination column
       newTab[colIdx] = [...newTab[colIdx], ...moving];
+      
       return newTab;
     });
+    
+    // If moving from waste, update waste pile
     if (fromCol === -1) {
       setWaste(w => w.slice(0, -1));
     }
+    
     setDragged(null);
   };
 
@@ -373,41 +445,46 @@ const Solitaire: React.FC = () => {
               onDragOver={e => onDragOver(colIdx, e)}
               onDrop={e => onDrop(colIdx, e)}
             />
-            {col.map((card, cardIdx) => (
-              <div
-                key={card.id || `${colIdx}-${cardIdx}`}
-                className={`w-full max-w-16 min-w-9 aspect-[3/4] relative rounded-xl shadow-lg border-2 font-bold flex items-center justify-center select-none transition-all duration-200 overflow-hidden ${
-                  card.faceUp 
-                    ? `bg-white border-slate-600 cursor-grab hover:shadow-xl ${
-                        card.suit === '♥' || card.suit === '♦' ? 'text-red-500' : 'text-gray-800'
-                      }` 
-                    : 'bg-slate-600 border-slate-700 cursor-default'
-                } ${
-                  dragged && dragged.col === colIdx && dragged.cardIdx === cardIdx ? 'opacity-50' : 'opacity-100'
-                }`}
-                style={{
-                  marginTop: cardIdx === 0 ? 0 : '-2.2vw',
-                  zIndex: cardIdx,
-                  fontSize: 'min(5vw, 1.5rem)',
-                }}
-                draggable={card.faceUp && cardIdx === col.length - 1}
-                onDragStart={e => onDragStart(colIdx, cardIdx, e)}
-                onDragEnd={onDragEnd}
-                tabIndex={card.faceUp ? 0 : -1}
-                aria-label={card.faceUp ? `${card.rank}${card.suit}` : 'Face down card'}
-              >
-                {card.faceUp ? (
-                  <div className="flex flex-col items-center w-full">
-                    <span className="text-lg font-bold">{card.rank}</span>
-                    <span className="text-2xl leading-none">{card.suit}</span>
-                  </div>
-                ) : (
-                  <div className="w-full h-full bg-blue-800 rounded-lg flex items-center justify-center">
-                    <span className="text-blue-300 text-xl">🂠</span>
-                  </div>
-                )}
-              </div>
-            ))}
+            {col.map((card, cardIdx) => {
+              const canDrag = card.faceUp && !tableau[colIdx].slice(cardIdx + 1).some(c => !c.faceUp);
+              
+              return (
+                <div
+                  key={card.id || `${colIdx}-${cardIdx}`}
+                  className={`w-full max-w-16 min-w-9 aspect-[3/4] relative rounded-xl shadow-lg border-2 font-bold flex items-center justify-center select-none transition-all duration-200 overflow-hidden ${
+                    card.faceUp 
+                      ? `bg-white border-slate-600 ${canDrag ? 'cursor-grab hover:shadow-xl' : 'cursor-default'} ${
+                          card.suit === '♥' || card.suit === '♦' ? 'text-red-500' : 'text-gray-800'
+                        }` 
+                      : 'bg-slate-600 border-slate-700 cursor-pointer'
+                  } ${
+                    dragged && dragged.col === colIdx && dragged.cardIdx === cardIdx ? 'opacity-50' : 'opacity-100'
+                  }`}
+                  style={{
+                    marginTop: cardIdx === 0 ? 0 : '-2.2vw',
+                    zIndex: cardIdx,
+                    fontSize: 'min(5vw, 1.5rem)',
+                  }}
+                  draggable={canDrag}
+                  onDragStart={e => onDragStart(colIdx, cardIdx, e)}
+                  onDragEnd={onDragEnd}
+                  onClick={() => !card.faceUp && cardIdx === col.length - 1 ? handleCardClick(colIdx, cardIdx) : undefined}
+                  tabIndex={card.faceUp ? 0 : -1}
+                  aria-label={card.faceUp ? `${card.rank}${card.suit}` : 'Face down card'}
+                >
+                  {card.faceUp ? (
+                    <div className="flex flex-col items-center w-full">
+                      <span className="text-lg font-bold">{card.rank}</span>
+                      <span className="text-2xl leading-none">{card.suit}</span>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full bg-blue-800 rounded-lg flex items-center justify-center">
+                      <span className="text-blue-300 text-xl">🂠</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>
