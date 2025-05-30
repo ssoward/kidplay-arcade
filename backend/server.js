@@ -16,14 +16,6 @@ if (!AZURE_API_KEY || !AZURE_ENDPOINT) {
   process.exit(1);
 }
 
-// Serve static files from the React app build folder
-app.use(express.static(path.join(__dirname, '../build')));
-
-// All other GET requests not handled before will return the React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../build', 'index.html'));
-});
-
 app.post('/api/ask-ai', async (req, res) => {
   // Support both flat and nested (checkers) formats for Checkers
   let { history, board, possibleMoves, checkers, systemPrompt, chess } = req.body;
@@ -342,7 +334,15 @@ app.post('/api/ask-ai', async (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 4000;
+// Serve static files from the React app build folder (after API routes)
+app.use(express.static(path.join(__dirname, '../build')));
+
+// All other GET requests not handled before will return the React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../build', 'index.html'));
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`AI backend listening on port ${PORT}`);
 });

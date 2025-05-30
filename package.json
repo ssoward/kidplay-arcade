@@ -33,7 +33,9 @@
     "backend": "cd backend && npm start",
     "dev:backend": "cd backend && npm start",
     "dev:both": "concurrently \"npm start\" \"npm run backend\"",
-    "start:both": "concurrently \"npm start\" \"npm run backend\""
+    "start:both": "concurrently \"npm start\" \"npm run backend\"",
+    "build:production": "npm run build && cd backend && npm install --production",
+    "start:production": "cd backend && npm start"
   },
   "browserslist": {
     "production": [

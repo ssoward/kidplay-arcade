@@ -1,0 +1,12 @@
+version: "3"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - AZURE_API_KEY=$AZURE_API_KEY
+      - AZURE_ENDPOINT=$AZURE_ENDPOINT
+      - PORT=3000
+    ports:
+      - "3000:3000"
