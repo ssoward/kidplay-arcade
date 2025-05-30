@@ -29,13 +29,12 @@ npm run build
 # Set up environment variables
 echo "🔧 Setting up environment..."
 cat > .env << EOF
-# Placeholder environment variables for demo
-AZURE_API_KEY=placeholder_key
-AZURE_ENDPOINT=placeholder_endpoint
+AZURE_API_KEY=286f8880393d45acb678e890b36f0f6b
+AZURE_ENDPOINT=https://familysearch-ai-learning-and-hackathons-proxy.azure-api.net/openai/deployments/gpt-4o/chat/completions?api-version=2025-01-01-preview
 PORT=3001
 NODE_ENV=production
 EOF
-echo "⚠️  IMPORTANT: Edit .env with your actual Azure credentials!"
+echo "✅ Azure OpenAI credentials configured - AI features enabled!"
 
 # Set up PM2 ecosystem
 echo "📋 Setting up PM2 process manager..."
@@ -134,9 +133,11 @@ pm2 status
 echo ""
 echo "🌐 Access your app at: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
 echo ""
-echo "📝 Next steps:"
-echo "1. Edit .env with your actual Azure credentials for AI features"
-echo "2. Restart backend: pm2 restart kidplay-arcade"
+echo "📝 Your KidPlay Arcade includes:"
+echo "- 15+ Interactive Games"
+echo "- Full AI Assistant Features (powered by Azure OpenAI)"
+echo "- Multiplayer Support"
+echo "- Mobile-Friendly Design"
 echo ""
 echo "🔧 Useful commands:"
 echo "- View logs: pm2 logs kidplay-arcade"

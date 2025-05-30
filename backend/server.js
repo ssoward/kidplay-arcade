@@ -10,10 +10,49 @@ app.use(express.json());
 
 const AZURE_API_KEY = process.env.AZURE_API_KEY;
 const AZURE_ENDPOINT = process.env.AZURE_ENDPOINT; // e.g. https://your-resource-name.openai.azure.com/openai/deployments/your-deployment/chat/completions?api-version=2023-03-15-preview
+const DEMO_MODE = process.env.DEMO_MODE === 'true';
 
 if (!AZURE_API_KEY || !AZURE_ENDPOINT) {
-  console.error('Missing AZURE_API_KEY or AZURE_ENDPOINT in .env');
-  process.exit(1);
+  if (DEMO_MODE) {
+    console.warn('⚠️  Running in DEMO MODE - Azure credentials not configured');
+    console.warn('   AI features will use fallback responses');
+  } else {
+    console.error('Missing AZURE_API_KEY or AZURE_ENDPOINT in .env');
+    process.exit(1);
+  }
+}
+
+// Helper function to handle AI calls with demo mode fallbacks
+async function callAI(messages, maxTokens = 64, temperature = 0.7, fallbackFn) {
+  if (DEMO_MODE || !AZURE_API_KEY || !AZURE_ENDPOINT) {
+    console.log('🎮 DEMO MODE: Using fallback response');
+    return fallbackFn();
+  }
+  
+  try {
+    const response = await axios.post(
+      AZURE_ENDPOINT,
+      {
+        messages,
+        max_tokens: maxTokens,
+        temperature,
+        top_p: 0.95,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      },
+      {
+        headers: {
+          'api-key': AZURE_API_KEY,
+          'Ocp-Apim-Subscription-Key': AZURE_API_KEY,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data.choices?.[0]?.message?.content || '';
+  } catch (err) {
+    console.error('AI ERROR:', err.response?.data || err.message);
+    return fallbackFn();
+  }
 }
 
 app.post('/api/ask-ai', async (req, res) => {
