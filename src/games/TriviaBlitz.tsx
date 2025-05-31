@@ -8,6 +8,12 @@ interface Question {
 	answer: number;
 }
 
+interface AIQuestion {
+	question: string;
+	options: string[];
+	correct: number;
+}
+
 const FALLBACK_QUESTIONS: Question[] = [
 	{
 		question: 'What is the capital of France?',
@@ -88,71 +94,42 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 	const generateAIQuestions = async (numQuestions: number = 5): Promise<Question[]> => {
 		setLoadingQuestions(true);
 		try {
-			const categoryDescriptions = {
-				general: 'general knowledge covering various topics',
-				science: 'science, nature, and technology',
-				history: 'historical events and famous people',
-				geography: 'countries, capitals, and world geography',
-				sports: 'sports, games, and athletics',
-				entertainment: 'movies, music, books, and pop culture'
-			};
-
-			const difficultyDescriptions = {
-				easy: 'simple questions appropriate for elementary school level',
-				medium: 'moderately challenging questions for middle/high school level',
-				hard: 'difficult questions that would challenge adults'
-			};
-
-			const systemPrompt = `You are a trivia question generator. Create ${numQuestions} multiple choice trivia questions about ${categoryDescriptions[category as keyof typeof categoryDescriptions] || 'general knowledge'}.
-
-Requirements:
-- ${difficultyDescriptions[difficulty]} 
-- Each question should have exactly 4 answer options
-- Questions should be family-friendly and educational
-- Provide the correct answer index (0-3)
-- Questions should be interesting and fun
-
-Format your response as a JSON array of objects with this exact structure:
-[
-  {
-    "question": "Question text here?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "answer": 0
-  }
-]
-
-Respond with ONLY the JSON array, no additional text or formatting.`;
+			console.log(`Generating ${numQuestions} ${difficulty} ${category} trivia questions...`);
 
 			const response = await axios.post('/api/ask-ai', {
 				game: 'trivia-generator',
 				category: category,
-				difficulty: difficulty,
-				systemPrompt: systemPrompt,
-				userMessage: `Generate ${numQuestions} ${difficulty} ${category} trivia questions.`
+				difficulty: difficulty
 			});
 
 			let aiQuestions: Question[] = [];
 			
 			try {
-				// Try to parse the AI response as JSON
-				const responseText = response.data.response || response.data.message || '';
-				const cleanedResponse = responseText.trim().replace(/^```json\n?|```$/g, '');
-				aiQuestions = JSON.parse(cleanedResponse);
+				// The backend returns questions with "correct" property, we need "answer"
+				const rawQuestions: AIQuestion[] = response.data.questions || [];
+				console.log('Raw AI questions from backend:', rawQuestions);
 				
-				// Validate the structure
-				if (Array.isArray(aiQuestions) && aiQuestions.length > 0) {
-					// Ensure all questions have the required structure
-					aiQuestions = aiQuestions.filter(q => 
-						q.question && 
-						Array.isArray(q.options) && 
-						q.options.length === 4 && 
-						typeof q.answer === 'number' && 
-						q.answer >= 0 && 
-						q.answer < 4
-					);
+				if (Array.isArray(rawQuestions) && rawQuestions.length > 0) {
+					// Convert AI questions to our format
+					aiQuestions = rawQuestions
+						.filter(q => 
+							q.question && 
+							Array.isArray(q.options) && 
+							q.options.length === 4 && 
+							typeof q.correct === 'number' && 
+							q.correct >= 0 && 
+							q.correct < 4
+						)
+						.map(q => ({
+							question: q.question,
+							options: q.options,
+							answer: q.correct // Convert "correct" to "answer"
+						}));
+					
+					console.log('Converted questions:', aiQuestions);
 					
 					if (aiQuestions.length >= 3) { // Need at least 3 valid questions
-						console.log(`Generated ${aiQuestions.length} AI trivia questions`);
+						console.log(`Successfully generated ${aiQuestions.length} AI trivia questions`);
 						return aiQuestions.slice(0, numQuestions); // Take only the requested number
 					}
 				}
