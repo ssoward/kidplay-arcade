@@ -81,6 +81,10 @@ const AZURE_API_KEY = process.env.AZURE_API_KEY;
 const AZURE_ENDPOINT = process.env.AZURE_ENDPOINT; 
 const DEMO_MODE = process.env.DEMO_MODE === 'true';
 
+console.log(`🔧 Environment loaded - NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`🔧 ALLOWED_ORIGINS: ${process.env.ALLOWED_ORIGINS || 'NOT SET'}`);
+console.log(`🔧 PORT: ${process.env.PORT || 'NOT SET'}`);
+
 if (!AZURE_API_KEY || !AZURE_ENDPOINT) {
   if (DEMO_MODE) {
     console.warn('⚠️  Running in DEMO MODE - Azure credentials not configured');
