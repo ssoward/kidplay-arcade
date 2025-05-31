@@ -24,6 +24,7 @@ interface GameState {
   showAnswer: boolean;
   loading: boolean;
   hintsUsed: number;
+  artworkHistory: Array<{title: string; artist: string}>;
 }
 
 const FALLBACK_ARTWORKS = {
@@ -102,6 +103,7 @@ export default function ArtCritic() {
     showAnswer: false,
     loading: false,
     hintsUsed: 0,
+    artworkHistory: [],
   });
 
   // Load saved stats
@@ -164,6 +166,11 @@ export default function ArtCritic() {
         hard: 'lesser-known but significant works or complex artistic concepts'
       };
 
+      // Create history context for AI to avoid repetition
+      const historyContext = state.artworkHistory.length > 0 
+        ? `\n\nIMPORTANT: Do NOT choose any of these previously shown artworks:\n${state.artworkHistory.map(art => `- "${art.title}" by ${art.artist}`).join('\n')}\n\nPlease select a different artwork to ensure variety in the game.`
+        : '';
+
       const response = await fetch('/api/ask-ai', {
         method: 'POST',
         headers: {
@@ -173,23 +180,25 @@ export default function ArtCritic() {
           history: [
             {
               role: 'user',
-              content: `Create an art description game. Choose a ${difficultyPrompts[currentDifficulty]} artwork. 
+              content: `Create an art description game. Choose a ${difficultyPrompts[currentDifficulty]} artwork.${historyContext}
 
 Describe the artwork as an AI art critic would, focusing on visual elements, composition, colors, and mood - but don't mention the title or artist name directly.
 
 For well-known artworks, try to provide a Wikipedia image URL if possible. For others, you can leave imageUrl as null and we'll generate a placeholder.
 
-Return a JSON object with:
+IMPORTANT: Return ONLY a valid JSON object with no additional text, markdown formatting, or code blocks. Ensure all strings are properly escaped and there are no line breaks within string values.
+
+Return exactly this JSON structure:
 {
   "title": "artwork title",
   "artist": "artist name", 
-  "description": "detailed visual description without revealing title/artist",
+  "description": "detailed visual description without revealing title or artist (use \\n for line breaks if needed)",
   "hints": ["hint 1", "hint 2", "hint 3", "hint 4"],
   "difficulty": "${currentDifficulty}",
-  "imageUrl": "wikipedia or public domain image URL if available, otherwise null"
+  "imageUrl": null
 }
 
-The description should be vivid and help someone visualize the artwork. Hints should progressively reveal more information.`
+The description should be vivid and help someone visualize the artwork. Hints should progressively reveal more information. Do not include quotes within the string values.`
             }
           ]
         }),
@@ -199,8 +208,30 @@ The description should be vivid and help someone visualize the artwork. Hints sh
       
       if (data.message) {
         try {
-          // Clean up the response
-          let cleanMessage = data.message.trim().replace(/^```[a-zA-Z]*\n?|```$/g, '');
+          // Clean up the response - more aggressive cleaning
+          let cleanMessage = data.message.trim();
+          
+          // Remove code blocks
+          cleanMessage = cleanMessage.replace(/^```[a-zA-Z]*\n?|```$/g, '');
+          
+          // Try to extract JSON from the response if it's embedded in text
+          const jsonMatch = cleanMessage.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            cleanMessage = jsonMatch[0];
+          }
+          
+          // Fix common JSON issues
+          cleanMessage = cleanMessage
+            .replace(/([{,]\s*)"([^"]+)":\s*"([^"]*?)"\s*([,}])/g, (match: string, prefix: string, key: string, value: string, suffix: string) => {
+              // Escape quotes in values
+              const escapedValue = value.replace(/"/g, '\\"');
+              return `${prefix}"${key}": "${escapedValue}"${suffix}`;
+            })
+            .replace(/\n/g, '\\n')  // Escape newlines
+            .replace(/\r/g, '\\r')  // Escape carriage returns
+            .replace(/\t/g, '\\t'); // Escape tabs
+          
+          console.log('Attempting to parse cleaned JSON:', cleanMessage);
           
           // Try to parse as JSON
           const artwork = JSON.parse(cleanMessage);
@@ -214,6 +245,31 @@ The description should be vivid and help someone visualize the artwork. Hints sh
           }
         } catch (error) {
           console.error('Failed to parse AI artwork response:', error);
+          console.error('Raw response:', data.message);
+          
+          // Try one more fallback - attempt to extract individual fields using regex
+          try {
+            const titleMatch = data.message.match(/"title":\s*"([^"]+)"/);
+            const artistMatch = data.message.match(/"artist":\s*"([^"]+)"/);
+            const descriptionMatch = data.message.match(/"description":\s*"([^"]+)"/);
+            const hintsMatch = data.message.match(/"hints":\s*\[([^\]]+)\]/);
+            
+            if (titleMatch && artistMatch && descriptionMatch && hintsMatch) {
+              const hintsStr = hintsMatch[1];
+              const hints = hintsStr.split(',').map((h: string) => h.trim().replace(/^"|"$/g, ''));
+              
+              return {
+                title: titleMatch[1],
+                artist: artistMatch[1],
+                description: descriptionMatch[1],
+                hints: hints,
+                difficulty: currentDifficulty,
+                imageUrl: undefined as string | undefined
+              };
+            }
+          } catch (regexError) {
+            console.error('Regex fallback also failed:', regexError);
+          }
         }
       }
       
@@ -243,6 +299,11 @@ The description should be vivid and help someone visualize the artwork. Hints sh
         gameActive: true,
         showAnswer: false,
         hintsUsed: 0,
+        // Add current artwork to history to prevent repetition
+        artworkHistory: [
+          ...prev.artworkHistory,
+          { title: artwork.title, artist: artwork.artist }
+        ].slice(-10) // Keep only last 10 artworks to prevent memory bloat
       }));
     }
   };
