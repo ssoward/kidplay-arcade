@@ -9,8 +9,9 @@ const { body, validationResult, param, query } = require('express-validator');
 
 const app = express();
 
-// Trust proxy for proper IP detection (fixes X-Forwarded-For warnings)
-app.set('trust proxy', true);
+// Trust proxy for proper IP detection - specify trusted proxies for security
+// In AWS with nginx reverse proxy, trust the first proxy (nginx)
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet({
@@ -39,22 +40,31 @@ app.use(generalLimiter);
 // CORS configuration - restrict to known origins in production
 const corsOptions = {
   origin: function (origin, callback) {
+    console.log(`CORS: Checking origin: ${origin || 'undefined'}`);
+    
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('CORS: Allowing request with no origin');
+      return callback(null, true);
+    }
     
     // Get allowed origins from environment or use defaults
     const allowedOrigins = process.env.ALLOWED_ORIGINS 
       ? process.env.ALLOWED_ORIGINS.split(',')
       : ['http://localhost:3000', 'http://localhost:3001'];
     
+    console.log(`CORS: Allowed origins: ${allowedOrigins.join(', ')}`);
+    
     // In development, also allow localhost variations
     if (process.env.NODE_ENV !== 'production') {
       if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        console.log('CORS: Allowing localhost in development');
         return callback(null, true);
       }
     }
     
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log(`CORS: Allowing origin: ${origin}`);
       callback(null, true);
     } else {
       console.warn(`CORS: Rejected origin: ${origin}. Allowed origins: ${allowedOrigins.join(', ')}`);
