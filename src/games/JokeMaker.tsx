@@ -8,6 +8,7 @@ interface JokeState {
   score: number;
   totalJokes: number;
   rating: number | null;
+  jokeHistory: string[];
 }
 
 interface GameStats {
@@ -25,7 +26,8 @@ const JokeMaker: React.FC = () => {
     difficulty: 'easy',
     score: 0,
     totalJokes: 0,
-    rating: null
+    rating: null,
+    jokeHistory: []
   });
 
   const [stats, setStats] = useState<GameStats>({
@@ -61,11 +63,20 @@ const JokeMaker: React.FC = () => {
     setState(prev => ({ ...prev, loading: true, rating: null }));
 
     try {
+      // Get current state for history context
+      const currentJokeHistory = state.jokeHistory;
+      
+      // Create history context for AI
+      const historyContext = currentJokeHistory.length > 0 
+        ? `\n\nPrevious jokes you've already told (DO NOT repeat any of these):\n${currentJokeHistory.map((joke, i) => `${i + 1}. ${joke}`).join('\n')}\n\nMake sure your new joke is completely different from all the previous ones.`
+        : '';
+
       const prompt = `Generate a ${state.difficulty} level, kid-friendly joke about ${state.category}. 
       Make it appropriate for children ages 6-12. The joke should be clean, fun, and easy to understand.
       ${state.difficulty === 'easy' ? 'Use simple words and silly humor.' : ''}
       ${state.difficulty === 'medium' ? 'Use clever wordplay and puns.' : ''}
       ${state.difficulty === 'hard' ? 'Use witty humor and smart observations.' : ''}
+      ${historyContext}
       Just return the joke, nothing else.`;
 
       const response = await fetch('/api/ask-ai', {
@@ -81,11 +92,13 @@ const JokeMaker: React.FC = () => {
       const data = await response.json();
       const joke = data.response || "Why don't scientists trust atoms? Because they make up everything!";
 
+      // Add joke to history and update state
       setState(prev => ({
         ...prev,
         currentJoke: joke,
         loading: false,
-        totalJokes: prev.totalJokes + 1
+        totalJokes: prev.totalJokes + 1,
+        jokeHistory: [...prev.jokeHistory, joke].slice(-20) // Keep last 20 jokes to prevent too long prompts
       }));
 
     } catch (error) {
@@ -98,11 +111,18 @@ const JokeMaker: React.FC = () => {
         "Why did the math book look so sad? Because it had too many problems!"
       ];
       
+      // Filter out previously used fallback jokes
+      const availableFallbacks = fallbackJokes.filter(joke => !state.jokeHistory.includes(joke));
+      const selectedJoke = availableFallbacks.length > 0 
+        ? availableFallbacks[Math.floor(Math.random() * availableFallbacks.length)]
+        : fallbackJokes[Math.floor(Math.random() * fallbackJokes.length)];
+      
       setState(prev => ({
         ...prev,
-        currentJoke: fallbackJokes[Math.floor(Math.random() * fallbackJokes.length)],
+        currentJoke: selectedJoke,
         loading: false,
-        totalJokes: prev.totalJokes + 1
+        totalJokes: prev.totalJokes + 1,
+        jokeHistory: [...prev.jokeHistory, selectedJoke].slice(-20)
       }));
     }
   };
@@ -130,7 +150,8 @@ const JokeMaker: React.FC = () => {
       difficulty: 'easy',
       score: 0,
       totalJokes: 0,
-      rating: null
+      rating: null,
+      jokeHistory: []
     });
   };
 
@@ -151,16 +172,16 @@ const JokeMaker: React.FC = () => {
               <div className="text-white/80 text-sm">Jokes Generated</div>
             </div>
             <div>
+              <div className="text-2xl font-bold text-white">{state.jokeHistory.length}</div>
+              <div className="text-white/80 text-sm">Unique Jokes</div>
+            </div>
+            <div>
               <div className="text-2xl font-bold text-white">{state.score}</div>
               <div className="text-white/80 text-sm">Total Score</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-white">{stats.averageRating.toFixed(1)}</div>
               <div className="text-white/80 text-sm">Avg Rating</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-white">{stats.totalJokes}</div>
-              <div className="text-white/80 text-sm">All-Time Jokes</div>
             </div>
           </div>
         </div>
@@ -209,6 +230,12 @@ const JokeMaker: React.FC = () => {
           >
             {state.loading ? '🎭 Creating Joke...' : '🎲 Generate New Joke'}
           </button>
+          
+          {state.jokeHistory.length > 0 && (
+            <div className="mt-2 text-center text-sm text-gray-600">
+              🧠 AI will avoid repeating your {state.jokeHistory.length} previous joke{state.jokeHistory.length !== 1 ? 's' : ''}
+            </div>
+          )}
         </div>
 
         {/* Joke Display */}
@@ -249,67 +276,13 @@ const JokeMaker: React.FC = () => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-center space-x-4 mb-8">
+        <div className="flex justify-center space-x-4">
           <button
             onClick={resetGame}
             className="bg-gray-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors"
           >
             🔄 Reset Game
           </button>
-        </div>
-
-        {/* Instructions */}
-        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-white mb-4">🎯 How to Play Joke Maker</h2>
-          
-          <div className="space-y-4 text-white/90">
-            <div>
-              <h3 className="font-semibold text-lg">📝 Objective</h3>
-              <p>Generate AI-powered jokes and rate them to build your comedy collection!</p>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg">🎮 How to Play</h3>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>Choose a joke category (animals, food, school, etc.)</li>
-                <li>Select difficulty level (easy, medium, or hard)</li>
-                <li>Click "Generate New Joke" to create a new joke</li>
-                <li>Rate the joke from 1-5 stars based on how funny it is</li>
-                <li>Keep generating jokes to build your score!</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg">⭐ Scoring System</h3>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>Rate each joke from 1-5 stars</li>
-                <li>Your total score is the sum of all your ratings</li>
-                <li>Track your average rating to see your comedy preferences</li>
-                <li>All stats are saved between game sessions</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg">🎭 Categories & Difficulty</h3>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li><strong>Easy:</strong> Simple and silly humor perfect for young kids</li>
-                <li><strong>Medium:</strong> Clever wordplay and puns for developing humor</li>
-                <li><strong>Hard:</strong> Witty observations and smart comedy</li>
-                <li>Try different categories to discover your favorite type of humor!</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg">💡 Tips for Fun</h3>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>Share the funniest jokes with friends and family</li>
-                <li>Try all difficulty levels to expand your humor range</li>
-                <li>Explore different categories to find new types of jokes</li>
-                <li>Rate honestly to help build better comedy preferences</li>
-                <li>Remember: humor is subjective - what makes you laugh is perfect!</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
     </div>

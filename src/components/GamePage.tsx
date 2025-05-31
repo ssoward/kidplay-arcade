@@ -36,20 +36,42 @@ const GamePage: React.FC = () => {
   const { gameId } = useParams<{ gameId: string }>();
 
   if (!gameId) {
-    return <div className="text-center mt-8">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mb-4"></div>
+          <div className="text-white">Loading...</div>
+        </div>
+      </div>
+    );
   }
 
   const GameComponent = gameComponentMap[gameId];
 
   if (!GameComponent) {
-    return <div className="text-center mt-8 text-red-500">Game not found.</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20">
+          <div className="text-6xl mb-4">🎮</div>
+          <div className="text-red-400 text-xl mb-2">Game not found</div>
+          <div className="text-white/70">The game you're looking for doesn't exist.</div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Suspense fallback={<div className="text-center mt-8">Loading game...</div>}>
-        <GameComponent />
-      </Suspense>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="container mx-auto px-4 py-8">
+        <Suspense fallback={
+          <div className="text-center mt-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mb-4"></div>
+            <div className="text-white">Loading game...</div>
+          </div>
+        }>
+          <GameComponent />
+        </Suspense>
+      </div>
     </div>
   );
 };
