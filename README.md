@@ -1,4 +1,16 @@
-# Getting Started with Create React App
+# KidPlay Arcade
+
+A secure, interactive gaming platform featuring educational games powered by AI.
+
+## 🔒 Security Status
+✅ **SECURE** - All vulnerabilities resolved (0 found in latest audit)
+- Frontend dependencies: Secured with npm overrides
+- Backend: Comprehensive security middleware implemented
+- Rate limiting, input validation, and CORS protection enabled
+
+For detailed security information, see [SECURITY-FIXES.md](./SECURITY-FIXES.md)
+
+## Getting Started
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
