@@ -124,7 +124,7 @@ const RadioSongGuess: React.FC = () => {
   ];
 
   const genres = [
-    'pop', 'rock', 'hip-hop', 'country', 'r&b', 'electronic', 'indie', 'alternative', 'classic rock'
+    'pop', 'rock', 'hip-hop', 'country', 'r&b', 'electronic', 'indie', 'alternative', 'classic rock', 'disney'
   ];
 
   useEffect(() => {
@@ -223,6 +223,10 @@ const RadioSongGuess: React.FC = () => {
 
         const prompt = `Generate a real, popular song from the ${state.yearRange} era in the ${state.selectedGenre} genre that would be appropriate for kids to know about. 
         Create a fun, descriptive clue about the song without mentioning the artist name or song title directly.${usedSongsHistory}
+        
+        ${state.selectedGenre === 'disney' ? 
+        'For Disney songs, choose from classic Disney animated movies, Pixar films, Disney Channel movies, or Disney live-action films. Include songs from movies like The Little Mermaid, Lion King, Frozen, Moana, Encanto, Aladdin, Beauty and the Beast, Toy Story, etc.' : 
+        ''}
         
         Format your response as JSON:
         {
@@ -346,6 +350,55 @@ const RadioSongGuess: React.FC = () => {
               year: 2014,
               genre: "pop",
               description: "A sweet love song with an upbeat tempo. The music video became famous for surprise wedding performances!",
+              audioUrl: undefined
+            },
+            // Disney Songs
+            {
+              artist: "Idina Menzel",
+              title: "Let It Go",
+              year: 2013,
+              genre: "disney",
+              description: "A powerful anthem about freedom and self-acceptance from an icy animated movie. This song features soaring vocals and magical lyrics about embracing who you are!",
+              audioUrl: undefined
+            },
+            {
+              artist: "Lin-Manuel Miranda",
+              title: "We Don't Talk About Bruno",
+              year: 2021,
+              genre: "disney",
+              description: "A catchy, mysterious song about a family member with magical gifts that everyone whispers about. It's from a colorful animated movie about magical houses!",
+              audioUrl: undefined
+            },
+            {
+              artist: "Auli'i Cravalho",
+              title: "How Far I'll Go",
+              year: 2016,
+              genre: "disney",
+              description: "An inspiring song about adventure and following your dreams, sung by a brave island princess who loves the ocean. Features beautiful island-style music!",
+              audioUrl: undefined
+            },
+            {
+              artist: "Alan Menken",
+              title: "A Whole New World",
+              year: 1992,
+              genre: "disney",
+              description: "A romantic duet about exploring new possibilities and seeing things from a different perspective. Features a magical carpet ride through the stars!",
+              audioUrl: undefined
+            },
+            {
+              artist: "Elton John",
+              title: "Can You Feel the Love Tonight",
+              year: 1994,
+              genre: "disney",
+              description: "A beautiful love song from an African savanna adventure. This gentle ballad talks about romance under the stars with animal friends watching!",
+              audioUrl: undefined
+            },
+            {
+              artist: "Randy Newman",
+              title: "You've Got a Friend in Me",
+              year: 1995,
+              genre: "disney",
+              description: "A heartwarming song about friendship and loyalty between toys. This cheerful tune is all about being there for each other through thick and thin!",
               audioUrl: undefined
             }
           ];
