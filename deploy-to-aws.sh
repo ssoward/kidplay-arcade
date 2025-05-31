@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Deploy Kidplay Arcade to AWS EC2
+# Usage: ./deploy-to-aws.sh [EC2_IP_ADDRESS]
+
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+echo -e "${GREEN}🚀 Deploying Kidplay Arcade to AWS EC2...${NC}"
+
+# Check if IP address is provided
+if [ -z "$1" ]; then
+    echo -e "${YELLOW}Usage: ./deploy-to-aws.sh [EC2_IP_ADDRESS]${NC}"
+    echo -e "${YELLOW}Example: ./deploy-to-aws.sh 54.123.45.67${NC}"
+    exit 1
+fi
+
+EC2_IP=$1
+KEY_PATH="/Users/ssoward/.ssh/kidplay-arcade-key.pem"
+
+# Check if key file exists
+if [ ! -f "$KEY_PATH" ]; then
+    echo -e "${RED}❌ Key file not found at: $KEY_PATH${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}📡 Connecting to EC2 instance: $EC2_IP${NC}"
+
+# SSH into EC2 and run deployment commands
+ssh -i "$KEY_PATH" ec2-user@"$EC2_IP" << 'ENDSSH'
+    echo "🔄 Pulling latest code from GitHub..."
+    cd kidplay-arcade || { echo "❌ kidplay-arcade directory not found. Run: git clone https://github.com/ssoward/kidplay-arcade.git"; exit 1; }
+    
+    git pull origin main
+    
+    echo "🚀 Running deployment script..."
+    chmod +x deploy-aws-ec2.sh
+    ./deploy-aws-ec2.sh
+    
+    echo "✅ Deployment complete!"
+    echo "🌐 Your Kidplay Arcade should now be available at: http://$EC2_IP"
+ENDSSH
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ Deployment successful!${NC}"
+    echo -e "${GREEN}🌐 Visit your app at: http://$EC2_IP${NC}"
+else
+    echo -e "${RED}❌ Deployment failed. Check the output above for errors.${NC}"
+fi
