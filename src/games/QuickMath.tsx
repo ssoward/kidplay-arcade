@@ -327,7 +327,7 @@ export default function QuickMath() {
   };
 
   return (
-    <div className="quick-math-game p-6 max-w-4xl mx-auto">
+    <div className="quick-math-game p-6 max-w-4xl mx-auto min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="header mb-8 text-center">
         <h1 className="text-4xl font-bold text-blue-800 mb-2">Quick Math</h1>
         <p className="text-gray-600">Test your mental math skills!</p>
