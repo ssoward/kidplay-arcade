@@ -60,24 +60,34 @@ const JokeMaker: React.FC = () => {
   };
 
   const generateJoke = async () => {
-    setState(prev => ({ ...prev, loading: true, rating: null }));
-
     try {
-      // Get current state for history context
+      // Capture current state values before any async operations
       const currentJokeHistory = state.jokeHistory;
+      const currentDifficulty = state.difficulty;
+      const currentCategory = state.category;
+      
+      // Set loading state
+      setState(prev => ({ 
+        ...prev, 
+        loading: true, 
+        rating: null,
+        currentJoke: '' // Clear current joke immediately
+      }));
       
       // Create history context for AI
       const historyContext = currentJokeHistory.length > 0 
         ? `\n\nPrevious jokes you've already told (DO NOT repeat any of these):\n${currentJokeHistory.map((joke, i) => `${i + 1}. ${joke}`).join('\n')}\n\nMake sure your new joke is completely different from all the previous ones.`
         : '';
 
-      const prompt = `Generate a ${state.difficulty} level, kid-friendly joke about ${state.category}. 
+      const prompt = `Generate a ${currentDifficulty} level, kid-friendly joke about ${currentCategory}. 
       Make it appropriate for children ages 6-12. The joke should be clean, fun, and easy to understand.
-      ${state.difficulty === 'easy' ? 'Use simple words and silly humor.' : ''}
-      ${state.difficulty === 'medium' ? 'Use clever wordplay and puns.' : ''}
-      ${state.difficulty === 'hard' ? 'Use witty humor and smart observations.' : ''}
+      ${currentDifficulty === 'easy' ? 'Use simple words and silly humor.' : ''}
+      ${currentDifficulty === 'medium' ? 'Use clever wordplay and puns.' : ''}
+      ${currentDifficulty === 'hard' ? 'Use witty humor and smart observations.' : ''}
       ${historyContext}
       Just return the joke, nothing else.`;
+
+      console.log('Generating joke with prompt:', prompt.substring(0, 200) + '...');
 
       const response = await fetch('/api/ask-ai', {
         method: 'POST',
@@ -90,15 +100,20 @@ const JokeMaker: React.FC = () => {
       if (!response.ok) throw new Error('Failed to generate joke');
 
       const data = await response.json();
-      const joke = data.response || "Why don't scientists trust atoms? Because they make up everything!";
+      const joke = data.message?.trim() || data.response?.trim() || "Why don't scientists trust atoms? Because they make up everything!";
 
-      // Add joke to history and update state
+      console.log('API Response data:', data);
+      console.log('Generated joke:', joke);
+      console.log('Previous joke history length:', currentJokeHistory.length);
+
+      // Update state with new joke
       setState(prev => ({
         ...prev,
         currentJoke: joke,
         loading: false,
+        rating: null,
         totalJokes: prev.totalJokes + 1,
-        jokeHistory: [...prev.jokeHistory, joke].slice(-20) // Keep last 20 jokes to prevent too long prompts
+        jokeHistory: [...prev.jokeHistory, joke].slice(-20)
       }));
 
     } catch (error) {
@@ -117,10 +132,13 @@ const JokeMaker: React.FC = () => {
         ? availableFallbacks[Math.floor(Math.random() * availableFallbacks.length)]
         : fallbackJokes[Math.floor(Math.random() * fallbackJokes.length)];
       
+      console.log('Using fallback joke:', selectedJoke);
+      
       setState(prev => ({
         ...prev,
         currentJoke: selectedJoke,
         loading: false,
+        rating: null,
         totalJokes: prev.totalJokes + 1,
         jokeHistory: [...prev.jokeHistory, selectedJoke].slice(-20)
       }));
@@ -240,11 +258,16 @@ const JokeMaker: React.FC = () => {
 
         {/* Joke Display */}
         {state.currentJoke && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div key={`joke-${state.totalJokes}-${Date.now()}`} className="bg-white rounded-lg shadow-lg p-6 mb-6">
             <div className="text-center">
               <div className="text-6xl mb-4">😂</div>
               <div className="text-xl text-gray-800 mb-6 leading-relaxed">
                 {state.currentJoke}
+              </div>
+              
+              {/* Debug info - remove this later */}
+              <div className="text-xs text-gray-400 mb-2">
+                Joke #{state.totalJokes} | History: {state.jokeHistory.length} jokes
               </div>
               
               {/* Rating */}
