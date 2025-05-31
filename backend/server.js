@@ -332,6 +332,111 @@ app.post('/api/ask-ai', async (req, res) => {
     }
   }
 
+  // Trivia Generator AI request
+  if (req.body.game === 'trivia-generator' && req.body.difficulty && req.body.category) {
+    console.log('--- TRIVIA GENERATOR AI REQUEST ---');
+    const { difficulty, category } = req.body;
+    console.log('Difficulty:', difficulty);
+    console.log('Category:', category);
+    
+    const fallbackQuestions = () => {
+      const fallbacks = [
+        {
+          question: "What is the capital of France?",
+          options: ["London", "Berlin", "Paris", "Madrid"],
+          correct: 2
+        },
+        {
+          question: "What is 2 + 2?",
+          options: ["3", "4", "5", "6"],
+          correct: 1
+        },
+        {
+          question: "Which planet is closest to the Sun?",
+          options: ["Venus", "Mercury", "Earth", "Mars"],
+          correct: 1
+        },
+        {
+          question: "What color do you get when you mix red and blue?",
+          options: ["Green", "Yellow", "Purple", "Orange"],
+          correct: 2
+        },
+        {
+          question: "How many legs does a spider have?",
+          options: ["6", "8", "10", "12"],
+          correct: 1
+        }
+      ];
+      return fallbacks.slice(0, 5);
+    };
+    
+    try {
+      const systemPrompt = `You are a trivia question generator. Generate exactly 5 trivia questions for the category "${category}" at "${difficulty}" difficulty level. 
+
+Rules:
+- Each question must have exactly 4 multiple choice options
+- Only one option should be correct
+- Questions should be appropriate for all ages
+- Return ONLY a valid JSON array with no additional text
+- Each question object must have: question, options (array of 4 strings), correct (number 0-3 indicating correct option index)
+
+Example format:
+[
+  {
+    "question": "What is the largest planet?",
+    "options": ["Earth", "Jupiter", "Saturn", "Mars"],
+    "correct": 1
+  }
+]`;
+
+      const userPrompt = `Generate 5 ${difficulty} difficulty trivia questions about ${category}.`;
+      
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ];
+      
+      const response = await callAI(messages, 1000, 0.8, fallbackQuestions);
+      
+      let questions;
+      if (typeof response === 'string') {
+        try {
+          // Clean up the response - remove any markdown formatting
+          let cleanResponse = response.trim();
+          cleanResponse = cleanResponse.replace(/^```[a-zA-Z]*\n?|```$/g, '');
+          cleanResponse = cleanResponse.replace(/```[a-zA-Z]*\n([\s\S]*?)\n```/, '$1');
+          
+          questions = JSON.parse(cleanResponse);
+          
+          // Validate the structure
+          if (!Array.isArray(questions) || questions.length !== 5) {
+            throw new Error('Invalid questions array');
+          }
+          
+          questions.forEach((q, index) => {
+            if (!q.question || !Array.isArray(q.options) || q.options.length !== 4 || 
+                typeof q.correct !== 'number' || q.correct < 0 || q.correct > 3) {
+              throw new Error(`Invalid question structure at index ${index}`);
+            }
+          });
+          
+        } catch (parseError) {
+          console.log('Failed to parse AI trivia response, using fallback questions');
+          questions = fallbackQuestions();
+        }
+      } else {
+        questions = response;
+      }
+      
+      console.log('Generated trivia questions:', JSON.stringify(questions, null, 2));
+      return res.json({ questions });
+      
+    } catch (err) {
+      console.error('Trivia Generator AI ERROR:', err.response?.data || err.message);
+      return res.json({ questions: fallbackQuestions(), error: 'AI call failed, used fallback questions.' });
+    }
+  }
+
   // Chat-based AI request (default)
   if (Array.isArray(history)) {
     console.log('--- AI REQUEST ---');
