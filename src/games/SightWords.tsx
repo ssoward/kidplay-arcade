@@ -14,6 +14,8 @@ interface SightWordsState {
   difficulty: Difficulty;
   loading: boolean;
   usedWords: string[];
+  isPlaying: boolean;
+  audioSupported: boolean;
 }
 
 export default function SightWords() {
@@ -27,6 +29,8 @@ export default function SightWords() {
     difficulty: 'easy',
     loading: false,
     usedWords: [],
+    isPlaying: false,
+    audioSupported: typeof window !== 'undefined' && 'speechSynthesis' in window,
   });
 
   useEffect(() => {
@@ -67,6 +71,23 @@ export default function SightWords() {
     // Fetch words with the loaded used words
     fetchWordsWithUsedList(usedWords);
   }, [state.difficulty]);
+
+  // Cleanup speech synthesis when component unmounts or word changes
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [state.words, state.current]);
+
+  // Stop speech when moving to next word
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setState(prev => ({ ...prev, isPlaying: false }));
+    }
+  }, [state.current]);
 
   const fetchWordsWithUsedList = async (usedWords: string[] = state.usedWords) => {
     setState(prev => ({ ...prev, loading: true }));
@@ -223,6 +244,31 @@ export default function SightWords() {
     localStorage.removeItem(`sightwords-used-words-${state.difficulty}`);
   };
 
+  const playWordAudio = () => {
+    const wordToSpeak = state.words[state.current];
+    if (!state.audioSupported || !wordToSpeak) return;
+    
+    setState(prev => ({ ...prev, isPlaying: true }));
+    
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(wordToSpeak);
+    utterance.rate = 0.7; // Slower rate for kids
+    utterance.pitch = 1.1; // Slightly higher pitch for friendliness
+    utterance.volume = 0.8;
+    
+    utterance.onend = () => {
+      setState(prev => ({ ...prev, isPlaying: false }));
+    };
+    
+    utterance.onerror = () => {
+      setState(prev => ({ ...prev, isPlaying: false }));
+    };
+    
+    window.speechSynthesis.speak(utterance);
+  };
+
   const currentWord = state.words[state.current] || '';
 
   return (
@@ -294,15 +340,37 @@ export default function SightWords() {
                   </div>
                 </div>
                 <div 
-                  className="flip-card-back absolute w-full h-full bg-green-100 border-2 border-green-300 rounded-lg shadow-lg flex items-center justify-center"
+                  className="flip-card-back absolute w-full h-full bg-green-100 border-2 border-green-300 rounded-lg shadow-lg flex flex-col items-center justify-center"
                   style={{ 
                     backfaceVisibility: 'hidden',
                     transform: 'rotateY(180deg)'
                   }}
                 >
-                  <div className="text-2xl text-green-800 text-center">
+                  <div className="text-2xl text-green-800 text-center mb-4">
                     Did you say it correctly?
                   </div>
+                  {state.audioSupported && (
+                    <button
+                      onClick={playWordAudio}
+                      disabled={state.isPlaying}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      title="Listen to the word"
+                    >
+                      {state.isPlaying ? (
+                        <>
+                          <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                          Playing...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.914 14H2a1 1 0 01-1-1V7a1 1 0 011-1h2.914l3.469-2.816a1 1 0 011.617.816zM16 10a1 1 0 01-.832.986 4.002 4.002 0 010-1.972A1 1 0 0116 10zm-4 3.75a1 1 0 01-.832.986 8.003 8.003 0 010-9.472A1 1 0 0112 6.25v7.5z" clipRule="evenodd" />
+                          </svg>
+                          Listen
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
