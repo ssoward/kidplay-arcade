@@ -219,6 +219,50 @@ app.post('/api/ask-ai', aiLimiter, aiValidationRules, validateRequest, async (re
   });
 });
 
+// iTunes API proxy to handle CORS issues on mobile
+app.get('/api/itunes-search', [
+  query('term').isString().isLength({ min: 1, max: 200 }).withMessage('Search term is required and must be 1-200 characters'),
+  query('media').optional().isString().withMessage('Media must be a string'),
+  query('entity').optional().isString().withMessage('Entity must be a string'),
+  query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('Limit must be between 1 and 50')
+], validateRequest, async (req, res) => {
+  try {
+    const { term, media = 'music', entity = 'song', limit = 5 } = req.query;
+    
+    console.log(`🎵 iTunes search request: ${term}`);
+    
+    // Make request to iTunes API from backend (no CORS issues)
+    const response = await axios.get('https://itunes.apple.com/search', {
+      params: {
+        term,
+        media,
+        entity,
+        limit: Math.min(parseInt(limit), 50) // Cap at 50 for safety
+      },
+      timeout: 10000, // 10 second timeout
+      headers: {
+        'User-Agent': 'KidPlay-Arcade/1.0'
+      }
+    });
+    
+    console.log(`🎵 iTunes API response: ${response.data.results?.length || 0} results`);
+    
+    // Return the iTunes API response
+    res.json(response.data);
+    
+  } catch (error) {
+    console.error('iTunes API error:', error.message);
+    
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+      res.status(503).json({ error: 'iTunes service temporarily unavailable' });
+    } else if (error.code === 'ECONNABORTED') {
+      res.status(504).json({ error: 'iTunes search timed out' });
+    } else {
+      res.status(500).json({ error: 'Failed to search iTunes catalog' });
+    }
+  }
+});
+
 // Serve static files from the React app build folder (after API routes)
 app.use(express.static(path.join(__dirname, '../build')));
 

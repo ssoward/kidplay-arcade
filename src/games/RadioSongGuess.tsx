@@ -529,7 +529,7 @@ const RadioSongGuess: React.FC = () => {
     setState(prev => ({ ...prev, audioLoading: true, audioError: null }));
     
     try {
-      const searchQuery = encodeURIComponent(`${artist} ${title}`);
+      const searchQuery = `${artist} ${title}`;
       
       // Add retry logic with backoff
       let attempts = 0;
@@ -541,9 +541,9 @@ const RadioSongGuess: React.FC = () => {
           attempts++;
           const timeout = attempts === 1 ? 8000 : 4000; // shorter timeout on retry
           
-          // Use fetchWithTimeout
+          // Use backend proxy instead of direct iTunes API call to avoid CORS issues on mobile
           const response = await fetchWithTimeout(
-            `https://itunes.apple.com/search?term=${searchQuery}&media=music&entity=song&limit=5`, 
+            `/api/itunes-search?term=${encodeURIComponent(searchQuery)}&media=music&entity=song&limit=5`, 
             { signal: abortController.signal }, 
             timeout
           );
