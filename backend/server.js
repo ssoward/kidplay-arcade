@@ -9,6 +9,9 @@ const { body, validationResult, param, query } = require('express-validator');
 
 const app = express();
 
+// Trust proxy for proper IP detection (fixes X-Forwarded-For warnings)
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: false, // Disable CSP for now to avoid breaking the frontend
