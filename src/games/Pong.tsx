@@ -24,6 +24,7 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
   const [aiScore, setAiScore] = useState(0);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [isMobile, setIsMobile] = useState(false);
+  const [keysPressed, setKeysPressed] = useState<{[key: string]: boolean}>({});
   const gameAreaRef = useRef<HTMLDivElement>(null);
 
   // Responsive game dimensions
@@ -70,15 +71,36 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
     setAiPaddle((gameHeight - paddleHeight) / 2);
   }, [gameWidth, gameHeight, paddleHeight]);
 
+  // Track actual rendered game area dimensions
+  const getActualGameDimensions = useCallback(() => {
+    if (gameAreaRef.current) {
+      const rect = gameAreaRef.current.getBoundingClientRect();
+      return {
+        width: rect.width,
+        height: rect.height,
+        scaleX: rect.width / gameWidth,
+        scaleY: rect.height / gameHeight
+      };
+    }
+    return {
+      width: gameWidth,
+      height: gameHeight,
+      scaleX: 1,
+      scaleY: 1
+    };
+  }, [gameWidth, gameHeight]);
+
   const resetBall = useCallback(() => {
     setBallPosition({ x: gameWidth / 2, y: gameHeight / 2 });
     const angle = (Math.random() - 0.5) * Math.PI / 3; // Random angle between -30 and 30 degrees
-    const speed = (gameWidth / 267) * difficultySettings[difficulty].ballSpeedMultiplier; // Scale speed with game size
+    const baseSpeed = (gameWidth / 267) * difficultySettings[difficulty].ballSpeedMultiplier; // Scale speed with game size
+    // Reduce ball speed slightly on mobile for better collision detection
+    const speed = isMobile ? baseSpeed * 0.9 : baseSpeed;
     setBallVelocity({
       x: Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1),
       y: Math.sin(angle) * speed
     });
-  }, [difficulty, gameWidth, gameHeight]);
+  }, [difficulty, gameWidth, gameHeight, isMobile]);
 
   const startGame = () => {
     setGameRunning(true);
@@ -106,9 +128,15 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
     if (!gameRunning) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const mouseY = e.clientY - rect.top;
-    const paddleY = Math.max(0, Math.min(gameHeight - paddleHeight, mouseY - paddleHeight / 2));
-    setPlayerPaddle(paddleY);
-  }, [gameRunning, gameHeight, paddleHeight]);
+    const actualDims = getActualGameDimensions();
+    const scaleY = actualDims.scaleY;
+    const actualPaddleHeight = paddleHeight * scaleY;
+    
+    // Calculate paddle position in actual rendered coordinates, then convert to logical
+    const actualPaddleY = Math.max(0, Math.min(actualDims.height - actualPaddleHeight, mouseY - actualPaddleHeight / 2));
+    const logicalPaddleY = actualPaddleY / scaleY;
+    setPlayerPaddle(logicalPaddleY);
+  }, [gameRunning, gameHeight, paddleHeight, getActualGameDimensions]);
 
   // Handle touch movement for mobile
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
@@ -117,9 +145,160 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const touch = e.touches[0];
     const touchY = touch.clientY - rect.top;
-    const paddleY = Math.max(0, Math.min(gameHeight - paddleHeight, touchY - paddleHeight / 2));
-    setPlayerPaddle(paddleY);
-  }, [gameRunning, gameHeight, paddleHeight]);
+    const actualDims = getActualGameDimensions();
+    const scaleY = actualDims.scaleY;
+    const actualPaddleHeight = paddleHeight * scaleY;
+    
+    // Calculate paddle position in actual rendered coordinates, then convert to logical
+    const actualPaddleY = Math.max(0, Math.min(actualDims.height - actualPaddleHeight, touchY - actualPaddleHeight / 2));
+    const logicalPaddleY = actualPaddleY / scaleY;
+    setPlayerPaddle(logicalPaddleY);
+  }, [gameRunning, gameHeight, paddleHeight, getActualGameDimensions]);
+
+  // Handle keyboard controls
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!gameRunning) return;
+    setKeysPressed(prev => ({ ...prev, [e.key]: true }));
+  }, [gameRunning]);
+
+  const handleKeyUp = useCallback((e: KeyboardEvent) => {
+    setKeysPressed(prev => ({ ...prev, [e.key]: false }));
+  }, []);
+
+  // Mobile button controls with continuous movement
+  const [buttonPressed, setButtonPressed] = useState<{up: boolean, down: boolean}>({up: false, down: false});
+
+  const startMoveUp = useCallback(() => {
+    if (!gameRunning) return;
+    setButtonPressed(prev => ({...prev, up: true}));
+  }, [gameRunning]);
+
+  const stopMoveUp = useCallback(() => {
+    setButtonPressed(prev => ({...prev, up: false}));
+  }, []);
+
+  const startMoveDown = useCallback(() => {
+    if (!gameRunning) return;
+    setButtonPressed(prev => ({...prev, down: true}));
+  }, [gameRunning]);
+
+  const stopMoveDown = useCallback(() => {
+    setButtonPressed(prev => ({...prev, down: false}));
+  }, []);
+
+  // Handle continuous button movement
+  useEffect(() => {
+    if (!gameRunning) return;
+
+    const buttonLoop = setInterval(() => {
+      if (buttonPressed.up) {
+        setPlayerPaddle(prev => Math.max(0, prev - 8));
+      }
+      if (buttonPressed.down) {
+        setPlayerPaddle(prev => Math.min(gameHeight - paddleHeight, prev + 8));
+      }
+    }, 16); // ~60 FPS
+
+    return () => clearInterval(buttonLoop);
+  }, [gameRunning, buttonPressed, gameHeight, paddleHeight]);
+
+  // Keyboard event listeners
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [handleKeyDown, handleKeyUp]);
+
+  // Handle continuous keyboard movement
+  useEffect(() => {
+    if (!gameRunning) return;
+
+    const keyboardLoop = setInterval(() => {
+      if (keysPressed['ArrowUp']) {
+        setPlayerPaddle(prev => Math.max(0, prev - 8));
+      }
+      if (keysPressed['ArrowDown']) {
+        setPlayerPaddle(prev => Math.min(gameHeight - paddleHeight, prev + 8));
+      }
+    }, 16); // ~60 FPS
+
+    return () => clearInterval(keyboardLoop);
+  }, [gameRunning, keysPressed, gameHeight, paddleHeight]);
+
+  // Continuous collision detection helper function
+  const checkPaddleCollision = useCallback((
+    ballStartX: number, ballStartY: number,
+    ballEndX: number, ballEndY: number,
+    velX: number, velY: number,
+    paddleX: number, paddleY: number,
+    paddleW: number, paddleH: number,
+    isLeftPaddle: boolean
+  ) => {
+    // Use swept AABB (Axis-Aligned Bounding Box) collision detection
+    const ballW = ballSize;
+    const ballH = ballSize;
+    
+    // Calculate time of collision for each axis
+    let tMinX, tMaxX, tMinY, tMaxY;
+    
+    if (velX === 0) {
+      // Ball not moving horizontally
+      if (ballStartX + ballW < paddleX || ballStartX > paddleX + paddleW) {
+        return null; // No collision possible
+      }
+      tMinX = Number.NEGATIVE_INFINITY;
+      tMaxX = Number.POSITIVE_INFINITY;
+    } else {
+      // Calculate X collision times
+      const t1 = (paddleX - (ballStartX + ballW)) / velX;
+      const t2 = (paddleX + paddleW - ballStartX) / velX;
+      tMinX = Math.min(t1, t2);
+      tMaxX = Math.max(t1, t2);
+    }
+    
+    if (velY === 0) {
+      // Ball not moving vertically
+      if (ballStartY + ballH < paddleY || ballStartY > paddleY + paddleH) {
+        return null; // No collision possible
+      }
+      tMinY = Number.NEGATIVE_INFINITY;
+      tMaxY = Number.POSITIVE_INFINITY;
+    } else {
+      // Calculate Y collision times
+      const t1 = (paddleY - (ballStartY + ballH)) / velY;
+      const t2 = (paddleY + paddleH - ballStartY) / velY;
+      tMinY = Math.min(t1, t2);
+      tMaxY = Math.max(t1, t2);
+    }
+    
+    // Check if collision occurs within the movement frame
+    const tMin = Math.max(tMinX, tMinY);
+    const tMax = Math.min(tMaxX, tMaxY);
+    
+    // Collision occurs if tMin <= tMax and within our time frame (0 to 1)
+    if (tMin <= tMax && tMin >= 0 && tMin <= 1) {
+      // Calculate collision point
+      const collisionX = ballStartX + velX * tMin;
+      const collisionY = ballStartY + velY * tMin;
+      
+      // Calculate hit position on paddle for angle variation
+      const paddleCenter = paddleY + paddleH / 2;
+      const ballCenter = collisionY + ballH / 2;
+      const hitPos = Math.max(-1, Math.min(1, (ballCenter - paddleCenter) / (paddleH / 2)));
+      
+      return {
+        time: tMin,
+        x: collisionX,
+        y: collisionY,
+        hitPos
+      };
+    }
+    
+    return null; // No collision
+  }, [ballSize]);
 
   // Game loop
   useEffect(() => {
@@ -127,77 +306,111 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
 
     const gameLoop = setInterval(() => {
       setBallPosition(prevPos => {
-        let newX = prevPos.x + ballVelocity.x;
-        let newY = prevPos.y + ballVelocity.y;
+        // Get actual rendered dimensions for accurate collision detection
+        const actualDims = getActualGameDimensions();
+        const actualWidth = actualDims.width;
+        const actualHeight = actualDims.height;
+        const scaleX = actualDims.scaleX;
+        const scaleY = actualDims.scaleY;
+        
+        // Scale ball size and paddle dimensions to match actual rendering
+        const actualBallSize = ballSize * Math.min(scaleX, scaleY);
+        const actualPaddleWidth = paddleWidth * scaleX;
+        const actualPaddleHeight = paddleHeight * scaleY;
+        
+        const startX = prevPos.x * scaleX;
+        const startY = prevPos.y * scaleY;
+        let newX = startX + (ballVelocity.x * scaleX);
+        let newY = startY + (ballVelocity.y * scaleY);
         let newVelX = ballVelocity.x;
         let newVelY = ballVelocity.y;
 
-        // Ball collision with top and bottom walls
+        // Ball collision with top and bottom walls (using actual dimensions)
         if (newY <= 0) {
           newY = 0;
           newVelY = Math.abs(newVelY);
-          setBallVelocity(prev => ({ ...prev, y: newVelY }));
-        } else if (newY >= gameHeight - ballSize) {
-          newY = gameHeight - ballSize;
+        } else if (newY >= actualHeight - actualBallSize) {
+          newY = actualHeight - actualBallSize;
           newVelY = -Math.abs(newVelY);
-          setBallVelocity(prev => ({ ...prev, y: newVelY }));
         }
 
-        // Ball collision with player paddle (right side)
-        if (newX + ballSize >= gameWidth - paddleWidth &&
-            newX <= gameWidth - paddleWidth &&
-            newY + ballSize >= playerPaddle &&
-            newY <= playerPaddle + paddleHeight &&
-            ballVelocity.x > 0) {
+        // Continuous collision detection for paddles (using actual dimensions)
+        const ballSpeed = Math.sqrt(newVelX * newVelX + newVelY * newVelY);
+        
+        // Check collision with player paddle (right side) - using actual dimensions
+        if (newVelX > 0) {
+          const rightPaddleLeft = actualWidth - actualPaddleWidth;
+          const actualPlayerPaddle = playerPaddle * scaleY;
           
-          // Calculate hit position for angle variation
-          const hitPos = ((newY + ballSize/2) - (playerPaddle + paddleHeight/2)) / (paddleHeight/2); // -1 to 1
-          const angle = hitPos * Math.PI / 4; // Max 45 degree angle
-          const speed = Math.sqrt(ballVelocity.x * ballVelocity.x + ballVelocity.y * ballVelocity.y);
+          const playerCollision = checkPaddleCollision(
+            startX, startY,
+            newX, newY,
+            ballVelocity.x * scaleX, ballVelocity.y * scaleY,
+            rightPaddleLeft, actualPlayerPaddle,
+            actualPaddleWidth, actualPaddleHeight,
+            false
+          );
           
-          newVelX = -Math.abs(Math.cos(angle) * speed);
-          newVelY = Math.sin(angle) * speed;
-          newX = gameWidth - paddleWidth - ballSize;
-          
-          setBallVelocity({ x: newVelX, y: newVelY });
+          if (playerCollision) {
+            // Calculate new velocity based on hit position
+            const angle = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, playerCollision.hitPos * Math.PI / 3));
+            const speed = ballSpeed * 1.02; // Slight speed increase
+            
+            newVelX = -Math.abs(Math.cos(angle) * speed);
+            newVelY = Math.sin(angle) * speed;
+            newX = rightPaddleLeft - actualBallSize - 1; // Position with safety margin
+          }
         }
 
-        // Ball collision with AI paddle (left side)
-        if (newX <= paddleWidth &&
-            newX + ballSize >= 0 &&
-            newY + ballSize >= aiPaddle &&
-            newY <= aiPaddle + paddleHeight &&
-            ballVelocity.x < 0) {
+        // Check collision with AI paddle (left side) - using actual dimensions
+        if (newVelX < 0) {
+          const actualAiPaddle = aiPaddle * scaleY;
           
-          const hitPos = ((newY + ballSize/2) - (aiPaddle + paddleHeight/2)) / (paddleHeight/2); // -1 to 1
-          const angle = hitPos * Math.PI / 4; // Max 45 degree angle
-          const speed = Math.sqrt(ballVelocity.x * ballVelocity.x + ballVelocity.y * ballVelocity.y);
+          const aiCollision = checkPaddleCollision(
+            startX, startY,
+            newX, newY,
+            ballVelocity.x * scaleX, ballVelocity.y * scaleY,
+            0, actualAiPaddle,
+            actualPaddleWidth, actualPaddleHeight,
+            true
+          );
           
-          newVelX = Math.abs(Math.cos(angle) * speed);
-          newVelY = Math.sin(angle) * speed;
-          newX = paddleWidth;
-          
-          setBallVelocity({ x: newVelX, y: newVelY });
+          if (aiCollision) {
+            // Calculate new velocity based on hit position
+            const angle = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, aiCollision.hitPos * Math.PI / 3));
+            const speed = ballSpeed * 1.02;
+            
+            newVelX = Math.abs(Math.cos(angle) * speed);
+            newVelY = Math.sin(angle) * speed;
+            newX = actualPaddleWidth + 1; // Position with safety margin
+          }
         }
 
-        // Ball goes off screen (scoring) - with safety bounds
-        if (newX < -ballSize * 2) {
+        // Update velocity for next frame
+        setBallVelocity({ x: newVelX, y: newVelY });
+
+        // Ball goes off screen (scoring) - using actual dimensions
+        if (newX < -actualBallSize * 2) {
           setPlayerScore(prev => prev + 1);
           setTimeout(resetBall, 1000);
           return { x: gameWidth / 2, y: gameHeight / 2 };
         }
 
-        if (newX > gameWidth + ballSize * 2) {
+        if (newX > actualWidth + actualBallSize * 2) {
           setAiScore(prev => prev + 1);
           setTimeout(resetBall, 1000);
           return { x: gameWidth / 2, y: gameHeight / 2 };
         }
 
-        // Ensure ball never goes completely off bounds
-        newX = Math.max(-ballSize, Math.min(gameWidth + ballSize, newX));
-        newY = Math.max(0, Math.min(gameHeight - ballSize, newY));
+        // Ensure ball stays within bounds with small safety margin (convert back to logical coordinates)
+        newX = Math.max(0, Math.min(actualWidth - actualBallSize, newX));
+        newY = Math.max(0, Math.min(actualHeight - actualBallSize, newY));
 
-        return { x: newX, y: newY };
+        // Convert back to logical coordinates for state
+        return { 
+          x: newX / scaleX, 
+          y: newY / scaleY 
+        };
       });
 
       // AI paddle movement - scaled for game size
@@ -213,10 +426,10 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
         return Math.max(0, Math.min(gameHeight - paddleHeight, newPaddle));
       });
 
-    }, 16); // ~60 FPS
+    }, isMobile ? 12 : 16); // Higher frame rate on mobile for better collision detection
 
     return () => clearInterval(gameLoop);
-  }, [gameRunning, ballVelocity, ballPosition, playerPaddle, aiPaddle, difficulty, resetBall, gameWidth, gameHeight, paddleHeight, paddleWidth, ballSize]);
+  }, [gameRunning, ballVelocity, ballPosition, playerPaddle, aiPaddle, difficulty, resetBall, gameWidth, gameHeight, paddleHeight, paddleWidth, ballSize, checkPaddleCollision, isMobile, getActualGameDimensions]);
 
   // Check for game end
   useEffect(() => {
@@ -379,7 +592,7 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
                       Ready to Play?
                     </div>
                     <p className="text-white/80 mb-6 text-sm md:text-base">
-                      {isMobile ? 'Touch and drag to control the right paddle' : 'Move your mouse to control the right paddle'}
+                      {isMobile ? 'Touch and drag or use UP/DOWN buttons to control the right paddle' : 'Move your mouse or use arrow keys (↑↓) to control the right paddle'}
                     </p>
                   </div>
                 </div>
@@ -387,6 +600,34 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
             </div>
           </div>
         </div>
+
+        {/* Mobile Control Buttons */}
+        {isMobile && (
+          <div className="flex justify-center mb-6 space-x-4">
+            <button
+              onTouchStart={startMoveUp}
+              onTouchEnd={stopMoveUp}
+              onMouseDown={startMoveUp}
+              onMouseUp={stopMoveUp}
+              onMouseLeave={stopMoveUp}
+              className="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 select-none"
+              style={{ touchAction: 'manipulation' }}
+            >
+              ⬆️ UP
+            </button>
+            <button
+              onTouchStart={startMoveDown}
+              onTouchEnd={stopMoveDown}
+              onMouseDown={startMoveDown}
+              onMouseUp={stopMoveDown}
+              onMouseLeave={stopMoveDown}
+              className="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 select-none"
+              style={{ touchAction: 'manipulation' }}
+            >
+              ⬇️ DOWN
+            </button>
+          </div>
+        )}
 
         {/* Instructions */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6">
@@ -399,8 +640,8 @@ const Pong: React.FC<PongProps> = ({ onExit }) => {
               <h4 className="font-semibold text-gray-800 mb-2">Control</h4>
               <p>
                 {isMobile 
-                  ? 'Touch and drag on the game area to move the right paddle up and down' 
-                  : 'Move your mouse up and down to control the right paddle'
+                  ? 'Touch and drag on the game area or use the UP/DOWN buttons to move the right paddle' 
+                  : 'Move your mouse or use the arrow keys (↑↓) to control the right paddle'
                 }
               </p>
             </div>

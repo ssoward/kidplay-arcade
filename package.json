@@ -37,6 +37,7 @@
     "build:production": "npm run build && cd backend && npm install --production",
     "start:production": "cd backend && npm start"
   },
+  "proxy": "http://localhost:3001",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -57,6 +58,5 @@
     "concurrently": "^9.1.2",
     "postcss": "^8.5.4",
     "tailwindcss": "^3.4.17"
-  },
-  "proxy": "http://localhost:3001"
+  }
 }

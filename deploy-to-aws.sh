@@ -11,15 +11,18 @@ NC='\033[0m' # No Color
 
 echo -e "${GREEN}🚀 Deploying Kidplay Arcade to AWS EC2...${NC}"
 
-# Check if IP address is provided
-if [ -z "$1" ]; then
-    echo -e "${YELLOW}Usage: ./deploy-to-aws.sh [EC2_IP_ADDRESS]${NC}"
-    echo -e "${YELLOW}Example: ./deploy-to-aws.sh 54.123.45.67${NC}"
-    exit 1
-fi
-
-EC2_IP=$1
+# Default EC2 IP and key path
+DEFAULT_EC2_IP="3.81.165.163"
 KEY_PATH="/Users/ssoward/.ssh/kidplay-arcade-key.pem"
+
+# Use provided IP or default
+if [ -z "$1" ]; then
+    EC2_IP=$DEFAULT_EC2_IP
+    echo -e "${GREEN}Using default EC2 IP: $EC2_IP${NC}"
+else
+    EC2_IP=$1
+    echo -e "${GREEN}Using provided EC2 IP: $EC2_IP${NC}"
+fi
 
 # Check if key file exists
 if [ ! -f "$KEY_PATH" ]; then
@@ -47,6 +50,7 @@ ENDSSH
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Deployment successful!${NC}"
     echo -e "${GREEN}🌐 Visit your app at: http://$EC2_IP${NC}"
+    echo -e "${GREEN}🔧 SSH into your server: ssh -i $KEY_PATH ec2-user@$EC2_IP${NC}"
 else
     echo -e "${RED}❌ Deployment failed. Check the output above for errors.${NC}"
 fi

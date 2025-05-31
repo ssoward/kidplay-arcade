@@ -446,7 +446,7 @@ Example format:
         AZURE_ENDPOINT,
         {
           messages: history,
-          max_tokens: 64,
+          max_tokens: 300,
           temperature: 0.7,
           top_p: 0.95,
           frequency_penalty: 0,

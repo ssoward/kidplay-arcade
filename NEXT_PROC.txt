@@ -1,0 +1,28 @@
+Create a new file: src/games/SightWords.tsx
+Component features:
+Custom flip card UI for showing a word (pure CSS animations).
+Difficulty selector (easy/medium/hard).
+Button to flip to the next word.
+Buttons for "Correct" and "Incorrect" pronunciation.
+Accumulated score display and reset.
+Use AI (backend /api/ask-ai) to fetch a list of sight words for the selected difficulty.
+State:
+words: string[]
+current: number
+flipped: boolean
+score: number
+totalScore: number
+wordsAttempted: number
+difficulty: 'easy' | 'medium' | 'hard'
+loading: boolean
+Lifecycle:
+On mount or difficulty change, fetch new words from AI.
+On "Next", flip card and show next word.
+On "Correct/Incorrect", update score and stats.
+Accumulated score saved in localStorage.
+Implementation Notes:
+- Use only vanilla CSS for flip card animations
+- No external animation libraries
+- Custom styling with Tailwind classes only
+- All flip card logic implemented from scratch
+- Fallback word lists hardcoded for offline functionality

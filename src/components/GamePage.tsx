@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 
 const gameComponentMap: Record<string, any> = {
+  'sight-words': lazy(() => import('../games/SightWords')),
   chess: lazy(() => import('../games/Chess')),
   checkers: lazy(() => import('../games/Checkers')),
   'tic-tac-toe': lazy(() => import('../games/TicTacToe')),
@@ -23,6 +24,12 @@ const gameComponentMap: Record<string, any> = {
   'twenty-questions': lazy(() => import('../games/TwentyQuestions')),
   'word-guess': lazy(() => import('../games/WordGuess')),
   storyteller: lazy(() => import('../games/Storyteller')),
+  'art-critic': lazy(() => import('../games/ArtCritic')),
+  'riddle-master': lazy(() => import('../games/RiddleMaster')),
+  'code-breaker': lazy(() => import('../games/CodeBreaker')),
+  'dream-interpreter': lazy(() => import('../games/DreamInterpreter')),
+  'joke-maker': lazy(() => import('../games/JokeMaker')),
+  'radio-song-guess': lazy(() => import('../games/RadioSongGuess')),
 };
 
 const GamePage: React.FC = () => {

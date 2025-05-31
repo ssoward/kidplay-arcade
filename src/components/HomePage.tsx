@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const games = [
+  { id: 'sight-words', name: 'Sight Words' },
   { id: 'chess', name: 'Chess' },
   { id: 'checkers', name: 'Checkers' },
   { id: 'tic-tac-toe', name: 'Tic Tac Toe' },
@@ -23,6 +24,12 @@ const games = [
   { id: 'twenty-questions', name: 'Twenty Questions' },
   { id: 'word-guess', name: 'Word Guess' },
   { id: 'storyteller', name: 'Storyteller' },
+  { id: 'art-critic', name: 'Art Critic' },
+  { id: 'riddle-master', name: 'Riddle Master' },
+  { id: 'code-breaker', name: 'Code Breaker' },
+  { id: 'dream-interpreter', name: 'Dream Interpreter' },
+  { id: 'joke-maker', name: 'Joke Maker' },
+  { id: 'radio-song-guess', name: 'Song Quiz' },
 ];
 
 const HomePage: React.FC = () => {
