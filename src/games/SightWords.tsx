@@ -13,6 +13,7 @@ interface SightWordsState {
   wordsAttempted: number;
   difficulty: Difficulty;
   loading: boolean;
+  usedWords: string[];
 }
 
 export default function SightWords() {
@@ -25,23 +26,56 @@ export default function SightWords() {
     wordsAttempted: 0,
     difficulty: 'easy',
     loading: false,
+    usedWords: [],
   });
 
   useEffect(() => {
     const savedScore = localStorage.getItem('sightwords-total-score');
+    const savedUsedWords = localStorage.getItem(`sightwords-used-words-${state.difficulty}`);
+    
     if (savedScore) {
       setState(prev => ({ ...prev, totalScore: parseInt(savedScore, 10) }));
+    }
+    
+    if (savedUsedWords) {
+      try {
+        const usedWords = JSON.parse(savedUsedWords);
+        setState(prev => ({ ...prev, usedWords }));
+      } catch (error) {
+        console.error('Failed to parse used words:', error);
+      }
     }
   }, []);
 
   useEffect(() => {
-    fetchWords();
+    // Load used words for the current difficulty
+    const savedUsedWords = localStorage.getItem(`sightwords-used-words-${state.difficulty}`);
+    let usedWords: string[] = [];
+    
+    if (savedUsedWords) {
+      try {
+        usedWords = JSON.parse(savedUsedWords);
+        setState(prev => ({ ...prev, usedWords }));
+      } catch (error) {
+        console.error('Failed to parse used words:', error);
+        setState(prev => ({ ...prev, usedWords: [] }));
+      }
+    } else {
+      setState(prev => ({ ...prev, usedWords: [] }));
+    }
+    
+    // Fetch words with the loaded used words
+    fetchWordsWithUsedList(usedWords);
   }, [state.difficulty]);
 
-  const fetchWords = async () => {
+  const fetchWordsWithUsedList = async (usedWords: string[] = state.usedWords) => {
     setState(prev => ({ ...prev, loading: true }));
     
     try {
+      const usedWordsText = usedWords.length > 0 
+        ? `\n\nPreviously used words to avoid: ${usedWords.join(', ')}`
+        : '';
+        
       const response = await fetch('/api/ask-ai', {
         method: 'POST',
         headers: {
@@ -51,7 +85,7 @@ export default function SightWords() {
           history: [
             {
               role: 'user',
-              content: `Generate 20 sight words for ${state.difficulty} level reading. Return only a JSON array of words.`
+              content: `Generate 20 sight words for ${state.difficulty} level reading. Return only a JSON array of words.${usedWordsText}`
             }
           ]
         }),
@@ -105,12 +139,19 @@ export default function SightWords() {
         word.replace(/^["'\[\]]+|["'\[\]]+$/g, '').trim()
       ).filter(word => word.length > 0);
       
+      // Update used words list
+      const newUsedWords = [...usedWords, ...words];
+      
+      // Save used words to localStorage
+      localStorage.setItem(`sightwords-used-words-${state.difficulty}`, JSON.stringify(newUsedWords));
+      
       setState(prev => ({
         ...prev,
         words,
         current: 0,
         flipped: false,
         loading: false,
+        usedWords: newUsedWords,
       }));
     } catch (error) {
       console.error('Failed to fetch words:', error);
@@ -128,6 +169,10 @@ export default function SightWords() {
         loading: false,
       }));
     }
+  };
+
+  const fetchWords = () => {
+    fetchWordsWithUsedList();
   };
 
   const handleNext = () => {
@@ -164,6 +209,7 @@ export default function SightWords() {
       difficulty,
       score: 0,
       wordsAttempted: 0,
+      usedWords: [], // Will be loaded by useEffect
     }));
   };
 
@@ -172,10 +218,15 @@ export default function SightWords() {
     localStorage.removeItem('sightwords-total-score');
   };
 
+  const clearWordHistory = () => {
+    setState(prev => ({ ...prev, usedWords: [] }));
+    localStorage.removeItem(`sightwords-used-words-${state.difficulty}`);
+  };
+
   const currentWord = state.words[state.current] || '';
 
   return (
-    <div className="sight-words-game p-6 max-w-2xl mx-auto">
+    <div className="sight-words-game p-6 max-w-2xl mx-auto min-h-screen bg-gradient-to-br from-green-100 via-blue-100 to-purple-100">
       <div className="header mb-8">
         <h1 className="text-3xl font-bold text-center mb-4">Sophie's Words</h1>
         
@@ -199,12 +250,23 @@ export default function SightWords() {
           <div className="text-lg">
             Session: {state.score}/{state.wordsAttempted} | Total: {state.totalScore}
           </div>
-          <button
-            onClick={resetScore}
-            className="text-sm text-red-500 hover:text-red-700 underline"
-          >
-            Reset Total Score
-          </button>
+          <div className="text-sm text-gray-600 mb-2">
+            Words used this level: {state.usedWords.length}
+          </div>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={resetScore}
+              className="text-sm text-red-500 hover:text-red-700 underline"
+            >
+              Reset Total Score
+            </button>
+            <button
+              onClick={clearWordHistory}
+              className="text-sm text-blue-500 hover:text-blue-700 underline"
+            >
+              Clear Word History
+            </button>
+          </div>
         </div>
       </div>
 

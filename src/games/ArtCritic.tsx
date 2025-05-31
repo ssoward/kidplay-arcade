@@ -152,8 +152,10 @@ export default function ArtCritic() {
   };
 
   // Generate artwork description using AI
-  const generateArtwork = async (): Promise<ArtWork | null> => {
+  const generateArtwork = async (difficulty?: 'easy' | 'medium' | 'hard'): Promise<ArtWork | null> => {
     setState(prev => ({ ...prev, loading: true }));
+    
+    const currentDifficulty = difficulty || state.difficulty;
     
     try {
       const difficultyPrompts = {
@@ -171,7 +173,7 @@ export default function ArtCritic() {
           history: [
             {
               role: 'user',
-              content: `Create an art description game. Choose a ${difficultyPrompts[state.difficulty]} artwork. 
+              content: `Create an art description game. Choose a ${difficultyPrompts[currentDifficulty]} artwork. 
 
 Describe the artwork as an AI art critic would, focusing on visual elements, composition, colors, and mood - but don't mention the title or artist name directly.
 
@@ -183,7 +185,7 @@ Return a JSON object with:
   "artist": "artist name", 
   "description": "detailed visual description without revealing title/artist",
   "hints": ["hint 1", "hint 2", "hint 3", "hint 4"],
-  "difficulty": "${state.difficulty}",
+  "difficulty": "${currentDifficulty}",
   "imageUrl": "wikipedia or public domain image URL if available, otherwise null"
 }
 
@@ -216,13 +218,13 @@ The description should be vivid and help someone visualize the artwork. Hints sh
       }
       
       // Fallback to predefined artwork
-      const fallbackList = FALLBACK_ARTWORKS[state.difficulty];
+      const fallbackList = FALLBACK_ARTWORKS[currentDifficulty];
       return fallbackList[Math.floor(Math.random() * fallbackList.length)];
       
     } catch (error) {
       console.error('Failed to generate artwork:', error);
       // Fallback to predefined artwork
-      const fallbackList = FALLBACK_ARTWORKS[state.difficulty];
+      const fallbackList = FALLBACK_ARTWORKS[currentDifficulty];
       return fallbackList[Math.floor(Math.random() * fallbackList.length)];
     } finally {
       setState(prev => ({ ...prev, loading: false }));
@@ -231,7 +233,7 @@ The description should be vivid and help someone visualize the artwork. Hints sh
 
   // Start new game
   const startNewGame = async () => {
-    const artwork = await generateArtwork();
+    const artwork = await generateArtwork(state.difficulty);
     if (artwork) {
       setState(prev => ({
         ...prev,
