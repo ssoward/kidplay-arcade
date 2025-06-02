@@ -24,7 +24,9 @@
     }
   ],
   "env": {
-    "AZURE_API_KEY": "@azure_api_key",
-    "AZURE_ENDPOINT": "@azure_endpoint"
+    "AZURE_API_KEY": "286f8880393d45acb678e890b36f0f6b",
+    "AZURE_ENDPOINT": "https://familysearch-ai-learning-and-hackathons-proxy.azure-api.net/openai/deployments/gpt-4o/chat/completions?api-version=2025-01-01-preview",
+    "NODE_ENV": "production",
+    "ALLOWED_ORIGINS": "https://kidplay-arcade.vercel.app"
   }
 }

@@ -153,6 +153,7 @@ const aiValidationRules = [
   body('systemPrompt').optional().isString().isLength({ max: 5000 }).withMessage('System prompt must be a string with max 5000 characters'),
   body('game').optional().isString().isIn(['dots-and-boxes', 'word-guess-generator', 'trivia-generator']).withMessage('Invalid game type'),
   body('difficulty').optional().isString().isIn(['easy', 'medium', 'hard']).withMessage('Difficulty must be easy, medium, or hard'),
+  body('category').optional().isString().withMessage('Category must be a string'),
   body('player').optional().isInt({ min: 0, max: 10 }).withMessage('Player must be an integer between 0 and 10'),
   body('state').optional().isObject().withMessage('State must be an object'),
   body('userMessage').optional().isString().isLength({ max: 1000 }).withMessage('User message must be a string with max 1000 characters'),
@@ -211,10 +212,109 @@ app.post('/api/ask-ai', aiLimiter, aiValidationRules, validateRequest, async (re
     return;
   }
 
+  // Trivia Generator AI request
+  if (req.body.game === 'trivia-generator') {
+    console.log('--- TRIVIA GENERATOR AI REQUEST ---');
+    const { difficulty = 'medium', category = 'general' } = req.body;
+    
+    const fallbackQuestions = () => [
+      {
+        question: "What color do you get when you mix red and blue?",
+        options: ["Green", "Purple", "Orange", "Yellow"],
+        correct: 1
+      },
+      {
+        question: "How many legs does a spider have?",
+        options: ["6", "8", "10", "12"],
+        correct: 1
+      },
+      {
+        question: "What is the largest planet in our solar system?",
+        options: ["Earth", "Mars", "Jupiter", "Saturn"],
+        correct: 2
+      },
+      {
+        question: "Which animal is known as the 'King of the Jungle'?",
+        options: ["Tiger", "Lion", "Elephant", "Bear"],
+        correct: 1
+      },
+      {
+        question: "What do bees make?",
+        options: ["Milk", "Honey", "Butter", "Cheese"],
+        correct: 1
+      }
+    ];
+    
+    try {
+      const systemPrompt = `You are a trivia question generator for a family-friendly quiz game. Generate exactly 5 multiple choice questions for the "${category}" category at "${difficulty}" difficulty level. Each question should have exactly 4 options and specify which option is correct (0-3 index).
+
+Return your response as a JSON array in this exact format:
+[
+  {
+    "question": "Your question here?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correct": 1
+  }
+]
+
+Guidelines:
+- Questions should be appropriate for all ages
+- ${difficulty === 'easy' ? 'Use simple, well-known facts that children would know' : ''}
+- ${difficulty === 'medium' ? 'Use moderately challenging questions that require some knowledge' : ''}
+- ${difficulty === 'hard' ? 'Use more challenging questions that require deeper knowledge' : ''}
+- Make sure the correct answer index (0-3) accurately points to the right option
+- Ensure all questions are factually accurate`;
+
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Generate 5 ${difficulty} difficulty trivia questions about ${category}.` }
+      ];
+      
+      const response = await callAI(messages, 512, 0.7, fallbackQuestions);
+      
+      let questions;
+      if (typeof response === 'string') {
+        try {
+          // Clean up the response - remove any markdown formatting
+          let cleanResponse = response.trim();
+          cleanResponse = cleanResponse.replace(/^```[a-zA-Z]*\n?|```$/g, '');
+          cleanResponse = cleanResponse.replace(/```[a-zA-Z]*\n([\s\S]*?)\n```/, '$1');
+          
+          questions = JSON.parse(cleanResponse);
+          
+          // Validate the structure
+          if (!Array.isArray(questions) || questions.length !== 5) {
+            throw new Error('Invalid questions array');
+          }
+          
+          questions.forEach((q, index) => {
+            if (!q.question || !Array.isArray(q.options) || q.options.length !== 4 || 
+                typeof q.correct !== 'number' || q.correct < 0 || q.correct > 3) {
+              throw new Error(`Invalid question structure at index ${index}`);
+            }
+          });
+          
+        } catch (parseError) {
+          console.log('Failed to parse AI trivia response, using fallback questions');
+          questions = fallbackQuestions();
+        }
+      } else {
+        questions = response;
+      }
+      
+      console.log('Trivia questions generated successfully');
+      return res.json({ questions });
+      
+    } catch (err) {
+      console.error('Trivia Generator AI ERROR:', err.response?.data || err.message);
+      return res.json({ questions: fallbackQuestions(), error: 'AI call failed, used fallback questions.' });
+    }
+  }
+
   // Enhanced error logging for debugging
   console.error('Invalid /api/ask-ai request body - missing required fields');
   return res.status(400).json({
-    error: 'Missing or invalid request body. Must include either {history: array} or {board: array, possibleMoves: array} (flat or under checkers).',
+    error: 'Missing or invalid request body. Must include either {history: array}, {board: array, possibleMoves: array}, or {game: "trivia-generator", difficulty, category}.',
     received: Object.keys(req.body)
   });
 });

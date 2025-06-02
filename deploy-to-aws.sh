@@ -22,7 +22,7 @@ echo -e "${GREEN}🚀 Deploying Kidplay Arcade to AWS EC2 with Enhanced Verifica
 
 # Default EC2 IP and key path
 DEFAULT_EC2_IP="3.81.165.163"
-KEY_PATH="/Users/ssoward/.ssh/kidplay-arcade-key.pem"
+KEY_PATH="/Users/ssoward/.ssh/fs_soward_prviate_account.pem"
 
 # Use provided IP or default
 if [ -z "$1" ]; then
