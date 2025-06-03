@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import AnalyticsService from '../services/AnalyticsService';
 
 type Player = 'X' | 'O' | null;
 type Board = Player[];
@@ -9,6 +10,7 @@ const TicTacToe: React.FC = () => {
   const [winner, setWinner] = useState<Player | 'tie' | null>(null);
   const [isVsAI, setIsVsAI] = useState(true);
   const [scores, setScores] = useState({ X: 0, O: 0, ties: 0 });
+  const sessionStartTime = useRef<number>(Date.now());
 
   const winningCombinations = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
@@ -114,10 +116,36 @@ const TicTacToe: React.FC = () => {
     }
   }, [currentPlayer, board, isVsAI, winner, checkWinner, makeAIMove]);
 
+  // Analytics tracking - record game session when game ends
+  useEffect(() => {
+    if (winner) {
+      const analytics = AnalyticsService.getInstance();
+      const sessionDuration = Date.now() - sessionStartTime.current;
+      
+      analytics.recordGameSession({
+        gameType: 'TicTacToe',
+        duration: sessionDuration,
+        completed: true,
+        metadata: {
+          opponent: isVsAI ? 'AI' : 'Human',
+          outcome: winner === 'X' ? 'player_win' : winner === 'O' ? 'opponent_win' : 'tie',
+          playerScore: scores.X,
+          opponentScore: scores.O,
+          tieGames: scores.ties,
+          boardState: board.join('')
+        }
+      });
+      
+      // Reset the session start time when analytics are recorded
+      sessionStartTime.current = Date.now();
+    }
+  }, [winner, isVsAI, scores, board]);
+
   const resetGame = () => {
     setBoard(Array(9).fill(null));
     setCurrentPlayer('X');
     setWinner(null);
+    sessionStartTime.current = Date.now(); // Reset analytics session timer
   };
 
   const resetScores = () => {

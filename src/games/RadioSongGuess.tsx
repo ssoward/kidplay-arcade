@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AnalyticsService from '../services/AnalyticsService';
 
 interface GameState {
   currentSong: {
@@ -46,6 +47,8 @@ const RadioSongGuess: React.FC = () => {
     audio?: AbortController;
     hint?: AbortController;
   }>({});
+  
+  const [sessionStartTime, setSessionStartTime] = useState<number>(Date.now());
   
   const [state, setState] = useState<GameState>({
     currentSong: null,
@@ -474,6 +477,26 @@ const RadioSongGuess: React.FC = () => {
     }));
 
     saveStats(newStats);
+    
+    // Record analytics for each song attempt
+    const analytics = AnalyticsService.getInstance();
+    analytics.recordGameSession({
+      gameType: 'RadioSongGuess',
+      score: points,
+      duration: Math.floor((Date.now() - sessionStartTime) / 1000),
+      completed: false, // Each song is a mini-session within the larger game
+      metadata: {
+        isFullyCorrect: isFullyCorrect,
+        artistMatch: artistMatch,
+        titleMatch: titleMatch,
+        hintUsed: state.hintUsed,
+        genre: state.selectedGenre,
+        yearRange: state.yearRange,
+        streak: newStreak,
+        songTitle: state.currentSong.title,
+        songArtist: state.currentSong.artist
+      }
+    });
   };
 
   const nextSong = () => {
@@ -498,6 +521,26 @@ const RadioSongGuess: React.FC = () => {
   };
 
   const resetGame = () => {
+    // Record analytics for completed session if there were any songs played
+    if (state.totalSongs > 0) {
+      const analytics = AnalyticsService.getInstance();
+      analytics.recordGameSession({
+        gameType: 'RadioSongGuess',
+        score: state.score,
+        duration: Math.floor((Date.now() - sessionStartTime) / 1000),
+        completed: true,
+        metadata: {
+          totalSongs: state.totalSongs,
+          correctGuesses: state.correctGuesses,
+          streak: state.streak,
+          bestStreak: state.bestStreak,
+          accuracyRate: parseFloat(getAccuracyRate()),
+          favoriteGenre: state.selectedGenre,
+          yearRange: state.yearRange
+        }
+      });
+    }
+    
     setState({
       currentSong: null,
       userGuess: { artist: '', title: '' },
@@ -517,6 +560,7 @@ const RadioSongGuess: React.FC = () => {
       hintUsed: false
     });
     setUsedSongs([]);
+    setSessionStartTime(Date.now()); // Reset session timer
   };
 
   const getAccuracyRate = () => {

@@ -10,8 +10,9 @@
  * - Visual indicators for selected pieces, valid moves, and forced jumps
  * - Score tracking and game over detection
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import axios from 'axios';
+import AnalyticsService from '../services/AnalyticsService';
 // import './Chess.css';
 
 interface CheckersProps {
@@ -43,6 +44,7 @@ const Checkers: React.FC<CheckersProps> = ({ onExit }) => {
   const [player2Score, setPlayer2Score] = useState(12);
   const [vsAI, setVsAI] = useState(true);
   const [mustJumpFrom, setMustJumpFrom] = useState<Position | null>(null); // Track piece that must continue jumping
+  const sessionStartTime = useRef<number>(Date.now());
 
   function initializeBoard(): Board {
     const board: Board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
@@ -271,6 +273,27 @@ const Checkers: React.FC<CheckersProps> = ({ onExit }) => {
       }, 1000);
     }
   }, [vsAI, gameOver, currentPlayer, board, mustJumpFrom, getAllPossibleMoves, makeMove, getCaptures]);
+
+  // Analytics tracking - record game session when game ends
+  useEffect(() => {
+    if (gameOver && winner) {
+      const analytics = AnalyticsService.getInstance();
+      const sessionDuration = Date.now() - sessionStartTime.current;
+      
+      analytics.recordGameSession({
+        gameType: 'Checkers',
+        duration: sessionDuration,
+        completed: true,
+        metadata: {
+          vsAI,
+          finalScorePlayer1: player1Score,
+          finalScorePlayer2: player2Score,
+          winner: winner === 1 ? 'player' : 'ai',
+          outcome: winner === 1 ? 'player_win' : 'player_loss'
+        }
+      });
+    }
+  }, [gameOver, winner, vsAI, player1Score, player2Score]);
 
   // Backend AI move function
   const makeAIMove = async (from: Position | null, possibleMoves: Position[]) => {

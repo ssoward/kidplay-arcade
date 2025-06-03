@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Chess as ChessEngine } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
+import AnalyticsService from '../services/AnalyticsService';
 // import './Chess.css';
 
 const CHESS_SYSTEM_PROMPT =
@@ -16,6 +17,7 @@ const Chess: React.FC = () => {
   const [vsAI, setVsAI] = useState(true);
   const [currentPlayer, setCurrentPlayer] = useState(1);
   const [gameOver, setGameOver] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState<number>(Date.now());
 
   const safeGameMutate = (modify: (game: any) => void) => {
     setGame((g: any) => {
@@ -23,15 +25,44 @@ const Chess: React.FC = () => {
       modify(update);
       setFen(update.fen());
       setHistory(update.history({ verbose: false }));
-      setStatus(
-        update.isGameOver()
-          ? update.isCheckmate()
-            ? 'Checkmate!'
-            : update.isDraw()
-            ? 'Draw!'
-            : 'Game over'
-          : update.turn() === 'w' ? 'White to move' : 'Black to move'
-      );
+      
+      const isGameEnded = update.isGameOver();
+      const newStatus = isGameEnded
+        ? update.isCheckmate()
+          ? 'Checkmate!'
+          : update.isDraw()
+          ? 'Draw!'
+          : 'Game over'
+        : update.turn() === 'w' ? 'White to move' : 'Black to move';
+      
+      setStatus(newStatus);
+      
+      // Record analytics when game ends
+      if (isGameEnded && !gameOver) {
+        setGameOver(true);
+        const analytics = AnalyticsService.getInstance();
+        const duration = Math.floor((Date.now() - sessionStartTime) / 1000);
+        const moves = update.history().length;
+        
+        let gameResult = 'draw';
+        if (update.isCheckmate()) {
+          gameResult = update.turn() === 'w' ? 'black_wins' : 'white_wins';
+        }
+        
+        analytics.recordGameSession({
+          gameType: 'Chess',
+          score: moves, // Use move count as score
+          duration: duration,
+          completed: true,
+          metadata: {
+            gameMode: vsAI ? 'vs_ai' : 'vs_human',
+            result: gameResult,
+            totalMoves: moves,
+            winner: update.isCheckmate() ? (update.turn() === 'w' ? 'Black' : 'White') : 'Draw'
+          }
+        });
+      }
+      
       return update;
     });
   };
@@ -61,6 +92,7 @@ const Chess: React.FC = () => {
     setSelectedSquare(null);
     setGameOver(false);
     setCurrentPlayer(1);
+    setSessionStartTime(Date.now()); // Reset session timer
   }
 
   // Function to get AI move from backend

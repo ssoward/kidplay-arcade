@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import AnalyticsService from '../services/AnalyticsService';
 
 interface Question {
 	question: string;
 	options: string[];
 	answer: number;
 	id?: string; // For tracking used questions
+	source?: 'mtech' | 'ai' | 'fallback'; // Source indicator for labeling
 }
 
 interface AIQuestion {
@@ -19,391 +21,546 @@ interface MistakeQuestion extends Question {
 	timesWrong: number;
 }
 
-// The 62 priority Medical Assistant questions with scientific names where applicable
+// The 75 priority Medical Assistant questions with scientific names where applicable
 const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
 		id: 'arthroscopy',
 		question: 'What test is the visual inspection of a joint?',
 		options: ['Arthroscopy (Arthroskopein)', 'MRI (Magnetic Resonance Imaging)', 'X-ray (Radiography)', 'Ultrasound (Ultrasonography)'],
 		answer: 0,
+		source: 'mtech',
 	},
 	{
 		id: 'haversian-canals',
 		question: 'What are openings on the long bones where blood vessels and nerves pass through the periosteum called?',
 		options: ['Haversian Canals (Canalis Haversii)', 'Volkmann canals (Canalis Volkmann)', 'Lacunae (Lacunae osseae)', 'Canaliculi (Canaliculi ossei)'],
 		answer: 0,
+		source: 'mtech',
 	},
 	{
 		id: 'hemophilia',
 		question: 'What genetic disease is carried by females but only affects males?',
 		options: ['Huntington Disease (Huntington Chorea)', 'Klinefelter Disease (XXY Syndrome)', 'Hemophilia (Haemophilia)', 'Duchenne Muscular Dystrophy (DMD)'],
 		answer: 2,
+		source: 'mtech',
 	},
 	{
 		id: 'serum-globulin',
 		question: 'What is the role of serum globulin in blood plasma?',
 		options: ['Transport oxygen (Oxygen transport)', 'Assists in the formation of antibodies (Immunoglobulins)', 'Regulate blood sugar (Glucose homeostasis)', 'Clot blood (Hemostasis)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'tendons-ligaments',
 		question: 'True or False: Tendons stretch but ligaments don\'t',
 		options: ['True (Verum)', 'False (Falsum)'],
 		answer: 0,
+		source: 'mtech',
 	},
 	{
 		id: 'tb-causes',
 		question: 'What causes the influx of TB (Tuberculosis - Mycobacterium tuberculosis)?',
 		options: ['AIDS, use of drugs, influx of 3rd world immigrants (Multiple risk factors)', 'Poor sanitation only (Sanitation factors)', 'Air pollution (Environmental factors)', 'Genetic factors (Hereditary predisposition)'],
 		answer: 0,
+		source: 'mtech',
 	},
 	{
 		id: 'tricuspid-valve',
 		question: 'Where is the tricuspid valve (Valva tricuspidalis)?',
 		options: ['Between the left atrium and left ventricle (Mitral valve location)', 'Between the right atrium and right ventricle (Tricuspid valve location)', 'In the aorta (Aortic valve location)', 'In the pulmonary artery (Pulmonary valve location)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'snoring-percentage',
 		question: 'What percentage of men are habitual snorers?',
 		options: ['25% (Quarter prevalence)', '30% (Moderate prevalence)', '40% (High prevalence)', '50% (Half prevalence)'],
 		answer: 2,
+		source: 'mtech',
 	},
 	{
 		id: 'larynx-symptom',
 		question: 'What is the earliest symptom of a disease in the larynx?',
 		options: ['Cough (Tussis)', 'Hoarseness (Raucitas)', 'Fever (Pyrexia)', 'Difficulty swallowing (Dysphagia)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'rds-age',
 		question: 'What is the peak age for risk of RDS (Respiratory Distress Syndrome)?',
 		options: ['Full-term babies (Term neonates)', 'Babies born before 37-39 weeks (Preterm neonates)', 'Babies over 40 weeks (Post-term neonates)', 'All ages equally (Equal distribution)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'tnm-staging',
 		question: 'What does T in TNM stand for (Cancer Staging)?',
 		options: ['Type (Classification)', 'Tumor (Primary tumor)', 'Tissue (Tissue type)', 'Treatment (Therapeutic approach)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'cancer-treatment',
 		question: 'What is the oldest most common form of cancer treatment?',
 		options: ['Chemotherapy (Systemic therapy)', 'Radiation (Radiotherapy)', 'Surgery (Surgical resection)', 'Immunotherapy (Biological therapy)'],
 		answer: 2,
+		source: 'mtech',
 	},
 	{
 		id: 'surfactant',
 		question: 'What is the fatty molecule that keeps the lungs from collapsing?',
 		options: ['Mucus (Mucus secretion)', 'Surfactant (Pulmonary surfactant)', 'Albumin (Serum albumin)', 'Cholesterol (Cholesterolum)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'centrosome',
 		question: 'What organelle within the cell produces spindle fibers that attach to chromosomes during cellular division?',
 		options: ['Mitochondria', 'Centrosome (Centrosomal apparatus)', 'Nucleus', 'Ribosome'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'hypotonic-solution',
 		question: 'What happens to a blood cell when placed in a hypotonic solution?',
 		options: ['Shrink', 'Swell and burst (Hemolysis)', 'Stay the same', 'Divide'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'clubfoot',
 		question: 'What is the name for clubfoot?',
 		options: ['Scoliosis', 'Talipes (Talipes equinovarus)', 'Kyphosis', 'Lordosis'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'ciliary-body',
 		question: 'When the ciliary body contracts, what does it do to the lens?',
 		options: ['The lens becomes flatter', 'The lens becomes rounder (Accommodation)', 'No change', 'The lens becomes opaque'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'resting-potential',
 		question: 'What is normal resting potential (Membrane potential)?',
 		options: ['Positive inside, negative outside', 'Negative inside, positive outside', 'Neutral both sides', 'Variable'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'melanoma-age',
 		question: 'What is the peak age for malignant melanoma?',
 		options: ['30 years (Third decade)', '40 years (Fourth decade)', '50 years (Fifth decade)', '60 years (Sixth decade)'],
 		answer: 2,
+		source: 'mtech',
 	},
 	{
 		id: 'skin-body-weight',
 		question: 'What percent of body weight is skin?',
 		options: ['10% (One tenth)', '15% (Fifteen percent)', '20% (One fifth)', '25% (One quarter)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'tourettes-symptom',
 		question: 'What is the first symptom of tourettes?',
 		options: ['Vocal tics (Phonic tics)', 'Facial tic (Motor tics)', 'Hand movements (Manual tics)', 'Head jerking (Cephalic tics)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'brain-cavities',
 		question: 'What are spaces or cavities in the brain called?',
 		options: ['Sulci (Brain grooves)', 'Ventricles (Ventricular system)', 'Fissures (Deep grooves)', 'Lobes (Brain regions)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'nerve-impulse-speed',
 		question: 'How fast do nerve impulses travel?',
 		options: ['100 mph (160 km/h)', '200 mph (320 km/h)', '300 mph (480 km/h)', '400 mph (640 km/h)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'paralysis-types',
 		question: 'What are the two main groups of paralysis?',
 		options: ['Paraplegia, hemiplegia (Lower body/Half body paralysis)', 'Quadriplegia, monoplegia (Four limbs/Single limb)', 'Spastic, flaccid (Muscle tone types)', 'Upper, lower (Motor neuron types)'],
 		answer: 0,
+		source: 'mtech',
 	},
 	{
 		id: 'cellulitis',
 		question: 'What is cellulitis?',
 		options: ['Skin cancer (Malignant neoplasm)', 'Common skin infection caused by bacteria characterized by acute or diffuse or spreading inflammation of the skin and subcutaneous tissue (Bacterial cellulitis)', 'Viral infection (Viral dermatitis)', 'Fungal infection (Mycotic dermatitis)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'vitamins-skin',
 		question: 'What vitamins can pass through the skin?',
 		options: ['All vitamins (Complete vitamin absorption)', 'Not vitamin C (Excluding ascorbic acid)', 'Only fat-soluble vitamins (Lipophilic vitamins)', 'Only water-soluble vitamins (Hydrophilic vitamins)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'macular-degeneration',
 		question: 'What are the recommended modifications for age related macular degeneration (AMD)?',
 		options: ['Exercise more (Physical activity)', 'Quit smoking, take vitamins (Lifestyle modification)', 'Surgery only (Surgical intervention)', 'No treatment available (Palliative care)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'lymph-nodes',
 		question: 'What are lymph nodes full of?',
 		options: ['Red blood cells', 'T and B cells (Lymphocytes)', 'Platelets', 'Plasma'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'peyers-patch',
 		question: 'Where is the peyer\'s patch (Aggregated lymphoid nodules) located?',
 		options: ['Large intestine', 'Small intestine, ileum', 'Stomach', 'Liver'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'kidney-displacement',
 		question: 'Which kidney is displaced by the liver?',
 		options: ['Left kidney (Ren sinister)', 'Right kidney (Ren dexter)', 'Both kidneys (Bilateral kidneys)', 'Neither kidney (No displacement)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'urine-production',
 		question: 'Urine is produced by what?',
 		options: ['Filtration (Glomerular filtration)', 'Secretion', 'Absorption', 'Diffusion'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'upper-gi-series',
 		question: 'What is true about an upper GI series: It is painful, 2-3 day diet of high residue food, stop oral intake 2 hours prior, need to ingest barium?',
 		options: ['It is painful', '2-3 day diet of high residue food', 'Stop oral intake 2 hours prior', 'Barium (Barium sulfate)'],
 		answer: 3,
+		source: 'mtech',
 	},
 	{
 		id: 'thymus',
 		question: 'What is the 3 lobed structure under the sternum?',
 		options: ['Heart', 'Xiphoid process, thymus (Thymus gland)', 'Lung', 'Liver'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'thyroxine-gland',
 		question: 'What gland produces thyroxine (T4)?',
 		options: ['Parathyroid', 'Thyroid (Thyroid gland)', 'Adrenal', 'Pituitary'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'tot-procedure',
 		question: 'What is TOT (Transobturator tape) used for?',
 		options: ['Heart disease (Cardiac pathology)', 'Stress urinary incontinence (Urethral dysfunction)', 'Diabetes (Metabolic disorder)', 'Hypertension (High blood pressure)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'chronic-renal-failure',
 		question: 'Symptoms of chronic renal failure (CKD) include:',
 		options: ['Increased energy (Hyperactivity)', 'Tiredness, Vomiting, Hypertension (Uremic syndrome)', 'Weight gain only (Fluid retention)', 'Fever (Pyrexia)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'female-development',
 		question: 'Without what hormone, a female develops?',
 		options: ['Estrogen (Estradiol)', 'Testosterone (Male hormone)', 'Progesterone (Gestational hormone)', 'FSH (Follicle-stimulating hormone)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'klinefelter-test',
 		question: 'What is the test for klinefelters (Klinefelter syndrome)?',
 		options: ['Blood test', 'Chromosome analysis (Karyotyping)', 'Urine test', 'Physical exam'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'thyroid-location',
 		question: 'Where are the thyroid glands located?',
 		options: ['Chest (Thoracic cavity)', 'Throat (Neck - Cervical region)', 'Abdomen (Abdominal cavity)', 'Head (Cranial region)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'adrenal-hormones',
 		question: 'What do the adrenal glands (Suprarenal glands) produce?',
 		options: ['Only cortisol (Glucocorticoid only)', 'Androgens, estrogen, aldosterone, cortisol (Multiple hormones)', 'Only adrenaline (Epinephrine only)', 'Insulin (Pancreatic hormone)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'testicular-cancer-age',
 		question: 'What is the peak age for testicular cancer?',
 		options: ['10-19 yrs old (Second decade)', '20-34 yrs old (Third decade)', '35-49 yrs old (Fourth decade)', '50+ yrs old (Fifth decade+)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'sperm-hormone',
 		question: 'What hormone stimulates the production of sperm (Spermatogenesis)?',
 		options: ['LH (Luteinizing hormone)', 'FSH (Follicle-stimulating hormone)', 'Testosterone', 'GH (Growth hormone)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'heart-contraction',
 		question: 'What is the contraction phase of the heart?',
 		options: ['Diastole', 'Systole (Ventricular systole)', 'Relaxation', 'Filling'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'sarcoma',
 		question: 'Sarcoma is a tumor of what tissue?',
 		options: ['Epithelial tissue', 'Connective tissue (Mesenchymal tissue)', 'Nervous tissue', 'Muscle tissue only'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'salivary-amylase',
 		question: 'What enzyme in saliva breaks down carbohydrates?',
 		options: ['Pepsin', 'Amylase (Salivary amylase)', 'Lipase', 'Trypsin'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'ivp-allergy',
 		question: 'In IVP (Intravenous pyelogram) what can\'t the patient be allergic to?',
 		options: ['Shellfish', 'Iodine (Contrast dye)', 'Latex', 'Penicillin'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'nipd-exchanges',
 		question: 'How many overnight exchanges are there on NIPD (Nocturnal intermittent peritoneal dialysis)?',
 		options: ['1-2', '3-5', '6-8', '9-10'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'medulla-pyramid',
 		question: 'Is the medulla connected to the renal pyramid?',
 		options: ['Yes (Connected)', 'No (Not connected)'],
 		answer: 0,
+		source: 'mtech',
 	},
 	{
 		id: 'myoclonus',
 		question: 'Which condition has uncontrollable twitching and spasm of the muscles?',
 		options: ['Ataxia (Coordination disorder)', 'Myoclonus (Muscle jerks)', 'Dystonia (Muscle tone disorder)', 'Tremor (Rhythmic shaking)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'hyperparathyroidism',
 		question: 'What are the symptoms of Hyperparathyroidism?',
 		options: ['High energy, weight loss (Hyperthyroid symptoms)', 'Bone pain, muscle weakness, fatigue, depression, and increased urination or thirst (Hypercalcemia symptoms)', 'Fever, chills (Infection symptoms)', 'Rash, itching (Dermatological symptoms)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'glycogen-storage',
 		question: 'Where is glycogen stored?',
 		options: ['Kidney', 'Liver (Hepatic glycogen)', 'Heart', 'Brain'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'pituitary-attachment',
 		question: 'What organ is the pituitary gland (Hypophysis) attached to?',
 		options: ['Heart', 'Brain (Hypothalamus)', 'Liver', 'Kidney'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'prostatic-hypertrophy',
 		question: 'Initial symptoms of prostatic hypertrophy (BPH - Benign prostatic hyperplasia) include:',
 		options: ['Back pain (Dorsal pain)', 'Frequent urination (Urinary frequency)', 'Chest pain (Thoracic pain)', 'Headache (Cephalgia)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'gonorrhea-symptoms',
 		question: 'Symptom of gonorrhea (Neisseria gonorrhoeae) in men includes:',
 		options: ['Only fever (Pyrexia only)', 'Sore throat, dysuria, discharge from penis (Urethritis symptoms)', 'Only rash (Dermatitis only)', 'Joint pain (Arthralgia only)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'adipose-tissue',
 		question: 'What type of tissue is adipose tissue?',
 		options: ['Epithelial tissue', 'Connective tissue (Fat tissue)', 'Muscle tissue', 'Nervous tissue'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'cell-membrane',
 		question: 'What is the cell membrane (Plasma membrane) made up of?',
 		options: ['Only lipids', 'Protein and carbs (Phospholipid bilayer)', 'Only proteins', 'Only carbohydrates'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'cerebrospinal-fluid',
 		question: 'How much cerebrospinal fluid (CSF) is formed within the ventricles of the brain a day?',
 		options: ['250 mL (Quarter liter)', '500 mL (Half liter)', '750 mL (Three quarters liter)', '1000 mL (One liter)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'menieres-disease',
 		question: 'What condition is characterized by severe vertigo and tinnitus?',
 		options: ['Otitis media (Middle ear infection)', 'Meniere\'s disease (Endolymphatic hydrops)', 'Acoustic neuroma (Vestibular schwannoma)', 'Presbycusis (Age-related hearing loss)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'open-reduction',
 		question: 'What is the surgical procedure for involved fractures to repair the skin and surrounding tissue or to put small bone fragments back?',
 		options: ['Closed reduction (Non-surgical alignment)', 'Open reduction (ORIF)', 'Internal fixation (Hardware placement)', 'External fixation (External frame)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'triglycerides',
 		question: 'According to U.S. National Heart, Lung, and Blood Institute, triglycerides should be below what?',
 		options: ['150 mg/dL (Normal level)', '200 mg/dL (Borderline high)', '250 mg/dL (High level)', '300 mg/dL (Very high level)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'bleeding-time',
 		question: 'What is the normal bleeding range for template puncture method?',
 		options: ['Up to 5 min (Short duration)', 'Up to 8 min (Normal duration)', 'Up to 10 min (Extended duration)', 'Up to 15 min (Prolonged duration)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'pacemaker',
 		question: 'Small battery powered pulse generator with electrode catheters inserted into vein and threaded through vena cava describes what?',
 		options: ['Defibrillator (Cardioversion device)', 'Artificial pacemaker (Cardiac pacemaker)', 'Stent (Vascular support)', 'Catheter (Tube device)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'hordeolum',
 		question: 'What is another word for stye?',
 		options: ['Chalazion (Meibomian cyst)', 'Hordeolum (Eyelid infection)', 'Pterygium (Eye growth)', 'Pinguecula (Eye deposit)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'transverse-process',
 		question: 'What is the winglike projection of the vertebral column?',
 		options: ['Spinous process (Posterior projection)', 'Transverse process (Lateral projection)', 'Vertebral arch (Posterior arch)', 'Lamina (Arch component)'],
 		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'connective-tissue-categories',
+		question: 'What are the main categories of connective tissue?',
+		options: ['Loose, Dense, Specialized (Textus connectivus)', 'Hard, Soft, Medium (Density classification)', 'White, Red, Yellow (Color classification)', 'Internal, External, Mixed (Location classification)'],
+		answer: 0,
+		source: 'mtech',
+	},
+	{
+		id: 'consciousness-levels',
+		question: 'What are the different levels of consciousness?',
+		options: ['Alert, Drowsy, Stuporous, Comatose (Consciousness scale)', 'Active, Passive, Neutral (Activity levels)', 'High, Medium, Low (Intensity levels)', 'Normal, Abnormal, Critical (Status levels)'],
+		answer: 0,
+		source: 'mtech',
+	},
+	{
+		id: 'nervous-system-divisions',
+		question: 'What are the two main divisions of the nervous system?',
+		options: ['Upper, Lower (Anatomical division)', 'Central, Peripheral (CNS/PNS)', 'Sensory, Motor (Functional division)', 'Brain, Spinal (Location division)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'blepharitis-symptoms',
+		question: 'What are the main symptoms of blepharitis?',
+		options: ['Vision loss, Pain (Severe symptoms)', 'Red, swollen eyelids with crusting (Inflammatory symptoms)', 'Hearing loss, Dizziness (Unrelated symptoms)', 'Nausea, Vomiting (Systemic symptoms)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'herpes-zoster',
+		question: 'What is herpes zoster commonly known as?',
+		options: ['Chickenpox (Varicella)', 'Shingles (Zoster)', 'Cold sores (Herpes simplex)', 'Measles (Rubeola)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'baby-soft-spots',
+		question: 'What are the soft spots on a baby\'s head called?',
+		options: ['Sutures (Cranial joints)', 'Fontanelles (Fontanellae)', 'Fissures (Cranial gaps)', 'Plates (Cranial bones)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'bone-growth-points',
+		question: 'What are the growth points of long bones called?',
+		options: ['Diaphysis (Bone shaft)', 'Epiphyses (Growth plates)', 'Metaphysis (Transition zone)', 'Periosteum (Bone covering)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'emphysema-symptoms',
+		question: 'What are the main symptoms of emphysema?',
+		options: ['Fever, Chills (Infectious symptoms)', 'Shortness of breath, Chronic cough (Respiratory symptoms)', 'Joint pain, Swelling (Musculoskeletal symptoms)', 'Rash, Itching (Dermatological symptoms)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'pneumothorax-symptoms',
+		question: 'What are the symptoms of pneumothorax?',
+		options: ['Headache, Nausea (Neurological symptoms)', 'Sudden chest pain, Difficulty breathing (Respiratory emergency)', 'Stomach pain, Vomiting (Gastrointestinal symptoms)', 'Leg pain, Swelling (Circulatory symptoms)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'pyelonephritis-treatment',
+		question: 'What is the primary treatment for pyelonephritis?',
+		options: ['Surgery (Surgical intervention)', 'Antibiotics (Antimicrobial therapy)', 'Physical therapy (Rehabilitation)', 'Radiation (Radiotherapy)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'kussmaul-respirations',
+		question: 'What are Kussmaul respirations?',
+		options: ['Shallow, rapid breathing (Tachypnea)', 'Deep, rapid breathing pattern (Hyperpnea)', 'Slow, irregular breathing (Bradypnea)', 'Normal breathing pattern (Eupnea)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'body-cavity-division',
+		question: 'How is the body cavity divided?',
+		options: ['Front, Back (Anterior/Posterior)', 'Thoracic, Abdominal cavities (Cavitas thoracica/abdominalis)', 'Upper, Lower (Superior/Inferior)', 'Left, Right (Lateral division)'],
+		answer: 1,
+		source: 'mtech',
+	},
+	{
+		id: 'duck-waddle-condition',
+		question: 'What condition is associated with a duck waddle gait?',
+		options: ['Muscular dystrophy (Dystrophia muscularis)', 'Hip dysplasia or muscle weakness (Gait abnormality)', 'Broken leg (Fracture)', 'Arthritis (Joint inflammation)'],
+		answer: 1,
+		source: 'mtech',
 	},
 ];
 
@@ -414,60 +571,70 @@ const FALLBACK_MA_QUESTIONS: Question[] = [
 		question: 'Which chamber of the heart pumps blood to the lungs?',
 		options: ['Left atrium (Atrium sinistrum)', 'Right ventricle (Ventriculus dexter)', 'Left ventricle (Ventriculus sinister)', 'Right atrium (Atrium dextrum)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'largest-organ',
 		question: 'What is the largest organ in the human body?',
 		options: ['Heart (Cor)', 'Liver (Hepar)', 'Skin (Integumentary system)', 'Brain (Cerebrum)'],
 		answer: 2,
+		source: 'mtech',
 	},
 	{
 		id: 'bone-count',
 		question: 'How many bones are in the adult human body?',
 		options: ['186 bones (Fewer bones)', '206 bones (Standard count)', '226 bones (More bones)', '246 bones (Excessive count)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'central-nervous-system',
 		question: 'Which part of the nervous system includes the brain and spinal cord?',
 		options: ['Peripheral nervous system (PNS)', 'Central nervous system (CNS)', 'Autonomic nervous system (ANS)', 'Sympathetic nervous system (SNS)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'body-temperature',
 		question: 'What is the normal body temperature in Fahrenheit?',
 		options: ['96.8°F (Hypothermic)', '97.6°F (Below normal)', '98.6°F (Normal temperature)', '99.6°F (Febrile)'],
 		answer: 2,
+		source: 'mtech',
 	},
 	{
 		id: 'cardiac-muscle',
 		question: 'Which type of muscle is found in the heart?',
 		options: ['Skeletal muscle (Striated voluntary)', 'Smooth muscle (Non-striated involuntary)', 'Cardiac muscle (Myocardium)', 'Voluntary muscle (Skeletal type)'],
 		answer: 2,
+		source: 'mtech',
 	},
 	{
 		id: 'hypertension',
 		question: 'What is the medical term for high blood pressure?',
 		options: ['Hypotension (Low pressure)', 'Hypertension (High pressure)', 'Tachycardia (Fast heart rate)', 'Bradycardia (Slow heart rate)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'insulin-organ',
 		question: 'Which organ produces insulin?',
 		options: ['Liver (Hepar)', 'Kidney (Ren)', 'Pancreas (Islets of Langerhans)', 'Spleen (Lien)'],
 		answer: 2,
+		source: 'mtech',
 	},
 	{
 		id: 'nephron',
 		question: 'What is the basic functional unit of the kidney?',
 		options: ['Alveoli (Lung units)', 'Nephron (Kidney units)', 'Neuron (Nerve cells)', 'Villus (Intestinal projections)'],
 		answer: 1,
+		source: 'mtech',
 	},
 	{
 		id: 'red-blood-cells',
 		question: 'Which blood cells are responsible for carrying oxygen?',
 		options: ['White blood cells (Leukocytes)', 'Platelets (Thrombocytes)', 'Red blood cells (Erythrocytes)', 'Plasma cells (Antibody producers)'],
 		answer: 2,
+		source: 'mtech',
 	},
 ];
 
@@ -495,6 +662,7 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 	const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 	const [practicingMistakes, setPracticingMistakes] = useState(false);
 	const [playingOptionIndex, setPlayingOptionIndex] = useState<number | null>(null);
+	const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
 
 	// Load accumulative score from localStorage
 	const loadAccumulativeScore = () => {
@@ -637,6 +805,7 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 		setShowAnswer(false);
 		setFinished(false);
 		setLoadingQuestions(false);
+		setSessionStartTime(Date.now()); // Reset session timer for mistake practice
 	};
 
 	const handleOption = (idx: number) => {
@@ -675,6 +844,21 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 				});
 				setUsedQuestionIds(newUsedIds);
 				saveUsedQuestionIds(newUsedIds);
+
+				// Record analytics for completed session
+				const analytics = AnalyticsService.getInstance();
+				analytics.recordGameSession({
+					gameType: 'MedicalAssistant',
+					score: score,
+					duration: Math.floor((Date.now() - (sessionStartTime || Date.now())) / 1000),
+					completed: true,
+					metadata: {
+						totalQuestions: questions.length,
+						difficulty: difficulty,
+						questionsUsed: usedQuestionIds.size,
+						mistakesPracticed: practicingMistakes
+					}
+				});
 			}
 			setFinished(true);
 		}
@@ -687,6 +871,7 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 		setShowAnswer(false);
 		setFinished(false);
 		setPracticingMistakes(false);
+		setSessionStartTime(Date.now()); // Reset session timer
 		// Generate new questions
 		const newQuestions = await generateQuestions(5);
 		setQuestions(newQuestions);
@@ -740,7 +925,8 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 								id: `ai-${Date.now()}-${index}`,
 								question: q.question,
 								options: q.options,
-								answer: q.correct
+								answer: q.correct,
+								source: 'ai' as const
 							}));
 						
 						const remainingNeeded = numQuestions - selectedQuestions.length;
@@ -785,12 +971,18 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 
 	// Load questions when game starts or difficulty changes
 	useEffect(() => {
-		generateQuestions(5).then(setQuestions);
+		generateQuestions(5).then(questions => {
+			setQuestions(questions);
+			setSessionStartTime(Date.now()); // Start session timer
+		});
 	}, [difficulty]);
 
 	// Load accumulative score when component mounts
 	useEffect(() => {
 		loadAccumulativeScore();
+		if (!sessionStartTime) {
+			setSessionStartTime(Date.now()); // Initialize session timer if not set
+		}
 	}, []);
 
 	// Show loading screen while generating questions
@@ -931,6 +1123,11 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 			<div className="bg-white/80 rounded-2xl p-8 shadow-lg text-center max-w-lg w-full mb-4">
 				<div className="text-lg font-bold mb-2">
 					Question {current + 1} of {questions.length}
+					{questions[current].source === 'mtech' && (
+						<span className="ml-2 px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-600 text-white text-xs font-bold rounded-full">
+							MTech
+						</span>
+					)}
 				</div>
 				<div className="text-xl mb-6">{questions[current].question}</div>
 				
@@ -997,7 +1194,8 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 				</h3>
 				<ul className="text-gray-700 space-y-1 text-left">
 					<li>• Practice anatomy & physiology questions</li>
-					<li>• 26 priority questions from your study materials</li>
+					<li>• 75 priority questions from your study materials</li>
+					<li>• MTech label shows priority questions vs AI-generated</li>
 					<li>• AI-generated additional questions when needed</li>
 					<li>• Perfect for Medical Assistant exam prep!</li>
 				</ul>

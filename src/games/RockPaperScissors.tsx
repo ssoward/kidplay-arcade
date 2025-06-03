@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import AnalyticsService from '../services/AnalyticsService';
 
 const CHOICES = ['rock', 'paper', 'scissors'];
 
@@ -31,11 +32,15 @@ const RockPaperScissors: React.FC = () => {
   const [result, setResult] = useState<string | null>(null);
   const [score, setScore] = useState({ player: 0, ai: 0 });
   const [isPlaying, setIsPlaying] = useState(false);
+  const sessionStartTime = useRef<number>(Date.now());
+  const roundCount = useRef<number>(0);
 
   const play = (choice: string) => {
     if (isPlaying) return; // Prevent multiple clicks during animation
     
     setIsPlaying(true);
+    roundCount.current += 1;
+    
     const ai = getRandomChoice();
     setPlayerChoice(choice);
     setAiChoice(ai);
@@ -50,11 +55,67 @@ const RockPaperScissors: React.FC = () => {
     }, 2000);
   };
 
+  // Analytics tracking - record session every 10 rounds or when resetting
+  useEffect(() => {
+    if (roundCount.current > 0 && roundCount.current % 10 === 0) {
+      const analytics = AnalyticsService.getInstance();
+      const sessionDuration = Date.now() - sessionStartTime.current;
+      
+      const totalGames = score.player + score.ai + (roundCount.current - score.player - score.ai); // includes ties
+      let outcome = 'ongoing';
+      if (score.player > score.ai) outcome = 'player_leading';
+      else if (score.ai > score.player) outcome = 'player_behind';
+      else outcome = 'tied';
+      
+      analytics.recordGameSession({
+        gameType: 'RockPaperScissors',
+        duration: sessionDuration,
+        completed: false,
+        metadata: {
+          playerScore: score.player,
+          aiScore: score.ai,
+          totalRounds: roundCount.current,
+          totalGames,
+          winRate: totalGames > 0 ? (score.player / totalGames * 100).toFixed(1) + '%' : '0%',
+          outcome
+        }
+      });
+    }
+  }, [score.player, score.ai]);
+
   const reset = () => {
+    // Record final session before reset
+    if (roundCount.current > 0) {
+      const analytics = AnalyticsService.getInstance();
+      const sessionDuration = Date.now() - sessionStartTime.current;
+      const totalGames = score.player + score.ai + (roundCount.current - score.player - score.ai);
+      
+      let outcome = 'session_reset';
+      if (score.player > score.ai) outcome = 'player_won_session';
+      else if (score.ai > score.player) outcome = 'player_lost_session';
+      else outcome = 'session_tied';
+      
+      analytics.recordGameSession({
+        gameType: 'RockPaperScissors',
+        duration: sessionDuration,
+        completed: true,
+        metadata: {
+          playerScore: score.player,
+          aiScore: score.ai,
+          totalRounds: roundCount.current,
+          totalGames,
+          winRate: totalGames > 0 ? (score.player / totalGames * 100).toFixed(1) + '%' : '0%',
+          outcome
+        }
+      });
+    }
+    
     setPlayerChoice(null);
     setAiChoice(null);
     setResult(null);
     setScore({ player: 0, ai: 0 });
+    roundCount.current = 0;
+    sessionStartTime.current = Date.now();
   };
 
   return (

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import AnalyticsService from '../services/AnalyticsService';
 // import './Chess.css';
 
 interface Question {
@@ -65,6 +66,8 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 	const [loadingQuestions, setLoadingQuestions] = useState(true);
 	const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
 	const [category, setCategory] = useState<string>('general');
+	const sessionStartTime = useRef<number>(Date.now());
+	const questionStartTimes = useRef<number[]>([]);
 
 	// Load accumulative score from localStorage
 	const loadAccumulativeScore = () => {
@@ -105,7 +108,32 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 		if (showAnswer || questions.length === 0) return;
 		setSelected(idx);
 		setShowAnswer(true);
-		if (idx === questions[current].answer) setScore(score + 1);
+		
+		// Calculate answer time if we have a start time for this question
+		let answerTime = 0;
+		if (questionStartTimes.current[current]) {
+			answerTime = Date.now() - questionStartTimes.current[current];
+		}
+		
+		const isCorrect = idx === questions[current].answer;
+		if (isCorrect) setScore(score + 1);
+		
+		// Track question answer with analytics
+		const analytics = AnalyticsService.getInstance();
+		analytics.recordGameSession({
+			gameType: 'TriviaBlitz',
+			completed: false,
+			metadata: {
+				questionIndex: current,
+				question: questions[current].question,
+				answerSelected: questions[current].options[idx],
+				correctAnswer: questions[current].options[questions[current].answer],
+				isCorrect,
+				answerTimeMs: answerTime,
+				difficulty,
+				category
+			}
+		});
 	};
 
 	const next = () => {
@@ -113,6 +141,8 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 			setCurrent(current + 1);
 			setSelected(null);
 			setShowAnswer(false);
+			// Record start time for next question
+			questionStartTimes.current[current + 1] = Date.now();
 		} else {
 			// Game finished - update accumulative score
 			const newTotalScore = totalScore + score;
@@ -121,6 +151,25 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 			setGamesPlayed(newGamesPlayed);
 			saveAccumulativeScore(newTotalScore, newGamesPlayed);
 			setFinished(true);
+			
+			// Record complete game session
+			const analytics = AnalyticsService.getInstance();
+			const sessionDuration = Date.now() - sessionStartTime.current;
+			analytics.recordGameSession({
+				gameType: 'TriviaBlitz',
+				duration: sessionDuration,
+				score,
+				completed: true,
+				metadata: {
+					totalQuestions: questions.length,
+					correctAnswers: score,
+					accuracy: Math.round((score / questions.length) * 100) + '%',
+					difficulty,
+					category,
+					totalGamesPlayed: newGamesPlayed,
+					accumulativeScore: newTotalScore
+				}
+			});
 		}
 	};
 
@@ -197,7 +246,11 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 
 	// Load questions when game starts or settings change
 	useEffect(() => {
-		generateAIQuestions(5).then(setQuestions);
+		generateAIQuestions(5).then((newQuestions) => {
+			setQuestions(newQuestions);
+			// Record start time for first question
+			questionStartTimes.current[0] = Date.now();
+		});
 	}, [difficulty, category]);
 
 	// Load accumulative score when component mounts

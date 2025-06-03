@@ -2,36 +2,36 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const games = [
-  { id: 'sight-words', name: 'Sight Words', emoji: '👁️', category: 'Educational' },
+  { id: 'art-critic', name: 'Art Critic', emoji: '🎨', category: 'AI' },
   { id: 'atziri-world', name: "Atziri's World", emoji: '🌍', category: 'Educational' },
-  { id: 'chess', name: 'Chess', emoji: '♟️', category: 'Strategy' },
+  { id: 'blackjack', name: 'Blackjack', emoji: '🂡', category: 'Card' },
   { id: 'checkers', name: 'Checkers', emoji: '🔴', category: 'Strategy' },
-  { id: 'tic-tac-toe', name: 'Tic Tac Toe', emoji: '❌', category: 'Classic' },
-  { id: 'hangman', name: 'Hangman', emoji: '🎭', category: 'Word' },
-  { id: 'memory-match', name: 'Memory Match', emoji: '🧠', category: 'Memory' },
-  { id: 'dots-and-boxes', name: 'Dots and Boxes', emoji: '⬜', category: 'Strategy' },
+  { id: 'chess', name: 'Chess', emoji: '♟️', category: 'Strategy' },
+  { id: 'code-breaker', name: 'Code Breaker', emoji: '🔐', category: 'Puzzle' },
   { id: 'connect-four', name: 'Connect Four', emoji: '🔵', category: 'Strategy' },
-  { id: 'solitaire', name: 'Solitaire', emoji: '🃏', category: 'Card' },
-  { id: 'rock-paper-scissors', name: 'Rock Paper Scissors', emoji: '✂️', category: 'Classic' },
-  { id: 'slide-puzzle', name: 'Slide Puzzle', emoji: '🧩', category: 'Puzzle' },
+  { id: 'dots-and-boxes', name: 'Dots and Boxes', emoji: '⬜', category: 'Strategy' },
+  { id: 'dream-interpreter', name: 'Dream Interpreter', emoji: '💭', category: 'AI' },
+  { id: 'hangman', name: 'Hangman', emoji: '🎭', category: 'Word' },
+  { id: 'joke-maker', name: 'Joke Maker', emoji: '😂', category: 'AI' },
+  { id: 'maze-escape', name: 'Maze Escape', emoji: '🌀', category: 'Adventure' },
+  { id: 'medical-assistant', name: 'Medical Assistant', emoji: '🏥', category: 'Educational' },
+  { id: 'memory-match', name: 'Memory Match', emoji: '🧠', category: 'Memory' },
+  { id: 'mind-sweep', name: 'Mind Sweep', emoji: '💣', category: 'Puzzle' },
   { id: 'pong', name: 'Pong', emoji: '🏓', category: 'Arcade' },
   { id: 'quick-math', name: 'Quick Math', emoji: '🔢', category: 'Educational' },
-  { id: 'sudoku', name: 'Sudoku', emoji: '🔠', category: 'Puzzle' },
-  { id: 'blackjack', name: 'Blackjack', emoji: '🂡', category: 'Card' },
-  { id: 'trivia-blitz', name: 'Trivia Blitz', emoji: '❓', category: 'Trivia' },
-  { id: 'medical-assistant', name: 'Medical Assistant', emoji: '🏥', category: 'Educational' },
+  { id: 'riddle-master', name: 'Riddle Master', emoji: '🧙', category: 'AI' },
+  { id: 'rock-paper-scissors', name: 'Rock Paper Scissors', emoji: '✂️', category: 'Classic' },
+  { id: 'sight-words', name: 'Sight Words', emoji: '👁️', category: 'Educational' },
+  { id: 'slide-puzzle', name: 'Slide Puzzle', emoji: '🧩', category: 'Puzzle' },
+  { id: 'solitaire', name: 'Solitaire', emoji: '🃏', category: 'Card' },
+  { id: 'radio-song-guess', name: 'Song Quiz', emoji: '🎵', category: 'Music' },
   { id: 'spot-difference', name: 'Spot the Difference', emoji: '🔍', category: 'Puzzle' },
-  { id: 'maze-escape', name: 'Maze Escape', emoji: '🌀', category: 'Adventure' },
-  { id: 'mind-sweep', name: 'Mind Sweep', emoji: '💣', category: 'Puzzle' },
+  { id: 'storyteller', name: 'Storyteller', emoji: '📚', category: 'AI' },
+  { id: 'sudoku', name: 'Sudoku', emoji: '🔠', category: 'Puzzle' },
+  { id: 'tic-tac-toe', name: 'Tic Tac Toe', emoji: '❌', category: 'Classic' },
+  { id: 'trivia-blitz', name: 'Trivia Blitz', emoji: '❓', category: 'Trivia' },
   { id: 'twenty-questions', name: 'Twenty Questions', emoji: '🤔', category: 'AI' },
   { id: 'word-guess', name: 'Word Guess', emoji: '📝', category: 'Word' },
-  { id: 'storyteller', name: 'Storyteller', emoji: '📚', category: 'AI' },
-  { id: 'art-critic', name: 'Art Critic', emoji: '🎨', category: 'AI' },
-  { id: 'riddle-master', name: 'Riddle Master', emoji: '🧙', category: 'AI' },
-  { id: 'code-breaker', name: 'Code Breaker', emoji: '🔐', category: 'Puzzle' },
-  { id: 'dream-interpreter', name: 'Dream Interpreter', emoji: '💭', category: 'AI' },
-  { id: 'joke-maker', name: 'Joke Maker', emoji: '😂', category: 'AI' },
-  { id: 'radio-song-guess', name: 'Song Quiz', emoji: '🎵', category: 'Music' },
 ];
 
 const HomePage: React.FC = () => {
@@ -123,6 +123,11 @@ const HomePage: React.FC = () => {
           <div className="text-center text-gray-400">
             <p className="mb-2">Built with ❤️ for endless fun and learning</p>
             <p className="text-sm">Choose your adventure and let the games begin!</p>
+            <div className="mt-4">
+              <Link to="/admin" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+                Admin Portal
+              </Link>
+            </div>
           </div>
         </div>
       </div>
