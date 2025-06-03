@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 
 const gameComponentMap: Record<string, any> = {
   'sight-words': lazy(() => import('../games/SightWords')),
+  'atzris-world': lazy(() => import('../games/AtzrisWorld')),
   chess: lazy(() => import('../games/Chess')),
   checkers: lazy(() => import('../games/Checkers')),
   'tic-tac-toe': lazy(() => import('../games/TicTacToe')),
