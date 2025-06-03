@@ -77,7 +77,12 @@ async function comprehensiveAdminTest() {
     // Test 4: Data Export
     console.log('\n4️⃣ Testing Data Export...');
     const exportResponse = await fetch(`${baseUrl}/api/admin/export-data`, {
-      headers: { 'Authorization': `Bearer ${sessionToken}` }
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${sessionToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ timeRange: 'all' })
     });
 
     if (exportResponse.ok) {
