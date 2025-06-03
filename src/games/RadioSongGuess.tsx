@@ -224,6 +224,13 @@ const RadioSongGuess: React.FC = () => {
         const prompt = `Generate a real, popular song from the ${state.yearRange} era in the ${state.selectedGenre} genre that would be appropriate for kids to know about. 
         Create a fun, descriptive clue about the song without mentioning the artist name or song title directly.${usedSongsHistory}
         
+        IMPORTANT: Choose songs that are family-friendly and appropriate for children. Avoid songs with:
+        - Explicit language or profanity
+        - Sexual content or suggestive themes
+        - Violence or inappropriate subject matter
+        - Drug or alcohol references
+        - Any content that would not be suitable for kids under 13
+        
         ${state.selectedGenre === 'disney' ? 
         'For Disney songs, choose from classic Disney animated movies, Pixar films, Disney Channel movies, or Disney live-action films. Include songs from movies like The Little Mermaid, Lion King, Frozen, Moana, Encanto, Aladdin, Beauty and the Beast, Toy Story, etc.' : 
         ''}
@@ -239,9 +246,10 @@ const RadioSongGuess: React.FC = () => {
         
         Make sure the song is:
         - Actually a real, well-known song
-        - Appropriate for children (clean lyrics, positive themes)
+        - Completely appropriate for children (clean lyrics, positive themes, family-friendly content)
         - From the requested era and genre
         - Something kids might recognize from radio, movies, or popular culture
+        - Free of any explicit content, profanity, or inappropriate themes
         - NOT one of the previously used songs listed above`;
 
         const response = await fetch('/api/ask-ai', {
@@ -988,65 +996,6 @@ Format your response as a simple text hint, not JSON.`;
           >
             🔄 Reset Game
           </button>
-        </div>
-
-        {/* Instructions */}
-        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-white mb-4">🎯 How to Play Song Quiz</h2>
-          
-          <div className="space-y-4 text-white/90">
-            <div>
-              <h3 className="font-semibold text-lg">📝 Objective</h3>
-              <p>Read AI-generated song descriptions and guess the artist and song title to score points!</p>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg">🎮 How to Play</h3>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>Choose your preferred era/decade and music genre</li>
-                <li>Click "Get New Song" to receive a mysterious song description</li>
-                <li>Read the clues carefully - they describe the song without naming it</li>
-                <li>🎵 Listen to the 30-second audio preview if available (helps a lot!)</li>
-                <li>💡 Use the AI hint button if you're stuck (reduces points by 2)</li>
-                <li>Enter your guesses for both the artist name and song title</li>
-                <li>Submit your guess to see if you're right and earn points!</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg">⭐ Scoring System</h3>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li><strong>Perfect Match:</strong> 10 points (exact artist and title)</li>
-                <li><strong>Close Match:</strong> 5 points (partial or similar matches)</li>
-                <li><strong>Wrong Guess:</strong> 0 points (but don't give up!)</li>
-                <li>Build streaks by getting multiple songs correct in a row</li>
-                <li>Track your accuracy rate and try to improve over time</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg">🎵 Eras & Genres</h3>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li><strong>2020s:</strong> The newest hits you might hear today</li>
-                <li><strong>2010s:</strong> The golden era of many current favorites</li>
-                <li><strong>2000s, 1990s, 1980s:</strong> Classic songs that have stood the test of time</li>
-                <li><strong>1970s:</strong> Disco fever and classic rock legends</li>
-                <li><strong>Genres:</strong> Pop, rock, hip-hop, country, R&B, electronic, indie, alternative, and classic rock</li>
-                <li>Try different combinations to discover new music!</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg">💡 Strategy Tips</h3>
-              <ul className="list-disc list-inside space-y-1 ml-4">
-                <li>Pay attention to the description's mood and style clues</li>
-                <li>Think about popular songs from the selected era and genre</li>
-                <li>Don't worry about perfect spelling - close matches count!</li>
-                <li>Start with easier eras (2010s, 2000s) if you're new to the game</li>
-                <li>Remember: it's about having fun and discovering great music!</li>
-              </ul>
-            </div>
-          </div>
         </div>
 
         {/* Audio Preview - Hidden by default, shown when audio is available */}

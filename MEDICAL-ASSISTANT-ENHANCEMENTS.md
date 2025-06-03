@@ -22,13 +22,16 @@ Successfully enhanced the Medical Assistant (MA) game with four key features to 
   - Examples: "Arthroscopy (Arthroskopein)", "Tricuspid valve (Valva tricuspidalis)"
   - Added scientific names to all 10 FALLBACK_MA_QUESTIONS
 
-### 3. **Text-to-Speech for Answer Options**
+### 3. **Individual Text-to-Speech for Answer Options**
 - **Status**: ✅ COMPLETED
 - **Implementation**:
-  - Added `speakAnswerOptions()` function using Web Speech API
-  - Audio state management with `isPlayingAudio` to prevent overlapping
-  - Blue "🔊 Hear Options" button in game interface
-  - Reads all answer options aloud for accessibility
+  - Added `speakOption()` function using Web Speech API for individual options
+  - Audio state management with `isPlayingAudio` and `playingOptionIndex` to prevent overlapping
+  - Individual blue "🔊" buttons next to each answer option
+  - Reads specific answer option aloud when its button is clicked
+  - **Enhanced Audio**: Includes scientific names in speech using "also known as" format
+  - **Visual Format**: Displays scientific names with dashes instead of parentheses
+  - Enhanced accessibility with tooltip and visual feedback
 
 ### 4. **Mistake Practice System**
 - **Status**: ✅ COMPLETED
@@ -62,6 +65,7 @@ interface MistakeQuestion extends Question {
 - `mistakes: MistakeQuestion[]` - Stores incorrect answers
 - `showMistakes: boolean` - Controls mistake practice mode
 - `isPlayingAudio: boolean` - Manages speech state
+- `playingOptionIndex: number | null` - Tracks which option is being spoken
 - `practicingMistakes: boolean` - Practice mode flag
 
 ### Enhanced Data Persistence
@@ -82,8 +86,9 @@ interface MistakeQuestion extends Question {
 
 ### Game Interface
 - **Question Tracking Display**: Shows "X / Y Questions Covered" in progress
-- **Speech Button**: Blue "🔊 Hear Options" button with loading state
+- **Individual Audio Buttons**: Blue "🔊" buttons next to each answer option for targeted listening
 - **Enhanced Progress**: Visual progress bar with accumulative scoring
+- **Improved Layout**: Better spacing and accessibility with flex layout
 
 ### Finished Screen
 - **Mistake Practice Section**: Red section showing available mistakes to practice
@@ -91,9 +96,11 @@ interface MistakeQuestion extends Question {
 - **Smart Button Layout**: Properly grouped action buttons
 
 ### Accessibility Features
-- **Text-to-Speech**: Full audio support for answer options
-- **Visual Feedback**: Color-coded buttons and progress indicators
-- **Responsive Design**: Works on mobile and desktop
+- **Individual Text-to-Speech**: Audio support for each answer option individually with scientific terminology included
+- **Enhanced Display Format**: Scientific names displayed with dashes for better readability
+- **Visual Feedback**: Color-coded buttons and progress indicators with enhanced hover states
+- **Responsive Design**: Works on mobile and desktop with improved button layout
+- **Tooltip Support**: Helpful tooltips for audio buttons
 
 ## 🧠 Learning Enhancement Benefits
 

@@ -54,6 +54,58 @@ export default function RiddleMaster() {
     bestStreak: 0,
   });
 
+  // Levenshtein distance function for fuzzy matching
+  const levenshtein = (a: string, b: string): number => {
+    const m = a.length;
+    const n = b.length;
+    const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        if (a[i - 1] === b[j - 1]) {
+          dp[i][j] = dp[i - 1][j - 1];
+        } else {
+          dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        }
+      }
+    }
+    return dp[m][n];
+  };
+
+  // Fuzzy matching function for riddle answers
+  const isFuzzyMatch = (guess: string, answer: string): boolean => {
+    const g = guess.trim().toLowerCase();
+    const a = answer.trim().toLowerCase();
+    if (!g || !a) return false;
+    if (g === a) return true;
+    
+    // Allow for small Levenshtein distance (1 for short, 2 for longer)
+    const maxDist = a.length > 6 ? 2 : 1;
+    if (levenshtein(g, a) <= maxDist) return true;
+    
+    // Allow if guess is substring of answer or vice versa
+    if (a.includes(g) || g.includes(a)) return true;
+    
+    // Allow if all words in guess are in answer (subset matching)
+    const gWords = g.split(/\s+/).filter(word => word.length > 0);
+    const aWords = a.split(/\s+/).filter(word => word.length > 0);
+    
+    // If guess has all words from answer (missing words are OK)
+    if (gWords.every(word => aWords.some(aWord => 
+      aWord.includes(word) || word.includes(aWord) || levenshtein(word, aWord) <= 1
+    ))) return true;
+    
+    // If answer has all words from guess (extra words in answer are OK)
+    if (aWords.every(word => gWords.some(gWord => 
+      gWord.includes(word) || word.includes(gWord) || levenshtein(word, gWord) <= 1
+    ))) return true;
+    
+    return false;
+  };
+
   useEffect(() => {
     const savedScore = localStorage.getItem('riddlemaster-total-score');
     const savedStreak = localStorage.getItem('riddlemaster-best-streak');
@@ -170,7 +222,7 @@ export default function RiddleMaster() {
   };
 
   const checkAnswer = () => {
-    const isCorrect = state.userAnswer.toLowerCase().trim() === state.answer.toLowerCase().trim();
+    const isCorrect = isFuzzyMatch(state.userAnswer, state.answer);
     
     if (isCorrect) {
       const basePoints = state.difficulty === 'easy' ? 10 : state.difficulty === 'medium' ? 15 : 20;
@@ -223,7 +275,7 @@ export default function RiddleMaster() {
     localStorage.removeItem('riddlemaster-best-streak');
   };
 
-  const isCorrect = state.showAnswer && state.userAnswer.toLowerCase().trim() === state.answer.toLowerCase().trim();
+  const isCorrect = state.showAnswer && isFuzzyMatch(state.userAnswer, state.answer);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white p-6">

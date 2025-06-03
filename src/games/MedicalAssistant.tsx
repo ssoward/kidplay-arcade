@@ -24,13 +24,13 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
 		id: 'arthroscopy',
 		question: 'What test is the visual inspection of a joint?',
-		options: ['Arthroscopy (Arthroskopein)', 'MRI (Magnetic Resonance Imaging)', 'X-ray (Radiograph)', 'Ultrasound (Sonogram)'],
+		options: ['Arthroscopy (Arthroskopein)', 'MRI (Magnetic Resonance Imaging)', 'X-ray (Radiography)', 'Ultrasound (Ultrasonography)'],
 		answer: 0,
 	},
 	{
 		id: 'haversian-canals',
 		question: 'What are openings on the long bones where blood vessels and nerves pass through the periosteum called?',
-		options: ['Haversian Canals (Canalis Haversii)', 'Volkmann canals (Canalis Volkmann)', 'Lacunae', 'Canaliculi'],
+		options: ['Haversian Canals (Canalis Haversii)', 'Volkmann canals (Canalis Volkmann)', 'Lacunae (Lacunae osseae)', 'Canaliculi (Canaliculi ossei)'],
 		answer: 0,
 	},
 	{
@@ -42,61 +42,61 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
 		id: 'serum-globulin',
 		question: 'What is the role of serum globulin in blood plasma?',
-		options: ['Transport oxygen', 'Assists in the formation of antibodies (Immunoglobulins)', 'Regulate blood sugar', 'Clot blood'],
+		options: ['Transport oxygen (Oxygen transport)', 'Assists in the formation of antibodies (Immunoglobulins)', 'Regulate blood sugar (Glucose homeostasis)', 'Clot blood (Hemostasis)'],
 		answer: 1,
 	},
 	{
 		id: 'tendons-ligaments',
 		question: 'True or False: Tendons stretch but ligaments don\'t',
-		options: ['True', 'False'],
+		options: ['True (Verum)', 'False (Falsum)'],
 		answer: 0,
 	},
 	{
 		id: 'tb-causes',
 		question: 'What causes the influx of TB (Tuberculosis - Mycobacterium tuberculosis)?',
-		options: ['AIDS, use of drugs, influx of 3rd world immigrants', 'Poor sanitation only', 'Air pollution', 'Genetic factors'],
+		options: ['AIDS, use of drugs, influx of 3rd world immigrants (Multiple risk factors)', 'Poor sanitation only (Sanitation factors)', 'Air pollution (Environmental factors)', 'Genetic factors (Hereditary predisposition)'],
 		answer: 0,
 	},
 	{
 		id: 'tricuspid-valve',
 		question: 'Where is the tricuspid valve (Valva tricuspidalis)?',
-		options: ['Between the left atrium and left ventricle', 'Between the right atrium and right ventricle', 'In the aorta', 'In the pulmonary artery'],
+		options: ['Between the left atrium and left ventricle (Mitral valve location)', 'Between the right atrium and right ventricle (Tricuspid valve location)', 'In the aorta (Aortic valve location)', 'In the pulmonary artery (Pulmonary valve location)'],
 		answer: 1,
 	},
 	{
 		id: 'snoring-percentage',
 		question: 'What percentage of men are habitual snorers?',
-		options: ['25%', '30%', '40%', '50%'],
+		options: ['25% (Quarter prevalence)', '30% (Moderate prevalence)', '40% (High prevalence)', '50% (Half prevalence)'],
 		answer: 2,
 	},
 	{
 		id: 'larynx-symptom',
 		question: 'What is the earliest symptom of a disease in the larynx?',
-		options: ['Cough', 'Hoarseness', 'Fever', 'Difficulty swallowing'],
+		options: ['Cough (Tussis)', 'Hoarseness (Raucitas)', 'Fever (Pyrexia)', 'Difficulty swallowing (Dysphagia)'],
 		answer: 1,
 	},
 	{
 		id: 'rds-age',
 		question: 'What is the peak age for risk of RDS (Respiratory Distress Syndrome)?',
-		options: ['Full-term babies', 'Babies born before 37-39 weeks', 'Babies over 40 weeks', 'All ages equally'],
+		options: ['Full-term babies (Term neonates)', 'Babies born before 37-39 weeks (Preterm neonates)', 'Babies over 40 weeks (Post-term neonates)', 'All ages equally (Equal distribution)'],
 		answer: 1,
 	},
 	{
 		id: 'tnm-staging',
 		question: 'What does T in TNM stand for (Cancer Staging)?',
-		options: ['Type', 'Tumor', 'Tissue', 'Treatment'],
+		options: ['Type (Classification)', 'Tumor (Primary tumor)', 'Tissue (Tissue type)', 'Treatment (Therapeutic approach)'],
 		answer: 1,
 	},
 	{
 		id: 'cancer-treatment',
 		question: 'What is the oldest most common form of cancer treatment?',
-		options: ['Chemotherapy', 'Radiation', 'Surgery', 'Immunotherapy'],
+		options: ['Chemotherapy (Systemic therapy)', 'Radiation (Radiotherapy)', 'Surgery (Surgical resection)', 'Immunotherapy (Biological therapy)'],
 		answer: 2,
 	},
 	{
 		id: 'surfactant',
 		question: 'What is the fatty molecule that keeps the lungs from collapsing?',
-		options: ['Mucus', 'Surfactant (Pulmonary surfactant)', 'Albumin', 'Cholesterol'],
+		options: ['Mucus (Mucus secretion)', 'Surfactant (Pulmonary surfactant)', 'Albumin (Serum albumin)', 'Cholesterol (Cholesterolum)'],
 		answer: 1,
 	},
 	{
@@ -130,53 +130,57 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 		answer: 1,
 	},
 	{
+		id: 'melanoma-age',
 		question: 'What is the peak age for malignant melanoma?',
-		options: ['30', '40', '50', '60'],
+		options: ['30 years (Third decade)', '40 years (Fourth decade)', '50 years (Fifth decade)', '60 years (Sixth decade)'],
 		answer: 2,
 	},
 	{
+		id: 'skin-body-weight',
 		question: 'What percent of body weight is skin?',
-		options: ['10%', '15%', '20%', '25%'],
+		options: ['10% (One tenth)', '15% (Fifteen percent)', '20% (One fifth)', '25% (One quarter)'],
 		answer: 1,
 	},
 	{
+		id: 'tourettes-symptom',
 		question: 'What is the first symptom of tourettes?',
-		options: ['Vocal tics', 'Facial tic', 'Hand movements', 'Head jerking'],
+		options: ['Vocal tics (Phonic tics)', 'Facial tic (Motor tics)', 'Hand movements (Manual tics)', 'Head jerking (Cephalic tics)'],
 		answer: 1,
 	},
 	{
+		id: 'brain-cavities',
 		question: 'What are spaces or cavities in the brain called?',
-		options: ['Sulci', 'Ventricles', 'Fissures', 'Lobes'],
+		options: ['Sulci (Brain grooves)', 'Ventricles (Ventricular system)', 'Fissures (Deep grooves)', 'Lobes (Brain regions)'],
 		answer: 1,
 	},
 	{
 		id: 'nerve-impulse-speed',
 		question: 'How fast do nerve impulses travel?',
-		options: ['100 mph', '200 mph', '300 mph', '400 mph'],
+		options: ['100 mph (160 km/h)', '200 mph (320 km/h)', '300 mph (480 km/h)', '400 mph (640 km/h)'],
 		answer: 1,
 	},
 	{
 		id: 'paralysis-types',
 		question: 'What are the two main groups of paralysis?',
-		options: ['Paraplegia, hemiplegia', 'Quadriplegia, monoplegia', 'Spastic, flaccid', 'Upper, lower'],
+		options: ['Paraplegia, hemiplegia (Lower body/Half body paralysis)', 'Quadriplegia, monoplegia (Four limbs/Single limb)', 'Spastic, flaccid (Muscle tone types)', 'Upper, lower (Motor neuron types)'],
 		answer: 0,
 	},
 	{
 		id: 'cellulitis',
 		question: 'What is cellulitis?',
-		options: ['Skin cancer', 'Common skin infection caused by bacteria characterized by acute or diffuse or spreading inflammation of the skin and subcutaneous tissue', 'Viral infection', 'Fungal infection'],
+		options: ['Skin cancer (Malignant neoplasm)', 'Common skin infection caused by bacteria characterized by acute or diffuse or spreading inflammation of the skin and subcutaneous tissue (Bacterial cellulitis)', 'Viral infection (Viral dermatitis)', 'Fungal infection (Mycotic dermatitis)'],
 		answer: 1,
 	},
 	{
 		id: 'vitamins-skin',
 		question: 'What vitamins can pass through the skin?',
-		options: ['All vitamins', 'Not vitamin C', 'Only fat-soluble vitamins', 'Only water-soluble vitamins'],
+		options: ['All vitamins (Complete vitamin absorption)', 'Not vitamin C (Excluding ascorbic acid)', 'Only fat-soluble vitamins (Lipophilic vitamins)', 'Only water-soluble vitamins (Hydrophilic vitamins)'],
 		answer: 1,
 	},
 	{
 		id: 'macular-degeneration',
 		question: 'What are the recommended modifications for age related macular degeneration (AMD)?',
-		options: ['Exercise more', 'Quit smoking, take vitamins', 'Surgery only', 'No treatment available'],
+		options: ['Exercise more (Physical activity)', 'Quit smoking, take vitamins (Lifestyle modification)', 'Surgery only (Surgical intervention)', 'No treatment available (Palliative care)'],
 		answer: 1,
 	},
 	{
@@ -194,7 +198,7 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
 		id: 'kidney-displacement',
 		question: 'Which kidney is displaced by the liver?',
-		options: ['Left kidney', 'Right kidney', 'Both kidneys', 'Neither kidney'],
+		options: ['Left kidney (Ren sinister)', 'Right kidney (Ren dexter)', 'Both kidneys (Bilateral kidneys)', 'Neither kidney (No displacement)'],
 		answer: 1,
 	},
 	{
@@ -224,19 +228,19 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
 		id: 'tot-procedure',
 		question: 'What is TOT (Transobturator tape) used for?',
-		options: ['Heart disease', 'Stress urinary incontinence', 'Diabetes', 'Hypertension'],
+		options: ['Heart disease (Cardiac pathology)', 'Stress urinary incontinence (Urethral dysfunction)', 'Diabetes (Metabolic disorder)', 'Hypertension (High blood pressure)'],
 		answer: 1,
 	},
 	{
 		id: 'chronic-renal-failure',
 		question: 'Symptoms of chronic renal failure (CKD) include:',
-		options: ['Increased energy', 'Tiredness, Vomiting, Hypertension', 'Weight gain only', 'Fever'],
+		options: ['Increased energy (Hyperactivity)', 'Tiredness, Vomiting, Hypertension (Uremic syndrome)', 'Weight gain only (Fluid retention)', 'Fever (Pyrexia)'],
 		answer: 1,
 	},
 	{
 		id: 'female-development',
 		question: 'Without what hormone, a female develops?',
-		options: ['Estrogen', 'Testosterone', 'Progesterone', 'FSH'],
+		options: ['Estrogen (Estradiol)', 'Testosterone (Male hormone)', 'Progesterone (Gestational hormone)', 'FSH (Follicle-stimulating hormone)'],
 		answer: 1,
 	},
 	{
@@ -248,19 +252,19 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
 		id: 'thyroid-location',
 		question: 'Where are the thyroid glands located?',
-		options: ['Chest', 'Throat (Neck)', 'Abdomen', 'Head'],
+		options: ['Chest (Thoracic cavity)', 'Throat (Neck - Cervical region)', 'Abdomen (Abdominal cavity)', 'Head (Cranial region)'],
 		answer: 1,
 	},
 	{
 		id: 'adrenal-hormones',
 		question: 'What do the adrenal glands (Suprarenal glands) produce?',
-		options: ['Only cortisol', 'Androgens, estrogen, aldosterone, cortisol', 'Only adrenaline', 'Insulin'],
+		options: ['Only cortisol (Glucocorticoid only)', 'Androgens, estrogen, aldosterone, cortisol (Multiple hormones)', 'Only adrenaline (Epinephrine only)', 'Insulin (Pancreatic hormone)'],
 		answer: 1,
 	},
 	{
 		id: 'testicular-cancer-age',
 		question: 'What is the peak age for testicular cancer?',
-		options: ['10-19 yrs old', '20-34 yrs old', '35-49 yrs old', '50+ yrs old'],
+		options: ['10-19 yrs old (Second decade)', '20-34 yrs old (Third decade)', '35-49 yrs old (Fourth decade)', '50+ yrs old (Fifth decade+)'],
 		answer: 1,
 	},
 	{
@@ -302,19 +306,19 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
 		id: 'medulla-pyramid',
 		question: 'Is the medulla connected to the renal pyramid?',
-		options: ['Yes', 'No'],
+		options: ['Yes (Connected)', 'No (Not connected)'],
 		answer: 0,
 	},
 	{
 		id: 'myoclonus',
 		question: 'Which condition has uncontrollable twitching and spasm of the muscles?',
-		options: ['Ataxia', 'Myoclonus', 'Dystonia', 'Tremor'],
+		options: ['Ataxia (Coordination disorder)', 'Myoclonus (Muscle jerks)', 'Dystonia (Muscle tone disorder)', 'Tremor (Rhythmic shaking)'],
 		answer: 1,
 	},
 	{
 		id: 'hyperparathyroidism',
 		question: 'What are the symptoms of Hyperparathyroidism?',
-		options: ['High energy, weight loss', 'Bone pain, muscle weakness, fatigue, depression, and increased urination or thirst', 'Fever, chills', 'Rash, itching'],
+		options: ['High energy, weight loss (Hyperthyroid symptoms)', 'Bone pain, muscle weakness, fatigue, depression, and increased urination or thirst (Hypercalcemia symptoms)', 'Fever, chills (Infection symptoms)', 'Rash, itching (Dermatological symptoms)'],
 		answer: 1,
 	},
 	{
@@ -332,13 +336,13 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
 		id: 'prostatic-hypertrophy',
 		question: 'Initial symptoms of prostatic hypertrophy (BPH - Benign prostatic hyperplasia) include:',
-		options: ['Back pain', 'Frequent urination', 'Chest pain', 'Headache'],
+		options: ['Back pain (Dorsal pain)', 'Frequent urination (Urinary frequency)', 'Chest pain (Thoracic pain)', 'Headache (Cephalgia)'],
 		answer: 1,
 	},
 	{
 		id: 'gonorrhea-symptoms',
 		question: 'Symptom of gonorrhea (Neisseria gonorrhoeae) in men includes:',
-		options: ['Only fever', 'Sore throat, dysuria, discharge from penis', 'Only rash', 'Joint pain'],
+		options: ['Only fever (Pyrexia only)', 'Sore throat, dysuria, discharge from penis (Urethritis symptoms)', 'Only rash (Dermatitis only)', 'Joint pain (Arthralgia only)'],
 		answer: 1,
 	},
 	{
@@ -356,49 +360,49 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
 		id: 'cerebrospinal-fluid',
 		question: 'How much cerebrospinal fluid (CSF) is formed within the ventricles of the brain a day?',
-		options: ['250 mL', '500 mL', '750 mL', '1000 mL'],
+		options: ['250 mL (Quarter liter)', '500 mL (Half liter)', '750 mL (Three quarters liter)', '1000 mL (One liter)'],
 		answer: 1,
 	},
 	{
 		id: 'menieres-disease',
 		question: 'What condition is characterized by severe vertigo and tinnitus?',
-		options: ['Otitis media', 'Meniere\'s disease (Endolymphatic hydrops)', 'Acoustic neuroma', 'Presbycusis'],
+		options: ['Otitis media (Middle ear infection)', 'Meniere\'s disease (Endolymphatic hydrops)', 'Acoustic neuroma (Vestibular schwannoma)', 'Presbycusis (Age-related hearing loss)'],
 		answer: 1,
 	},
 	{
 		id: 'open-reduction',
 		question: 'What is the surgical procedure for involved fractures to repair the skin and surrounding tissue or to put small bone fragments back?',
-		options: ['Closed reduction', 'Open reduction (ORIF)', 'Internal fixation', 'External fixation'],
+		options: ['Closed reduction (Non-surgical alignment)', 'Open reduction (ORIF)', 'Internal fixation (Hardware placement)', 'External fixation (External frame)'],
 		answer: 1,
 	},
 	{
 		id: 'triglycerides',
 		question: 'According to U.S. National Heart, Lung, and Blood Institute, triglycerides should be below what?',
-		options: ['150 mg/dL', '200 mg/dL', '250 mg/dL', '300 mg/dL'],
+		options: ['150 mg/dL (Normal level)', '200 mg/dL (Borderline high)', '250 mg/dL (High level)', '300 mg/dL (Very high level)'],
 		answer: 1,
 	},
 	{
 		id: 'bleeding-time',
 		question: 'What is the normal bleeding range for template puncture method?',
-		options: ['Up to 5 min', 'Up to 8 min', 'Up to 10 min', 'Up to 15 min'],
+		options: ['Up to 5 min (Short duration)', 'Up to 8 min (Normal duration)', 'Up to 10 min (Extended duration)', 'Up to 15 min (Prolonged duration)'],
 		answer: 1,
 	},
 	{
 		id: 'pacemaker',
 		question: 'Small battery powered pulse generator with electrode catheters inserted into vein and threaded through vena cava describes what?',
-		options: ['Defibrillator', 'Artificial pacemaker (Cardiac pacemaker)', 'Stent', 'Catheter'],
+		options: ['Defibrillator (Cardioversion device)', 'Artificial pacemaker (Cardiac pacemaker)', 'Stent (Vascular support)', 'Catheter (Tube device)'],
 		answer: 1,
 	},
 	{
 		id: 'hordeolum',
 		question: 'What is another word for stye?',
-		options: ['Chalazion', 'Hordeolum', 'Pterygium', 'Pinguecula'],
+		options: ['Chalazion (Meibomian cyst)', 'Hordeolum (Eyelid infection)', 'Pterygium (Eye growth)', 'Pinguecula (Eye deposit)'],
 		answer: 1,
 	},
 	{
 		id: 'transverse-process',
 		question: 'What is the winglike projection of the vertebral column?',
-		options: ['Spinous process', 'Transverse process', 'Vertebral arch', 'Lamina'],
+		options: ['Spinous process (Posterior projection)', 'Transverse process (Lateral projection)', 'Vertebral arch (Posterior arch)', 'Lamina (Arch component)'],
 		answer: 1,
 	},
 ];
@@ -408,61 +412,61 @@ const FALLBACK_MA_QUESTIONS: Question[] = [
 	{
 		id: 'heart-lungs-chamber',
 		question: 'Which chamber of the heart pumps blood to the lungs?',
-		options: ['Left atrium', 'Right ventricle', 'Left ventricle', 'Right atrium'],
+		options: ['Left atrium (Atrium sinistrum)', 'Right ventricle (Ventriculus dexter)', 'Left ventricle (Ventriculus sinister)', 'Right atrium (Atrium dextrum)'],
 		answer: 1,
 	},
 	{
 		id: 'largest-organ',
 		question: 'What is the largest organ in the human body?',
-		options: ['Heart', 'Liver', 'Skin (Integumentary system)', 'Brain'],
+		options: ['Heart (Cor)', 'Liver (Hepar)', 'Skin (Integumentary system)', 'Brain (Cerebrum)'],
 		answer: 2,
 	},
 	{
 		id: 'bone-count',
 		question: 'How many bones are in the adult human body?',
-		options: ['186', '206', '226', '246'],
+		options: ['186 bones (Fewer bones)', '206 bones (Standard count)', '226 bones (More bones)', '246 bones (Excessive count)'],
 		answer: 1,
 	},
 	{
 		id: 'central-nervous-system',
 		question: 'Which part of the nervous system includes the brain and spinal cord?',
-		options: ['Peripheral nervous system', 'Central nervous system (CNS)', 'Autonomic nervous system', 'Sympathetic nervous system'],
+		options: ['Peripheral nervous system (PNS)', 'Central nervous system (CNS)', 'Autonomic nervous system (ANS)', 'Sympathetic nervous system (SNS)'],
 		answer: 1,
 	},
 	{
 		id: 'body-temperature',
 		question: 'What is the normal body temperature in Fahrenheit?',
-		options: ['96.8°F', '97.6°F', '98.6°F', '99.6°F'],
+		options: ['96.8°F (Hypothermic)', '97.6°F (Below normal)', '98.6°F (Normal temperature)', '99.6°F (Febrile)'],
 		answer: 2,
 	},
 	{
 		id: 'cardiac-muscle',
 		question: 'Which type of muscle is found in the heart?',
-		options: ['Skeletal muscle', 'Smooth muscle', 'Cardiac muscle (Myocardium)', 'Voluntary muscle'],
+		options: ['Skeletal muscle (Striated voluntary)', 'Smooth muscle (Non-striated involuntary)', 'Cardiac muscle (Myocardium)', 'Voluntary muscle (Skeletal type)'],
 		answer: 2,
 	},
 	{
 		id: 'hypertension',
 		question: 'What is the medical term for high blood pressure?',
-		options: ['Hypotension', 'Hypertension', 'Tachycardia', 'Bradycardia'],
+		options: ['Hypotension (Low pressure)', 'Hypertension (High pressure)', 'Tachycardia (Fast heart rate)', 'Bradycardia (Slow heart rate)'],
 		answer: 1,
 	},
 	{
 		id: 'insulin-organ',
 		question: 'Which organ produces insulin?',
-		options: ['Liver', 'Kidney', 'Pancreas (Islets of Langerhans)', 'Spleen'],
+		options: ['Liver (Hepar)', 'Kidney (Ren)', 'Pancreas (Islets of Langerhans)', 'Spleen (Lien)'],
 		answer: 2,
 	},
 	{
 		id: 'nephron',
 		question: 'What is the basic functional unit of the kidney?',
-		options: ['Alveoli', 'Nephron', 'Neuron', 'Villus'],
+		options: ['Alveoli (Lung units)', 'Nephron (Kidney units)', 'Neuron (Nerve cells)', 'Villus (Intestinal projections)'],
 		answer: 1,
 	},
 	{
 		id: 'red-blood-cells',
 		question: 'Which blood cells are responsible for carrying oxygen?',
-		options: ['White blood cells', 'Platelets', 'Red blood cells (Erythrocytes)', 'Plasma cells'],
+		options: ['White blood cells (Leukocytes)', 'Platelets (Thrombocytes)', 'Red blood cells (Erythrocytes)', 'Plasma cells (Antibody producers)'],
 		answer: 2,
 	},
 ];
@@ -490,6 +494,7 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 	const [showMistakes, setShowMistakes] = useState(false);
 	const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 	const [practicingMistakes, setPracticingMistakes] = useState(false);
+	const [playingOptionIndex, setPlayingOptionIndex] = useState<number | null>(null);
 
 	// Load accumulative score from localStorage
 	const loadAccumulativeScore = () => {
@@ -549,28 +554,40 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 		}
 	};
 
-	// Text-to-speech function for answer options
-	const speakAnswerOptions = () => {
+	// Text-to-speech function for individual answer options
+	const speakOption = (optionText: string, optionIndex: number) => {
 		if (isPlayingAudio || questions.length === 0) return;
 		
 		setIsPlayingAudio(true);
-		const question = questions[current];
-		const textToSpeak = `The answer options are: ${question.options.map((opt, idx) => 
-			`Option ${idx + 1}: ${opt.replace(/\([^)]*\)/g, '').trim()}`
-		).join('. ')}`;
+		setPlayingOptionIndex(optionIndex);
+		
+		// Include scientific names in speech by converting parentheses to spoken format
+		const textToSpeak = optionText.replace(/\(([^)]*)\)/g, ', also known as $1,');
 		
 		if ('speechSynthesis' in window) {
 			const utterance = new SpeechSynthesisUtterance(textToSpeak);
 			utterance.rate = 0.8;
 			utterance.pitch = 1;
 			utterance.volume = 0.8;
-			utterance.onend = () => setIsPlayingAudio(false);
-			utterance.onerror = () => setIsPlayingAudio(false);
+			utterance.onend = () => {
+				setIsPlayingAudio(false);
+				setPlayingOptionIndex(null);
+			};
+			utterance.onerror = () => {
+				setIsPlayingAudio(false);
+				setPlayingOptionIndex(null);
+			};
 			speechSynthesis.speak(utterance);
 		} else {
 			setIsPlayingAudio(false);
+			setPlayingOptionIndex(null);
 			alert('Text-to-speech is not supported in your browser.');
 		}
+	};
+
+	// Helper function to format text for display (replace parentheses with dashes)
+	const formatDisplayText = (text: string) => {
+		return text.replace(/\(([^)]*)\)/g, ' - $1');
 	};
 
 	// Reset accumulative score
@@ -915,41 +932,39 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 				<div className="text-lg font-bold mb-2">
 					Question {current + 1} of {questions.length}
 				</div>
-				<div className="text-xl mb-4">{questions[current].question}</div>
+				<div className="text-xl mb-6">{questions[current].question}</div>
 				
-				{/* Speech button for answer options */}
-				<div className="mb-4">
-					<button
-						onClick={speakAnswerOptions}
-						disabled={isPlayingAudio}
-						className={`px-4 py-2 rounded-lg font-bold text-sm shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 ${
-							isPlayingAudio 
-								? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-								: 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-400'
-						}`}
-					>
-						{isPlayingAudio ? '🔊 Speaking...' : '🔊 Hear Options'}
-					</button>
-				</div>
-				
-				<div className="flex flex-col gap-2">
+				<div className="flex flex-col gap-3">
 					{questions[current].options.map((opt: string, idx: number) => (
-						<button
-							key={idx}
-							className={`px-4 py-2 rounded-lg font-bold text-lg shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 ${
-								showAnswer
-									? idx === questions[current].answer
-										? 'bg-green-400 text-white focus:ring-green-300'
-										: idx === selected
-										? 'bg-red-400 text-white focus:ring-red-300'
-										: 'bg-gray-200 text-gray-700 focus:ring-gray-400'
-									: 'bg-gray-200 text-gray-700 hover:bg-green-200 focus:ring-green-400'
-							}`}
-							onClick={() => handleOption(idx)}
-							disabled={showAnswer}
-						>
-							{opt}
-						</button>
+						<div key={idx} className="flex items-center gap-2">
+							<button
+								className={`flex-1 px-4 py-3 rounded-lg font-bold text-lg shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 ${
+									showAnswer
+										? idx === questions[current].answer
+											? 'bg-green-400 text-white focus:ring-green-300'
+											: idx === selected
+											? 'bg-red-400 text-white focus:ring-red-300'
+											: 'bg-gray-200 text-gray-700 focus:ring-gray-400'
+										: 'bg-gray-200 text-gray-700 hover:bg-green-200 focus:ring-green-400'
+								}`}
+								onClick={() => handleOption(idx)}
+								disabled={showAnswer}
+							>
+								{formatDisplayText(opt)}
+							</button>
+							<button
+								onClick={() => speakOption(opt, idx)}
+								disabled={isPlayingAudio}
+								className={`px-3 py-3 rounded-lg font-bold text-sm shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 min-w-[50px] ${
+									isPlayingAudio && playingOptionIndex === idx
+										? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+										: 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-400'
+								}`}
+								title="Listen to this option"
+							>
+								{isPlayingAudio && playingOptionIndex === idx ? '🔊' : '🔊'}
+							</button>
+						</div>
 					))}
 				</div>
 				{showAnswer && (
