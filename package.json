@@ -17,6 +17,7 @@
     "chess.js": "^1.2.0",
     "framer-motion": "^12.15.0",
     "lucide-react": "^0.511.0",
+    "node-fetch": "^3.3.2",
     "react": "^19.1.0",
     "react-chessboard": "^4.7.3",
     "react-dom": "^19.1.0",
