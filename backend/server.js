@@ -217,36 +217,210 @@ app.post('/api/ask-ai', aiLimiter, aiValidationRules, validateRequest, async (re
     console.log('--- TRIVIA GENERATOR AI REQUEST ---');
     const { difficulty = 'medium', category = 'general' } = req.body;
     
-    const fallbackQuestions = () => [
-      {
-        question: "What color do you get when you mix red and blue?",
-        options: ["Green", "Purple", "Orange", "Yellow"],
-        correct: 1
-      },
-      {
-        question: "How many legs does a spider have?",
-        options: ["6", "8", "10", "12"],
-        correct: 1
-      },
-      {
-        question: "What is the largest planet in our solar system?",
-        options: ["Earth", "Mars", "Jupiter", "Saturn"],
-        correct: 2
-      },
-      {
-        question: "Which animal is known as the 'King of the Jungle'?",
-        options: ["Tiger", "Lion", "Elephant", "Bear"],
-        correct: 1
-      },
-      {
-        question: "What do bees make?",
-        options: ["Milk", "Honey", "Butter", "Cheese"],
-        correct: 1
+    const fallbackQuestions = () => {
+      if (category === 'medical-assistant') {
+        // Priority Medical Assistant questions (the new 26 questions)
+        const priorityMAQuestions = [
+          {
+            question: "What type of tissue is adipose tissue?",
+            options: ["Epithelial", "Connective", "Muscle", "Nervous"],
+            correct: 1
+          },
+          {
+            question: "What is another term for club foot?",
+            options: ["Talipes equinovarus", "Scoliosis", "Kyphosis", "Lordosis"],
+            correct: 0
+          },
+          {
+            question: "Which organelle within a cell provides spindle fibers attached to chromosomes during cell division?",
+            options: ["Mitochondria", "Centriole", "Golgi apparatus", "Endoplasmic reticulum"],
+            correct: 1
+          },
+          {
+            question: "Which test is used to evaluate balance?",
+            options: ["Romberg test", "Weber test", "Rinne test", "Snellen test"],
+            correct: 0
+          },
+          {
+            question: "What is the fungal infection affecting the mucous membranes, often in the mouth or throat?",
+            options: ["Tinea pedis", "Candidiasis", "Ringworm", "Impetigo"],
+            correct: 1
+          },
+          {
+            question: "Which tissue specializes in secretion for the body?",
+            options: ["Connective tissue", "Epithelial tissue", "Muscle tissue", "Nervous tissue"],
+            correct: 1
+          },
+          {
+            question: "Which of the following is NOT a form of meningitis?",
+            options: ["Bacterial meningitis", "Viral meningitis", "Fungal meningitis", "Parasitic encephalitis"],
+            correct: 3
+          },
+          {
+            question: "Which organ found in the nose is responsible for smell?",
+            options: ["Olfactory epithelium", "Nasal conchae", "Septum", "Turbinates"],
+            correct: 0
+          },
+          {
+            question: "Which is NOT a common cause of furuncles?",
+            options: ["Staphylococcus aureus", "Poor hygiene", "Candida albicans", "Friction or pressure"],
+            correct: 2
+          },
+          {
+            question: "Which statement is true about asymmetrical melanoma?",
+            options: ["It is always benign", "It has uneven borders and shape", "It is smaller than 6 mm", "It is never itchy or painful"],
+            correct: 1
+          },
+          {
+            question: "A scrape and burn are what type of skin laceration?",
+            options: ["Abrasion", "Incision", "Puncture", "Avulsion"],
+            correct: 0
+          },
+          {
+            question: "What are the three different types of parasitic lice?",
+            options: ["Head lice, body lice, pubic lice", "Head lice, scabies, fleas", "Body lice, ticks, mites", "Pubic lice, bedbugs, chiggers"],
+            correct: 0
+          },
+          {
+            question: "Immovable joints are called?",
+            options: ["Synarthroses", "Diarthroses", "Amphiarthroses", "Synovial joints"],
+            correct: 0
+          },
+          {
+            question: "What is the tough membrane covering the bone called?",
+            options: ["Periosteum", "Endosteum", "Perichondrium", "Meniscus"],
+            correct: 0
+          },
+          {
+            question: "What is the triangular muscle that protects the shoulder?",
+            options: ["Trapezius", "Deltoid", "Pectoralis major", "Latissimus dorsi"],
+            correct: 1
+          },
+          {
+            question: "Which disease is diagnosed when pain is present in 11 out of 18 points for at least 3 months?",
+            options: ["Rheumatoid arthritis", "Fibromyalgia", "Osteoarthritis", "Lupus"],
+            correct: 1
+          },
+          {
+            question: "What is the first symptom of chronic laryngitis?",
+            options: ["Hoarseness", "Fever", "Chest pain", "Nasal congestion"],
+            correct: 0
+          },
+          {
+            question: "Blood flows from the left ventricle to which structure?",
+            options: ["Aorta", "Pulmonary artery", "Right atrium", "Left atrium"],
+            correct: 0
+          },
+          {
+            question: "A tear in the lining of the anus is called what?",
+            options: ["Anal fissure", "Hemorrhoid", "Fistula", "Diverticulitis"],
+            correct: 0
+          },
+          {
+            question: "True or False: Vitamin D is used to absorb calcium.",
+            options: ["True", "False"],
+            correct: 0
+          },
+          {
+            question: "Which enzyme is contained in saliva?",
+            options: ["Amylase", "Lipase", "Pepsin", "Trypsin"],
+            correct: 0
+          },
+          {
+            question: "In irritable bowel syndrome (IBS), stool typically appears as what?",
+            options: ["Loose or watery", "Hard and pellet-like", "Bloody", "Both loose/watery and hard/pellet-like"],
+            correct: 3
+          },
+          {
+            question: "Which structures have walls that are one cell thick?",
+            options: ["Capillaries", "Arteries", "Veins", "Arterioles"],
+            correct: 0
+          },
+          {
+            question: "What is a capillary bed?",
+            options: ["A network of capillaries where blood exchanges substances with tissues", "A group of veins returning blood to the heart", "A layer of connective tissue in the skin", "A muscle layer in the arteries"],
+            correct: 0
+          },
+          {
+            question: "What is the pathway for both food and air in the body?",
+            options: ["Pharynx", "Trachea", "Esophagus", "Larynx"],
+            correct: 0
+          },
+          {
+            question: "What is another term for duck waddle gait?",
+            options: ["Waddling gait", "Ataxic gait", "Spastic gait", "Steppage gait"],
+            correct: 0
+          }
+        ];
+        
+        // Return a random selection from the priority questions first
+        const shuffled = [...priorityMAQuestions].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 5);
       }
-    ];
+      
+      return [
+        {
+          question: "What color do you get when you mix red and blue?",
+          options: ["Green", "Purple", "Orange", "Yellow"],
+          correct: 1
+        },
+        {
+          question: "How many legs does a spider have?",
+          options: ["6", "8", "10", "12"],
+          correct: 1
+        },
+        {
+          question: "What is the largest planet in our solar system?",
+          options: ["Earth", "Mars", "Jupiter", "Saturn"],
+          correct: 2
+        },
+        {
+          question: "Which animal is known as the 'King of the Jungle'?",
+          options: ["Tiger", "Lion", "Elephant", "Bear"],
+          correct: 1
+        },
+        {
+          question: "What do bees make?",
+          options: ["Milk", "Honey", "Butter", "Cheese"],
+          correct: 1
+        }
+      ];
+    };
     
     try {
-      const systemPrompt = `You are a trivia question generator for a family-friendly quiz game. Generate exactly 5 multiple choice questions for the "${category}" category at "${difficulty}" difficulty level. Each question should have exactly 4 options and specify which option is correct (0-3 index).
+      let systemPrompt;
+      
+      if (category === 'medical-assistant') {
+        systemPrompt = `You are a Medical Assistant (MA) trivia question generator for healthcare students and professionals. Generate exactly 5 multiple choice questions focused on anatomy and physiology at "${difficulty}" difficulty level. Each question should have exactly 4 options and specify which option is correct (0-3 index).
+
+Focus on topics relevant to Medical Assistants, including:
+- Human anatomy (body systems, organs, bones, muscles)
+- Physiology (how body systems function)
+- Basic medical terminology
+- Vital signs and measurements
+- Medical procedures and patient care basics
+- Disease processes and symptoms
+- Medical ethics and patient safety
+
+Return your response as a JSON array in this exact format:
+[
+  {
+    "question": "Your medical question here?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correct": 1
+  }
+]
+
+Guidelines:
+- Questions should be appropriate for Medical Assistant certification level
+- ${difficulty === 'easy' ? 'Use basic anatomy and physiology concepts that entry-level MAs should know' : ''}
+- ${difficulty === 'medium' ? 'Use moderately challenging concepts that require solid MA knowledge' : ''}
+- ${difficulty === 'hard' ? 'Use advanced concepts that challenge experienced MAs and healthcare professionals' : ''}
+- Include proper medical terminology
+- Make sure all medical information is factually accurate
+- Focus on practical knowledge that MAs use in clinical settings`;
+      } else {
+        systemPrompt = `You are a trivia question generator for a family-friendly quiz game. Generate exactly 5 multiple choice questions for the "${category}" category at "${difficulty}" difficulty level. Each question should have exactly 4 options and specify which option is correct (0-3 index).
 
 Return your response as a JSON array in this exact format:
 [
@@ -264,10 +438,14 @@ Guidelines:
 - ${difficulty === 'hard' ? 'Use more challenging questions that require deeper knowledge' : ''}
 - Make sure the correct answer index (0-3) accurately points to the right option
 - Ensure all questions are factually accurate`;
+      }
 
       const messages = [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Generate 5 ${difficulty} difficulty trivia questions about ${category}.` }
+        { role: 'user', content: category === 'medical-assistant' 
+          ? `Generate 5 ${difficulty} difficulty Medical Assistant questions about anatomy and physiology.`
+          : `Generate 5 ${difficulty} difficulty trivia questions about ${category}.`
+        }
       ];
       
       const response = await callAI(messages, 512, 0.7, fallbackQuestions);

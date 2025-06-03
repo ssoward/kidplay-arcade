@@ -47,6 +47,8 @@ const FALLBACK_QUESTIONS: Question[] = [
 	},
 ];
 
+
+
 interface TriviaBlitzProps {
 	onExit: () => void;
 }
@@ -139,6 +141,7 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 		try {
 			console.log(`Generating ${numQuestions} ${difficulty} ${category} trivia questions...`);
 
+			// Use AI generation for all categories
 			const response = await axios.post('/api/ask-ai', {
 				game: 'trivia-generator',
 				category: category,
@@ -180,8 +183,8 @@ const TriviaBlitz: React.FC<TriviaBlitzProps> = ({ onExit }) => {
 				console.error('Error parsing AI trivia questions:', error);
 			}
 			
-			// Fallback to predefined questions if AI generation fails
-			console.log('Using fallback trivia questions');
+			// Final fallback to general questions
+			console.log('Using general fallback trivia questions');
 			return FALLBACK_QUESTIONS.slice(0, numQuestions);
 			
 		} catch (error) {

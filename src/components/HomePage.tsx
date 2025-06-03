@@ -18,6 +18,7 @@ const games = [
   { id: 'sudoku', name: 'Sudoku', emoji: '🔠', category: 'Puzzle' },
   { id: 'blackjack', name: 'Blackjack', emoji: '🂡', category: 'Card' },
   { id: 'trivia-blitz', name: 'Trivia Blitz', emoji: '❓', category: 'Trivia' },
+  { id: 'medical-assistant', name: 'Medical Assistant', emoji: '🏥', category: 'Educational' },
   { id: 'spot-difference', name: 'Spot the Difference', emoji: '🔍', category: 'Puzzle' },
   { id: 'maze-escape', name: 'Maze Escape', emoji: '🌀', category: 'Adventure' },
   { id: 'mind-sweep', name: 'Mind Sweep', emoji: '💣', category: 'Puzzle' },

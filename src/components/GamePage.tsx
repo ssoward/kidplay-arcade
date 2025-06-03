@@ -18,6 +18,7 @@ const gameComponentMap: Record<string, any> = {
   sudoku: lazy(() => import('../games/Sudoku')),
   blackjack: lazy(() => import('../games/Blackjack')),
   'trivia-blitz': lazy(() => import('../games/TriviaBlitz')),
+  'medical-assistant': lazy(() => import('../games/MedicalAssistant')),
   'spot-difference': lazy(() => import('../games/SpotDifference')),
   'maze-escape': lazy(() => import('../games/MazeEscape')),
   'mind-sweep': lazy(() => import('../games/MindSweep')),
