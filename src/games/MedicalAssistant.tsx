@@ -13,137 +13,327 @@ interface AIQuestion {
 	correct: number;
 }
 
-// The 26 priority Medical Assistant questions you provided
+// The 62 priority Medical Assistant questions
 const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
-		question: 'What type of tissue is adipose tissue?',
-		options: ['Epithelial', 'Connective', 'Muscle', 'Nervous'],
-		answer: 1,
-	},
-	{
-		question: 'What is another term for club foot?',
-		options: ['Talipes equinovarus', 'Scoliosis', 'Kyphosis', 'Lordosis'],
+		question: 'What test is the visual inspection of a joint?',
+		options: ['Arthroscopy', 'MRI', 'X-ray', 'Ultrasound'],
 		answer: 0,
 	},
 	{
-		question: 'Which organelle within a cell provides spindle fibers attached to chromosomes during cell division?',
-		options: ['Mitochondria', 'Centriole', 'Golgi apparatus', 'Endoplasmic reticulum'],
-		answer: 1,
-	},
-	{
-		question: 'Which test is used to evaluate balance?',
-		options: ['Romberg test', 'Weber test', 'Rinne test', 'Snellen test'],
+		question: 'What are openings on the long bones where blood vessels and nerves pass through the periosteum called?',
+		options: ['Haversian Canals', 'Volkmann canals', 'Lacunae', 'Canaliculi'],
 		answer: 0,
 	},
 	{
-		question: 'What is the fungal infection affecting the mucous membranes, often in the mouth or throat?',
-		options: ['Tinea pedis', 'Candidiasis', 'Ringworm', 'Impetigo'],
-		answer: 1,
-	},
-	{
-		question: 'Which tissue specializes in secretion for the body?',
-		options: ['Connective tissue', 'Epithelial tissue', 'Muscle tissue', 'Nervous tissue'],
-		answer: 1,
-	},
-	{
-		question: 'Which of the following is NOT a form of meningitis?',
-		options: ['Bacterial meningitis', 'Viral meningitis', 'Fungal meningitis', 'Parasitic encephalitis'],
-		answer: 3,
-	},
-	{
-		question: 'Which organ found in the nose is responsible for smell?',
-		options: ['Olfactory epithelium', 'Nasal conchae', 'Septum', 'Turbinates'],
-		answer: 0,
-	},
-	{
-		question: 'Which is NOT a common cause of furuncles?',
-		options: ['Staphylococcus aureus', 'Poor hygiene', 'Candida albicans', 'Friction or pressure'],
+		question: 'What genetic disease is carried by females but only affects males?',
+		options: ['Huntington Disease', 'Klinefelter Disease', 'Hemophilia', 'Duchenne Muscular Dystrophy'],
 		answer: 2,
 	},
 	{
-		question: 'Which statement is true about asymmetrical melanoma?',
-		options: ['It is always benign', 'It has uneven borders and shape', 'It is smaller than 6 mm', 'It is never itchy or painful'],
+		question: 'What is the role of serum globulin in blood plasma?',
+		options: ['Transport oxygen', 'Assists in the formation of antibodies', 'Regulate blood sugar', 'Clot blood'],
 		answer: 1,
 	},
 	{
-		question: 'A scrape and burn are what type of skin laceration?',
-		options: ['Abrasion', 'Incision', 'Puncture', 'Avulsion'],
-		answer: 0,
-	},
-	{
-		question: 'What are the three different types of parasitic lice?',
-		options: ['Head lice, body lice, pubic lice', 'Head lice, scabies, fleas', 'Body lice, ticks, mites', 'Pubic lice, bedbugs, chiggers'],
-		answer: 0,
-	},
-	{
-		question: 'Immovable joints are called?',
-		options: ['Synarthroses', 'Diarthroses', 'Amphiarthroses', 'Synovial joints'],
-		answer: 0,
-	},
-	{
-		question: 'What is the tough membrane covering the bone called?',
-		options: ['Periosteum', 'Endosteum', 'Perichondrium', 'Meniscus'],
-		answer: 0,
-	},
-	{
-		question: 'What is the triangular muscle that protects the shoulder?',
-		options: ['Trapezius', 'Deltoid', 'Pectoralis major', 'Latissimus dorsi'],
-		answer: 1,
-	},
-	{
-		question: 'Which disease is diagnosed when pain is present in 11 out of 18 points for at least 3 months?',
-		options: ['Rheumatoid arthritis', 'Fibromyalgia', 'Osteoarthritis', 'Lupus'],
-		answer: 1,
-	},
-	{
-		question: 'What is the first symptom of chronic laryngitis?',
-		options: ['Hoarseness', 'Fever', 'Chest pain', 'Nasal congestion'],
-		answer: 0,
-	},
-	{
-		question: 'Blood flows from the left ventricle to which structure?',
-		options: ['Aorta', 'Pulmonary artery', 'Right atrium', 'Left atrium'],
-		answer: 0,
-	},
-	{
-		question: 'A tear in the lining of the anus is called what?',
-		options: ['Anal fissure', 'Hemorrhoid', 'Fistula', 'Diverticulitis'],
-		answer: 0,
-	},
-	{
-		question: 'True or False: Vitamin D is used to absorb calcium.',
+		question: 'True or False: Tendons stretch but ligaments don\'t',
 		options: ['True', 'False'],
 		answer: 0,
 	},
 	{
-		question: 'Which enzyme is contained in saliva?',
-		options: ['Amylase', 'Lipase', 'Pepsin', 'Trypsin'],
+		question: 'What causes the influx of TB?',
+		options: ['AIDS, use of drugs, influx of 3rd world immigrants', 'Poor sanitation only', 'Air pollution', 'Genetic factors'],
 		answer: 0,
 	},
 	{
-		question: 'In irritable bowel syndrome (IBS), stool typically appears as what?',
-		options: ['Loose or watery', 'Hard and pellet-like', 'Bloody', 'Both loose/watery and hard/pellet-like'],
+		question: 'Where is the tricuspid valve?',
+		options: ['Between the left atrium and left ventricle', 'Between the right atrium and right ventricle', 'In the aorta', 'In the pulmonary artery'],
+		answer: 1,
+	},
+	{
+		question: 'What percentage of men are habitual snorers?',
+		options: ['25%', '30%', '40%', '50%'],
+		answer: 2,
+	},
+	{
+		question: 'What is the earliest symptom of a disease in the larynx?',
+		options: ['Cough', 'Hoarseness', 'Fever', 'Difficulty swallowing'],
+		answer: 1,
+	},
+	{
+		question: 'What is the peak age for risk of RDS?',
+		options: ['Full-term babies', 'Babies born before 37-39 weeks', 'Babies over 40 weeks', 'All ages equally'],
+		answer: 1,
+	},
+	{
+		question: 'What does T in TNM stand for?',
+		options: ['Type', 'Tumor', 'Tissue', 'Treatment'],
+		answer: 1,
+	},
+	{
+		question: 'What is the oldest most common form of cancer treatment?',
+		options: ['Chemotherapy', 'Radiation', 'Surgery', 'Immunotherapy'],
+		answer: 2,
+	},
+	{
+		question: 'What is the fatty molecule that keeps the lungs from collapsing?',
+		options: ['Mucus', 'Surfactant', 'Albumin', 'Cholesterol'],
+		answer: 1,
+	},
+	{
+		question: 'What organelle within the cell produces spindle fibers that attach to chromosomes during cellular division?',
+		options: ['Mitochondria', 'Centrosome', 'Nucleus', 'Ribosome'],
+		answer: 1,
+	},
+	{
+		question: 'What happens to a blood cell when placed in a hypotonic solution?',
+		options: ['Shrink', 'Swell and burst', 'Stay the same', 'Divide'],
+		answer: 1,
+	},
+	{
+		question: 'What is the name for clubfoot?',
+		options: ['Scoliosis', 'Talipes', 'Kyphosis', 'Lordosis'],
+		answer: 1,
+	},
+	{
+		question: 'When the ciliary body contracts, what does it do to the lens?',
+		options: ['The lens becomes flatter', 'The lens becomes rounder', 'No change', 'The lens becomes opaque'],
+		answer: 1,
+	},
+	{
+		question: 'What is normal resting potential?',
+		options: ['Positive inside, negative outside', 'Negative inside, positive outside', 'Neutral both sides', 'Variable'],
+		answer: 1,
+	},
+	{
+		question: 'What is the peak age for malignant melanoma?',
+		options: ['30', '40', '50', '60'],
+		answer: 2,
+	},
+	{
+		question: 'What percent of body weight is skin?',
+		options: ['10%', '15%', '20%', '25%'],
+		answer: 1,
+	},
+	{
+		question: 'What is the first symptom of tourettes?',
+		options: ['Vocal tics', 'Facial tic', 'Hand movements', 'Head jerking'],
+		answer: 1,
+	},
+	{
+		question: 'What are spaces or cavities in the brain called?',
+		options: ['Sulci', 'Ventricles', 'Fissures', 'Lobes'],
+		answer: 1,
+	},
+	{
+		question: 'How fast do nerve impulses travel?',
+		options: ['100 mph', '200 mph', '300 mph', '400 mph'],
+		answer: 1,
+	},
+	{
+		question: 'What are the two main groups of paralysis?',
+		options: ['Paraplegia, hemiplegia', 'Quadriplegia, monoplegia', 'Spastic, flaccid', 'Upper, lower'],
+		answer: 0,
+	},
+	{
+		question: 'What is cellulitis?',
+		options: ['Skin cancer', 'Common skin infection caused by bacteria characterized by acute or diffuse or spreading inflammation of the skin and subcutaneous tissue', 'Viral infection', 'Fungal infection'],
+		answer: 1,
+	},
+	{
+		question: 'What vitamins can pass through the skin?',
+		options: ['All vitamins', 'Not vitamin C', 'Only fat-soluble vitamins', 'Only water-soluble vitamins'],
+		answer: 1,
+	},
+	{
+		question: 'What are the recommended modifications for age related macular degeneration?',
+		options: ['Exercise more', 'Quit smoking, take vitamins', 'Surgery only', 'No treatment available'],
+		answer: 1,
+	},
+	{
+		question: 'What are lymph nodes full of?',
+		options: ['Red blood cells', 'T and B cells', 'Platelets', 'Plasma'],
+		answer: 1,
+	},
+	{
+		question: 'Where is the peyer\'s patch located?',
+		options: ['Large intestine', 'Small intestine, ileum', 'Stomach', 'Liver'],
+		answer: 1,
+	},
+	{
+		question: 'Which kidney is displaced by the liver?',
+		options: ['Left kidney', 'Right kidney', 'Both kidneys', 'Neither kidney'],
+		answer: 1,
+	},
+	{
+		question: 'Urine is produced by what?',
+		options: ['Filtration', 'Secretion', 'Absorption', 'Diffusion'],
+		answer: 1,
+	},
+	{
+		question: 'What is true about an upper GI series: It is painful, 2-3 day diet of high residue food, stop oral intake 2 hours prior, need to ingest barium?',
+		options: ['It is painful', '2-3 day diet of high residue food', 'Stop oral intake 2 hours prior', 'Barium'],
 		answer: 3,
 	},
 	{
-		question: 'Which structures have walls that are one cell thick?',
-		options: ['Capillaries', 'Arteries', 'Veins', 'Arterioles'],
+		question: 'What is the 3 lobed structure under the sternum?',
+		options: ['Heart', 'Xiphoid process, thymus', 'Lung', 'Liver'],
+		answer: 1,
+	},
+	{
+		question: 'What gland produces thyroxine?',
+		options: ['Parathyroid', 'Thyroid', 'Adrenal', 'Pituitary'],
+		answer: 1,
+	},
+	{
+		question: 'What is TOT used for?',
+		options: ['Heart disease', 'Stress urinary incontinence', 'Diabetes', 'Hypertension'],
+		answer: 1,
+	},
+	{
+		question: 'Symptoms of chronic renal failure include:',
+		options: ['Increased energy', 'Tiredness, Vomiting, Hypertension', 'Weight gain only', 'Fever'],
+		answer: 1,
+	},
+	{
+		question: 'Without what hormone, a female develops?',
+		options: ['Estrogen', 'Testosterone', 'Progesterone', 'FSH'],
+		answer: 1,
+	},
+	{
+		question: 'What is the test for klinefelters?',
+		options: ['Blood test', 'Chromosome analysis', 'Urine test', 'Physical exam'],
+		answer: 1,
+	},
+	{
+		question: 'Where are the thyroid glands located?',
+		options: ['Chest', 'Throat', 'Abdomen', 'Head'],
+		answer: 1,
+	},
+	{
+		question: 'What do the adrenal glands produce?',
+		options: ['Only cortisol', 'Androgens, estrogen, aldosterone, cortisol', 'Only adrenaline', 'Insulin'],
+		answer: 1,
+	},
+	{
+		question: 'What is the peak age for testicular cancer?',
+		options: ['10-19 yrs old', '20-34 yrs old', '35-49 yrs old', '50+ yrs old'],
+		answer: 1,
+	},
+	{
+		question: 'What hormone stimulates the production of sperm?',
+		options: ['LH', 'FSH', 'Testosterone', 'GH'],
+		answer: 1,
+	},
+	{
+		question: 'What is the contraction phase of the heart?',
+		options: ['Diastole', 'Systole', 'Relaxation', 'Filling'],
+		answer: 1,
+	},
+	{
+		question: 'Sarcoma is a tumor of what tissue?',
+		options: ['Epithelial tissue', 'Connective tissue', 'Nervous tissue', 'Muscle tissue only'],
+		answer: 1,
+	},
+	{
+		question: 'What enzyme in saliva breaks down carbohydrates?',
+		options: ['Pepsin', 'Amylase', 'Lipase', 'Trypsin'],
+		answer: 1,
+	},
+	{
+		question: 'In IVP what can\'t the patient be allergic to?',
+		options: ['Shellfish', 'Iodine', 'Latex', 'Penicillin'],
+		answer: 1,
+	},
+	{
+		question: 'How many overnight exchanges are there on NIPD?',
+		options: ['1-2', '3-5', '6-8', '9-10'],
+		answer: 1,
+	},
+	{
+		question: 'Is the medulla connected to the renal pyramid?',
+		options: ['Yes', 'No'],
 		answer: 0,
 	},
 	{
-		question: 'What is a capillary bed?',
-		options: ['A network of capillaries where blood exchanges substances with tissues', 'A group of veins returning blood to the heart', 'A layer of connective tissue in the skin', 'A muscle layer in the arteries'],
-		answer: 0,
+		question: 'Which condition has uncontrollable twitching and spasm of the muscles?',
+		options: ['Ataxia', 'Myoclonus', 'Dystonia', 'Tremor'],
+		answer: 1,
 	},
 	{
-		question: 'What is the pathway for both food and air in the body?',
-		options: ['Pharynx', 'Trachea', 'Esophagus', 'Larynx'],
-		answer: 0,
+		question: 'What are the symptoms of Hyperparathyroidism?',
+		options: ['High energy, weight loss', 'Bone pain, muscle weakness, fatigue, depression, and increased urination or thirst', 'Fever, chills', 'Rash, itching'],
+		answer: 1,
 	},
 	{
-		question: 'What is another term for duck waddle gait?',
-		options: ['Waddling gait', 'Ataxic gait', 'Spastic gait', 'Steppage gait'],
-		answer: 0,
+		question: 'Where is glycogen stored?',
+		options: ['Kidney', 'Liver', 'Heart', 'Brain'],
+		answer: 1,
+	},
+	{
+		question: 'What organ is the pituitary gland attached to?',
+		options: ['Heart', 'Brain', 'Liver', 'Kidney'],
+		answer: 1,
+	},
+	{
+		question: 'Initial symptoms of prostatic hypertrophy include:',
+		options: ['Back pain', 'Frequent urination', 'Chest pain', 'Headache'],
+		answer: 1,
+	},
+	{
+		question: 'Symptom of gonorrhea in men includes:',
+		options: ['Only fever', 'Sore throat, dysuria, discharge from penis', 'Only rash', 'Joint pain'],
+		answer: 1,
+	},
+	{
+		question: 'What type of tissue is adipose tissue?',
+		options: ['Epithelial tissue', 'Connective tissue', 'Muscle tissue', 'Nervous tissue'],
+		answer: 1,
+	},
+	{
+		question: 'What is the cell membrane made up of?',
+		options: ['Only lipids', 'Protein and carbs', 'Only proteins', 'Only carbohydrates'],
+		answer: 1,
+	},
+	{
+		question: 'How much cerebrospinal fluid is formed within the ventricles of the brain a day?',
+		options: ['250 mL', '500 mL', '750 mL', '1000 mL'],
+		answer: 1,
+	},
+	{
+		question: 'What condition is characterized by severe vertigo and tinnitus?',
+		options: ['Otitis media', 'Meniere\'s disease', 'Acoustic neuroma', 'Presbycusis'],
+		answer: 1,
+	},
+	{
+		question: 'What is the surgical procedure for involved fractures to repair the skin and surrounding tissue or to put small bone fragments back?',
+		options: ['Closed reduction', 'Open reduction', 'Internal fixation', 'External fixation'],
+		answer: 1,
+	},
+	{
+		question: 'According to U.S. National Heart, Lung, and Blood Institute, triglycerides should be below what?',
+		options: ['150 mg/dL', '200 mg/dL', '250 mg/dL', '300 mg/dL'],
+		answer: 1,
+	},
+	{
+		question: 'What is the normal bleeding range for template puncture method?',
+		options: ['Up to 5 min', 'Up to 8 min', 'Up to 10 min', 'Up to 15 min'],
+		answer: 1,
+	},
+	{
+		question: 'Small battery powered pulse generator with electrode catheters inserted into vein and threaded through vena cava describes what?',
+		options: ['Defibrillator', 'Artificial pacemaker', 'Stent', 'Catheter'],
+		answer: 1,
+	},
+	{
+		question: 'What is another word for stye?',
+		options: ['Chalazion', 'Hordeolum', 'Pterygium', 'Pinguecula'],
+		answer: 1,
+	},
+	{
+		question: 'What is the winglike projection of the vertebral column?',
+		options: ['Spinous process', 'Transverse process', 'Vertebral arch', 'Lamina'],
+		answer: 1,
 	},
 ];
 
