@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 type Category = 'everyday' | 'animals' | 'food' | 'colors' | 'numbers' | 'verbs' | 'adjectives';
 
-interface AtzrisWorldState {
+interface AtziriWorldState {
   words: string[];
   current: number;
   flipped: boolean;
@@ -16,7 +16,8 @@ interface AtzrisWorldState {
   category: Category;
   loading: boolean;
   usedWords: string[];
-  isPlaying: boolean;
+  isPlayingEnglish: boolean;
+  isPlayingSpanish: boolean;
   audioSupported: boolean;
   incorrectWords: string[];
   showPracticeList: boolean;
@@ -25,8 +26,8 @@ interface AtzrisWorldState {
   loadingDefinition: boolean;
 }
 
-export default function AtzrisWorld() {
-  const [state, setState] = useState<AtzrisWorldState>({
+export default function AtziriWorld() {
+  const [state, setState] = useState<AtziriWorldState>({
     words: [],
     current: 0,
     flipped: false,
@@ -37,7 +38,8 @@ export default function AtzrisWorld() {
     category: 'everyday',
     loading: false,
     usedWords: [],
-    isPlaying: typeof window !== 'undefined' && 'speechSynthesis' in window,
+    isPlayingEnglish: false,
+    isPlayingSpanish: false,
     audioSupported: typeof window !== 'undefined' && 'speechSynthesis' in window,
     incorrectWords: [],
     showPracticeList: false,
@@ -47,9 +49,9 @@ export default function AtzrisWorld() {
   });
 
   useEffect(() => {
-    const savedScore = localStorage.getItem('atzrisworld-total-score');
-    const savedUsedWords = localStorage.getItem(`atzrisworld-used-words-${state.difficulty}-${state.category}`);
-    const savedIncorrectWords = localStorage.getItem(`atzrisworld-incorrect-words-${state.difficulty}-${state.category}`);
+    const savedScore = localStorage.getItem('atziriworld-total-score');
+    const savedUsedWords = localStorage.getItem(`atziriworld-used-words-${state.difficulty}-${state.category}`);
+    const savedIncorrectWords = localStorage.getItem(`atziriworld-incorrect-words-${state.difficulty}-${state.category}`);
     
     if (savedScore) {
       setState(prev => ({ ...prev, totalScore: parseInt(savedScore, 10) }));
@@ -76,8 +78,8 @@ export default function AtzrisWorld() {
 
   useEffect(() => {
     // Load used words and incorrect words for the current difficulty and category
-    const savedUsedWords = localStorage.getItem(`atzrisworld-used-words-${state.difficulty}-${state.category}`);
-    const savedIncorrectWords = localStorage.getItem(`atzrisworld-incorrect-words-${state.difficulty}-${state.category}`);
+    const savedUsedWords = localStorage.getItem(`atziriworld-used-words-${state.difficulty}-${state.category}`);
+    const savedIncorrectWords = localStorage.getItem(`atziriworld-incorrect-words-${state.difficulty}-${state.category}`);
     let usedWords: string[] = [];
     let incorrectWords: string[] = [];
     
@@ -204,7 +206,7 @@ export default function AtzrisWorld() {
       const newUsedWords = [...usedWords, ...words];
       
       // Save used words to localStorage
-      localStorage.setItem(`atzrisworld-used-words-${state.difficulty}-${state.category}`, JSON.stringify(newUsedWords));
+      localStorage.setItem(`atziriworld-used-words-${state.difficulty}-${state.category}`, JSON.stringify(newUsedWords));
       
       setState(prev => ({
         ...prev,
@@ -319,7 +321,7 @@ export default function AtzrisWorld() {
     let newIncorrectWords = [...state.incorrectWords];
     if (!correct && currentWord && !newIncorrectWords.includes(currentWord)) {
       newIncorrectWords.push(currentWord);
-      localStorage.setItem(`atzrisworld-incorrect-words-${state.difficulty}-${state.category}`, JSON.stringify(newIncorrectWords));
+      localStorage.setItem(`atziriworld-incorrect-words-${state.difficulty}-${state.category}`, JSON.stringify(newIncorrectWords));
     }
 
     setState(prev => ({
@@ -330,7 +332,7 @@ export default function AtzrisWorld() {
       incorrectWords: newIncorrectWords,
     }));
 
-    localStorage.setItem('atzrisworld-total-score', newTotalScore.toString());
+    localStorage.setItem('atziriworld-total-score', newTotalScore.toString());
     setTimeout(handleNext, 1000);
   };
 
@@ -360,17 +362,17 @@ export default function AtzrisWorld() {
 
   const resetScore = () => {
     setState(prev => ({ ...prev, totalScore: 0 }));
-    localStorage.removeItem('atzrisworld-total-score');
+    localStorage.removeItem('atziriworld-total-score');
   };
 
   const clearWordHistory = () => {
     setState(prev => ({ ...prev, usedWords: [] }));
-    localStorage.removeItem(`atzrisworld-used-words-${state.difficulty}-${state.category}`);
+    localStorage.removeItem(`atziriworld-used-words-${state.difficulty}-${state.category}`);
   };
 
   const clearIncorrectWords = () => {
     setState(prev => ({ ...prev, incorrectWords: [] }));
-    localStorage.removeItem(`atzrisworld-incorrect-words-${state.difficulty}-${state.category}`);
+    localStorage.removeItem(`atziriworld-incorrect-words-${state.difficulty}-${state.category}`);
   };
 
   const fetchWordDefinition = async (word: string) => {
@@ -488,7 +490,7 @@ export default function AtzrisWorld() {
     const wordToSpeak = state.words[state.current];
     if (!state.audioSupported || !wordToSpeak) return;
     
-    setState(prev => ({ ...prev, isPlaying: true }));
+    setState(prev => ({ ...prev, isPlayingEnglish: true }));
     
     // Cancel any ongoing speech
     window.speechSynthesis.cancel();
@@ -500,40 +502,183 @@ export default function AtzrisWorld() {
     utterance.lang = 'en-US'; // Ensure English pronunciation
     
     utterance.onend = () => {
-      setState(prev => ({ ...prev, isPlaying: false }));
+      setState(prev => ({ ...prev, isPlayingEnglish: false }));
     };
     
     utterance.onerror = () => {
-      setState(prev => ({ ...prev, isPlaying: false }));
+      setState(prev => ({ ...prev, isPlayingEnglish: false }));
     };
     
     window.speechSynthesis.speak(utterance);
   };
 
   const playSpanishAudio = () => {
-    const wordToSpeak = state.words[state.current];
-    if (!state.audioSupported || !wordToSpeak) return;
+    const englishWord = state.words[state.current];
+    if (!state.audioSupported || !englishWord) return;
     
-    setState(prev => ({ ...prev, isPlaying: true }));
+    setState(prev => ({ ...prev, isPlayingSpanish: true }));
     
     // Cancel any ongoing speech
     window.speechSynthesis.cancel();
     
-    const utterance = new SpeechSynthesisUtterance(wordToSpeak);
+    // Get Spanish translation or fall back to English word
+    const spanishWord = translateToSpanish(englishWord);
+    
+    const utterance = new SpeechSynthesisUtterance(spanishWord);
     utterance.rate = 0.7; // Slower rate for learners
     utterance.pitch = 1.0; // Normal pitch
     utterance.volume = 0.8;
     utterance.lang = 'es-ES'; // Spanish pronunciation
     
     utterance.onend = () => {
-      setState(prev => ({ ...prev, isPlaying: false }));
+      setState(prev => ({ ...prev, isPlayingSpanish: false }));
     };
     
     utterance.onerror = () => {
-      setState(prev => ({ ...prev, isPlaying: false }));
+      setState(prev => ({ ...prev, isPlayingSpanish: false }));
     };
     
     window.speechSynthesis.speak(utterance);
+  };
+
+  // Simple English to Spanish translation for common vocabulary words
+  const translateToSpanish = (englishWord: string): string => {
+    const translations: { [key: string]: string } = {
+      // Everyday words
+      'hello': 'hola',
+      'house': 'casa',
+      'water': 'agua',
+      'book': 'libro',
+      'chair': 'silla',
+      'door': 'puerta',
+      'window': 'ventana',
+      'table': 'mesa',
+      'phone': 'teléfono',
+      'car': 'coche',
+      'tree': 'árbol',
+      'sun': 'sol',
+      'moon': 'luna',
+      'day': 'día',
+      'night': 'noche',
+      'good': 'bueno',
+      'bad': 'malo',
+      'big': 'grande',
+      'small': 'pequeño',
+      'happy': 'feliz',
+      
+      // Animals
+      'cat': 'gato',
+      'dog': 'perro',
+      'bird': 'pájaro',
+      'fish': 'pez',
+      'cow': 'vaca',
+      'pig': 'cerdo',
+      'horse': 'caballo',
+      'sheep': 'oveja',
+      'chicken': 'pollo',
+      'duck': 'pato',
+      'mouse': 'ratón',
+      'bear': 'oso',
+      'lion': 'león',
+      'tiger': 'tigre',
+      'elephant': 'elefante',
+      'monkey': 'mono',
+      'rabbit': 'conejo',
+      'frog': 'rana',
+      'snake': 'serpiente',
+      'butterfly': 'mariposa',
+      
+      // Food
+      'apple': 'manzana',
+      'bread': 'pan',
+      'milk': 'leche',
+      'egg': 'huevo',
+      'rice': 'arroz',
+      'meat': 'carne',
+      'cake': 'pastel',
+      'soup': 'sopa',
+      'tea': 'té',
+      'coffee': 'café',
+      'sugar': 'azúcar',
+      'salt': 'sal',
+      'orange': 'naranja',
+      'banana': 'plátano',
+      'potato': 'patata',
+      'tomato': 'tomate',
+      'cheese': 'queso',
+      
+      // Colors
+      'red': 'rojo',
+      'blue': 'azul',
+      'green': 'verde',
+      'yellow': 'amarillo',
+      'black': 'negro',
+      'white': 'blanco',
+      'pink': 'rosa',
+      'purple': 'morado',
+      'brown': 'marrón',
+      'gray': 'gris',
+      'color': 'color',
+      
+      // Numbers
+      'one': 'uno',
+      'two': 'dos',
+      'three': 'tres',
+      'four': 'cuatro',
+      'five': 'cinco',
+      'six': 'seis',
+      'seven': 'siete',
+      'eight': 'ocho',
+      'nine': 'nueve',
+      'ten': 'diez',
+      'zero': 'cero',
+      'first': 'primero',
+      'second': 'segundo',
+      'third': 'tercero',
+      
+      // Verbs
+      'go': 'ir',
+      'come': 'venir',
+      'run': 'correr',
+      'walk': 'caminar',
+      'eat': 'comer',
+      'drink': 'beber',
+      'sleep': 'dormir',
+      'work': 'trabajar',
+      'play': 'jugar',
+      'read': 'leer',
+      'write': 'escribir',
+      'look': 'mirar',
+      'see': 'ver',
+      'hear': 'oír',
+      'speak': 'hablar',
+      'think': 'pensar',
+      'know': 'saber',
+      'want': 'querer',
+      'like': 'gustar',
+      'love': 'amar',
+      
+      // Adjectives
+      'old': 'viejo',
+      'new': 'nuevo',
+      'hot': 'caliente',
+      'cold': 'frío',
+      'fast': 'rápido',
+      'slow': 'lento',
+      'sad': 'triste',
+      'beautiful': 'hermoso',
+      'ugly': 'feo',
+      'easy': 'fácil',
+      'hard': 'difícil',
+      'strong': 'fuerte',
+      'weak': 'débil',
+      'tall': 'alto',
+      'short': 'bajo'
+    };
+    
+    // Return Spanish translation if available, otherwise return the English word
+    // (some advanced words might not have translations in our dictionary)
+    return translations[englishWord.toLowerCase()] || englishWord;
   };
 
   const currentWord = state.words[state.current] || '';
@@ -555,10 +700,10 @@ export default function AtzrisWorld() {
   };
 
   return (
-    <div className="atzris-world-game p-6 max-w-2xl mx-auto min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-orange-100">
+    <div className="atziri-world-game p-6 max-w-2xl mx-auto min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-orange-100">
       <div className="header mb-8">
         <h1 className="text-4xl font-bold text-center mb-2 text-purple-800">
-          🌍 Atzri's World 🌍
+          🌍 Atziri's World 🌍
         </h1>
         <p className="text-center text-purple-600 mb-6">Learn English Vocabulary</p>
         
@@ -736,11 +881,11 @@ export default function AtzrisWorld() {
                         <>
                           <button
                             onClick={playWordAudio}
-                            disabled={state.isPlaying}
+                            disabled={state.isPlayingEnglish}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             title="Listen to English pronunciation"
                           >
-                            {state.isPlaying ? (
+                            {state.isPlayingEnglish ? (
                               <>
                                 <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
                                 Playing...
@@ -756,11 +901,11 @@ export default function AtzrisWorld() {
                           </button>
                           <button
                             onClick={playSpanishAudio}
-                            disabled={state.isPlaying}
+                            disabled={state.isPlayingSpanish}
                             className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            title="Listen to Spanish pronunciation"
+                            title="Listen to Spanish translation"
                           >
-                            {state.isPlaying ? (
+                            {state.isPlayingSpanish ? (
                               <>
                                 <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
                                 Playing...

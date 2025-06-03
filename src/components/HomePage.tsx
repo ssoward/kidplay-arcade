@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const games = [
   { id: 'sight-words', name: 'Sight Words', emoji: '👁️', category: 'Educational' },
-  { id: 'atzris-world', name: "Atzri's World", emoji: '🌍', category: 'Educational' },
+  { id: 'atziri-world', name: "Atziri's World", emoji: '🌍', category: 'Educational' },
   { id: 'chess', name: 'Chess', emoji: '♟️', category: 'Strategy' },
   { id: 'checkers', name: 'Checkers', emoji: '🔴', category: 'Strategy' },
   { id: 'tic-tac-toe', name: 'Tic Tac Toe', emoji: '❌', category: 'Classic' },

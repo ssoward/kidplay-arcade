@@ -5,6 +5,7 @@ interface Question {
 	question: string;
 	options: string[];
 	answer: number;
+	id?: string; // For tracking used questions
 }
 
 interface AIQuestion {
@@ -13,95 +14,118 @@ interface AIQuestion {
 	correct: number;
 }
 
-// The 62 priority Medical Assistant questions
+interface MistakeQuestion extends Question {
+	userAnswer: number;
+	timesWrong: number;
+}
+
+// The 62 priority Medical Assistant questions with scientific names where applicable
 const PRIORITY_MA_QUESTIONS: Question[] = [
 	{
+		id: 'arthroscopy',
 		question: 'What test is the visual inspection of a joint?',
-		options: ['Arthroscopy', 'MRI', 'X-ray', 'Ultrasound'],
+		options: ['Arthroscopy (Arthroskopein)', 'MRI (Magnetic Resonance Imaging)', 'X-ray (Radiograph)', 'Ultrasound (Sonogram)'],
 		answer: 0,
 	},
 	{
+		id: 'haversian-canals',
 		question: 'What are openings on the long bones where blood vessels and nerves pass through the periosteum called?',
-		options: ['Haversian Canals', 'Volkmann canals', 'Lacunae', 'Canaliculi'],
+		options: ['Haversian Canals (Canalis Haversii)', 'Volkmann canals (Canalis Volkmann)', 'Lacunae', 'Canaliculi'],
 		answer: 0,
 	},
 	{
+		id: 'hemophilia',
 		question: 'What genetic disease is carried by females but only affects males?',
-		options: ['Huntington Disease', 'Klinefelter Disease', 'Hemophilia', 'Duchenne Muscular Dystrophy'],
+		options: ['Huntington Disease (Huntington Chorea)', 'Klinefelter Disease (XXY Syndrome)', 'Hemophilia (Haemophilia)', 'Duchenne Muscular Dystrophy (DMD)'],
 		answer: 2,
 	},
 	{
+		id: 'serum-globulin',
 		question: 'What is the role of serum globulin in blood plasma?',
-		options: ['Transport oxygen', 'Assists in the formation of antibodies', 'Regulate blood sugar', 'Clot blood'],
+		options: ['Transport oxygen', 'Assists in the formation of antibodies (Immunoglobulins)', 'Regulate blood sugar', 'Clot blood'],
 		answer: 1,
 	},
 	{
+		id: 'tendons-ligaments',
 		question: 'True or False: Tendons stretch but ligaments don\'t',
 		options: ['True', 'False'],
 		answer: 0,
 	},
 	{
-		question: 'What causes the influx of TB?',
+		id: 'tb-causes',
+		question: 'What causes the influx of TB (Tuberculosis - Mycobacterium tuberculosis)?',
 		options: ['AIDS, use of drugs, influx of 3rd world immigrants', 'Poor sanitation only', 'Air pollution', 'Genetic factors'],
 		answer: 0,
 	},
 	{
-		question: 'Where is the tricuspid valve?',
+		id: 'tricuspid-valve',
+		question: 'Where is the tricuspid valve (Valva tricuspidalis)?',
 		options: ['Between the left atrium and left ventricle', 'Between the right atrium and right ventricle', 'In the aorta', 'In the pulmonary artery'],
 		answer: 1,
 	},
 	{
+		id: 'snoring-percentage',
 		question: 'What percentage of men are habitual snorers?',
 		options: ['25%', '30%', '40%', '50%'],
 		answer: 2,
 	},
 	{
+		id: 'larynx-symptom',
 		question: 'What is the earliest symptom of a disease in the larynx?',
 		options: ['Cough', 'Hoarseness', 'Fever', 'Difficulty swallowing'],
 		answer: 1,
 	},
 	{
-		question: 'What is the peak age for risk of RDS?',
+		id: 'rds-age',
+		question: 'What is the peak age for risk of RDS (Respiratory Distress Syndrome)?',
 		options: ['Full-term babies', 'Babies born before 37-39 weeks', 'Babies over 40 weeks', 'All ages equally'],
 		answer: 1,
 	},
 	{
-		question: 'What does T in TNM stand for?',
+		id: 'tnm-staging',
+		question: 'What does T in TNM stand for (Cancer Staging)?',
 		options: ['Type', 'Tumor', 'Tissue', 'Treatment'],
 		answer: 1,
 	},
 	{
+		id: 'cancer-treatment',
 		question: 'What is the oldest most common form of cancer treatment?',
 		options: ['Chemotherapy', 'Radiation', 'Surgery', 'Immunotherapy'],
 		answer: 2,
 	},
 	{
+		id: 'surfactant',
 		question: 'What is the fatty molecule that keeps the lungs from collapsing?',
-		options: ['Mucus', 'Surfactant', 'Albumin', 'Cholesterol'],
+		options: ['Mucus', 'Surfactant (Pulmonary surfactant)', 'Albumin', 'Cholesterol'],
 		answer: 1,
 	},
 	{
+		id: 'centrosome',
 		question: 'What organelle within the cell produces spindle fibers that attach to chromosomes during cellular division?',
-		options: ['Mitochondria', 'Centrosome', 'Nucleus', 'Ribosome'],
+		options: ['Mitochondria', 'Centrosome (Centrosomal apparatus)', 'Nucleus', 'Ribosome'],
 		answer: 1,
 	},
 	{
+		id: 'hypotonic-solution',
 		question: 'What happens to a blood cell when placed in a hypotonic solution?',
-		options: ['Shrink', 'Swell and burst', 'Stay the same', 'Divide'],
+		options: ['Shrink', 'Swell and burst (Hemolysis)', 'Stay the same', 'Divide'],
 		answer: 1,
 	},
 	{
+		id: 'clubfoot',
 		question: 'What is the name for clubfoot?',
-		options: ['Scoliosis', 'Talipes', 'Kyphosis', 'Lordosis'],
+		options: ['Scoliosis', 'Talipes (Talipes equinovarus)', 'Kyphosis', 'Lordosis'],
 		answer: 1,
 	},
 	{
+		id: 'ciliary-body',
 		question: 'When the ciliary body contracts, what does it do to the lens?',
-		options: ['The lens becomes flatter', 'The lens becomes rounder', 'No change', 'The lens becomes opaque'],
+		options: ['The lens becomes flatter', 'The lens becomes rounder (Accommodation)', 'No change', 'The lens becomes opaque'],
 		answer: 1,
 	},
 	{
-		question: 'What is normal resting potential?',
+		id: 'resting-potential',
+		question: 'What is normal resting potential (Membrane potential)?',
 		options: ['Positive inside, negative outside', 'Negative inside, positive outside', 'Neutral both sides', 'Variable'],
 		answer: 1,
 	},
@@ -126,211 +150,253 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 		answer: 1,
 	},
 	{
+		id: 'nerve-impulse-speed',
 		question: 'How fast do nerve impulses travel?',
 		options: ['100 mph', '200 mph', '300 mph', '400 mph'],
 		answer: 1,
 	},
 	{
+		id: 'paralysis-types',
 		question: 'What are the two main groups of paralysis?',
 		options: ['Paraplegia, hemiplegia', 'Quadriplegia, monoplegia', 'Spastic, flaccid', 'Upper, lower'],
 		answer: 0,
 	},
 	{
+		id: 'cellulitis',
 		question: 'What is cellulitis?',
 		options: ['Skin cancer', 'Common skin infection caused by bacteria characterized by acute or diffuse or spreading inflammation of the skin and subcutaneous tissue', 'Viral infection', 'Fungal infection'],
 		answer: 1,
 	},
 	{
+		id: 'vitamins-skin',
 		question: 'What vitamins can pass through the skin?',
 		options: ['All vitamins', 'Not vitamin C', 'Only fat-soluble vitamins', 'Only water-soluble vitamins'],
 		answer: 1,
 	},
 	{
-		question: 'What are the recommended modifications for age related macular degeneration?',
+		id: 'macular-degeneration',
+		question: 'What are the recommended modifications for age related macular degeneration (AMD)?',
 		options: ['Exercise more', 'Quit smoking, take vitamins', 'Surgery only', 'No treatment available'],
 		answer: 1,
 	},
 	{
+		id: 'lymph-nodes',
 		question: 'What are lymph nodes full of?',
-		options: ['Red blood cells', 'T and B cells', 'Platelets', 'Plasma'],
+		options: ['Red blood cells', 'T and B cells (Lymphocytes)', 'Platelets', 'Plasma'],
 		answer: 1,
 	},
 	{
-		question: 'Where is the peyer\'s patch located?',
+		id: 'peyers-patch',
+		question: 'Where is the peyer\'s patch (Aggregated lymphoid nodules) located?',
 		options: ['Large intestine', 'Small intestine, ileum', 'Stomach', 'Liver'],
 		answer: 1,
 	},
 	{
+		id: 'kidney-displacement',
 		question: 'Which kidney is displaced by the liver?',
 		options: ['Left kidney', 'Right kidney', 'Both kidneys', 'Neither kidney'],
 		answer: 1,
 	},
 	{
+		id: 'urine-production',
 		question: 'Urine is produced by what?',
-		options: ['Filtration', 'Secretion', 'Absorption', 'Diffusion'],
+		options: ['Filtration (Glomerular filtration)', 'Secretion', 'Absorption', 'Diffusion'],
 		answer: 1,
 	},
 	{
+		id: 'upper-gi-series',
 		question: 'What is true about an upper GI series: It is painful, 2-3 day diet of high residue food, stop oral intake 2 hours prior, need to ingest barium?',
-		options: ['It is painful', '2-3 day diet of high residue food', 'Stop oral intake 2 hours prior', 'Barium'],
+		options: ['It is painful', '2-3 day diet of high residue food', 'Stop oral intake 2 hours prior', 'Barium (Barium sulfate)'],
 		answer: 3,
 	},
 	{
+		id: 'thymus',
 		question: 'What is the 3 lobed structure under the sternum?',
-		options: ['Heart', 'Xiphoid process, thymus', 'Lung', 'Liver'],
+		options: ['Heart', 'Xiphoid process, thymus (Thymus gland)', 'Lung', 'Liver'],
 		answer: 1,
 	},
 	{
-		question: 'What gland produces thyroxine?',
-		options: ['Parathyroid', 'Thyroid', 'Adrenal', 'Pituitary'],
+		id: 'thyroxine-gland',
+		question: 'What gland produces thyroxine (T4)?',
+		options: ['Parathyroid', 'Thyroid (Thyroid gland)', 'Adrenal', 'Pituitary'],
 		answer: 1,
 	},
 	{
-		question: 'What is TOT used for?',
+		id: 'tot-procedure',
+		question: 'What is TOT (Transobturator tape) used for?',
 		options: ['Heart disease', 'Stress urinary incontinence', 'Diabetes', 'Hypertension'],
 		answer: 1,
 	},
 	{
-		question: 'Symptoms of chronic renal failure include:',
+		id: 'chronic-renal-failure',
+		question: 'Symptoms of chronic renal failure (CKD) include:',
 		options: ['Increased energy', 'Tiredness, Vomiting, Hypertension', 'Weight gain only', 'Fever'],
 		answer: 1,
 	},
 	{
+		id: 'female-development',
 		question: 'Without what hormone, a female develops?',
 		options: ['Estrogen', 'Testosterone', 'Progesterone', 'FSH'],
 		answer: 1,
 	},
 	{
-		question: 'What is the test for klinefelters?',
-		options: ['Blood test', 'Chromosome analysis', 'Urine test', 'Physical exam'],
+		id: 'klinefelter-test',
+		question: 'What is the test for klinefelters (Klinefelter syndrome)?',
+		options: ['Blood test', 'Chromosome analysis (Karyotyping)', 'Urine test', 'Physical exam'],
 		answer: 1,
 	},
 	{
+		id: 'thyroid-location',
 		question: 'Where are the thyroid glands located?',
-		options: ['Chest', 'Throat', 'Abdomen', 'Head'],
+		options: ['Chest', 'Throat (Neck)', 'Abdomen', 'Head'],
 		answer: 1,
 	},
 	{
-		question: 'What do the adrenal glands produce?',
+		id: 'adrenal-hormones',
+		question: 'What do the adrenal glands (Suprarenal glands) produce?',
 		options: ['Only cortisol', 'Androgens, estrogen, aldosterone, cortisol', 'Only adrenaline', 'Insulin'],
 		answer: 1,
 	},
 	{
+		id: 'testicular-cancer-age',
 		question: 'What is the peak age for testicular cancer?',
 		options: ['10-19 yrs old', '20-34 yrs old', '35-49 yrs old', '50+ yrs old'],
 		answer: 1,
 	},
 	{
-		question: 'What hormone stimulates the production of sperm?',
-		options: ['LH', 'FSH', 'Testosterone', 'GH'],
+		id: 'sperm-hormone',
+		question: 'What hormone stimulates the production of sperm (Spermatogenesis)?',
+		options: ['LH (Luteinizing hormone)', 'FSH (Follicle-stimulating hormone)', 'Testosterone', 'GH (Growth hormone)'],
 		answer: 1,
 	},
 	{
+		id: 'heart-contraction',
 		question: 'What is the contraction phase of the heart?',
-		options: ['Diastole', 'Systole', 'Relaxation', 'Filling'],
+		options: ['Diastole', 'Systole (Ventricular systole)', 'Relaxation', 'Filling'],
 		answer: 1,
 	},
 	{
+		id: 'sarcoma',
 		question: 'Sarcoma is a tumor of what tissue?',
-		options: ['Epithelial tissue', 'Connective tissue', 'Nervous tissue', 'Muscle tissue only'],
+		options: ['Epithelial tissue', 'Connective tissue (Mesenchymal tissue)', 'Nervous tissue', 'Muscle tissue only'],
 		answer: 1,
 	},
 	{
+		id: 'salivary-amylase',
 		question: 'What enzyme in saliva breaks down carbohydrates?',
-		options: ['Pepsin', 'Amylase', 'Lipase', 'Trypsin'],
+		options: ['Pepsin', 'Amylase (Salivary amylase)', 'Lipase', 'Trypsin'],
 		answer: 1,
 	},
 	{
-		question: 'In IVP what can\'t the patient be allergic to?',
-		options: ['Shellfish', 'Iodine', 'Latex', 'Penicillin'],
+		id: 'ivp-allergy',
+		question: 'In IVP (Intravenous pyelogram) what can\'t the patient be allergic to?',
+		options: ['Shellfish', 'Iodine (Contrast dye)', 'Latex', 'Penicillin'],
 		answer: 1,
 	},
 	{
-		question: 'How many overnight exchanges are there on NIPD?',
+		id: 'nipd-exchanges',
+		question: 'How many overnight exchanges are there on NIPD (Nocturnal intermittent peritoneal dialysis)?',
 		options: ['1-2', '3-5', '6-8', '9-10'],
 		answer: 1,
 	},
 	{
+		id: 'medulla-pyramid',
 		question: 'Is the medulla connected to the renal pyramid?',
 		options: ['Yes', 'No'],
 		answer: 0,
 	},
 	{
+		id: 'myoclonus',
 		question: 'Which condition has uncontrollable twitching and spasm of the muscles?',
 		options: ['Ataxia', 'Myoclonus', 'Dystonia', 'Tremor'],
 		answer: 1,
 	},
 	{
+		id: 'hyperparathyroidism',
 		question: 'What are the symptoms of Hyperparathyroidism?',
 		options: ['High energy, weight loss', 'Bone pain, muscle weakness, fatigue, depression, and increased urination or thirst', 'Fever, chills', 'Rash, itching'],
 		answer: 1,
 	},
 	{
+		id: 'glycogen-storage',
 		question: 'Where is glycogen stored?',
-		options: ['Kidney', 'Liver', 'Heart', 'Brain'],
+		options: ['Kidney', 'Liver (Hepatic glycogen)', 'Heart', 'Brain'],
 		answer: 1,
 	},
 	{
-		question: 'What organ is the pituitary gland attached to?',
-		options: ['Heart', 'Brain', 'Liver', 'Kidney'],
+		id: 'pituitary-attachment',
+		question: 'What organ is the pituitary gland (Hypophysis) attached to?',
+		options: ['Heart', 'Brain (Hypothalamus)', 'Liver', 'Kidney'],
 		answer: 1,
 	},
 	{
-		question: 'Initial symptoms of prostatic hypertrophy include:',
+		id: 'prostatic-hypertrophy',
+		question: 'Initial symptoms of prostatic hypertrophy (BPH - Benign prostatic hyperplasia) include:',
 		options: ['Back pain', 'Frequent urination', 'Chest pain', 'Headache'],
 		answer: 1,
 	},
 	{
-		question: 'Symptom of gonorrhea in men includes:',
+		id: 'gonorrhea-symptoms',
+		question: 'Symptom of gonorrhea (Neisseria gonorrhoeae) in men includes:',
 		options: ['Only fever', 'Sore throat, dysuria, discharge from penis', 'Only rash', 'Joint pain'],
 		answer: 1,
 	},
 	{
+		id: 'adipose-tissue',
 		question: 'What type of tissue is adipose tissue?',
-		options: ['Epithelial tissue', 'Connective tissue', 'Muscle tissue', 'Nervous tissue'],
+		options: ['Epithelial tissue', 'Connective tissue (Fat tissue)', 'Muscle tissue', 'Nervous tissue'],
 		answer: 1,
 	},
 	{
-		question: 'What is the cell membrane made up of?',
-		options: ['Only lipids', 'Protein and carbs', 'Only proteins', 'Only carbohydrates'],
+		id: 'cell-membrane',
+		question: 'What is the cell membrane (Plasma membrane) made up of?',
+		options: ['Only lipids', 'Protein and carbs (Phospholipid bilayer)', 'Only proteins', 'Only carbohydrates'],
 		answer: 1,
 	},
 	{
-		question: 'How much cerebrospinal fluid is formed within the ventricles of the brain a day?',
+		id: 'cerebrospinal-fluid',
+		question: 'How much cerebrospinal fluid (CSF) is formed within the ventricles of the brain a day?',
 		options: ['250 mL', '500 mL', '750 mL', '1000 mL'],
 		answer: 1,
 	},
 	{
+		id: 'menieres-disease',
 		question: 'What condition is characterized by severe vertigo and tinnitus?',
-		options: ['Otitis media', 'Meniere\'s disease', 'Acoustic neuroma', 'Presbycusis'],
+		options: ['Otitis media', 'Meniere\'s disease (Endolymphatic hydrops)', 'Acoustic neuroma', 'Presbycusis'],
 		answer: 1,
 	},
 	{
+		id: 'open-reduction',
 		question: 'What is the surgical procedure for involved fractures to repair the skin and surrounding tissue or to put small bone fragments back?',
-		options: ['Closed reduction', 'Open reduction', 'Internal fixation', 'External fixation'],
+		options: ['Closed reduction', 'Open reduction (ORIF)', 'Internal fixation', 'External fixation'],
 		answer: 1,
 	},
 	{
+		id: 'triglycerides',
 		question: 'According to U.S. National Heart, Lung, and Blood Institute, triglycerides should be below what?',
 		options: ['150 mg/dL', '200 mg/dL', '250 mg/dL', '300 mg/dL'],
 		answer: 1,
 	},
 	{
+		id: 'bleeding-time',
 		question: 'What is the normal bleeding range for template puncture method?',
 		options: ['Up to 5 min', 'Up to 8 min', 'Up to 10 min', 'Up to 15 min'],
 		answer: 1,
 	},
 	{
+		id: 'pacemaker',
 		question: 'Small battery powered pulse generator with electrode catheters inserted into vein and threaded through vena cava describes what?',
-		options: ['Defibrillator', 'Artificial pacemaker', 'Stent', 'Catheter'],
+		options: ['Defibrillator', 'Artificial pacemaker (Cardiac pacemaker)', 'Stent', 'Catheter'],
 		answer: 1,
 	},
 	{
+		id: 'hordeolum',
 		question: 'What is another word for stye?',
 		options: ['Chalazion', 'Hordeolum', 'Pterygium', 'Pinguecula'],
 		answer: 1,
 	},
 	{
+		id: 'transverse-process',
 		question: 'What is the winglike projection of the vertebral column?',
 		options: ['Spinous process', 'Transverse process', 'Vertebral arch', 'Lamina'],
 		answer: 1,
@@ -340,53 +406,63 @@ const PRIORITY_MA_QUESTIONS: Question[] = [
 // Additional fallback MA questions
 const FALLBACK_MA_QUESTIONS: Question[] = [
 	{
+		id: 'heart-lungs-chamber',
 		question: 'Which chamber of the heart pumps blood to the lungs?',
 		options: ['Left atrium', 'Right ventricle', 'Left ventricle', 'Right atrium'],
 		answer: 1,
 	},
 	{
+		id: 'largest-organ',
 		question: 'What is the largest organ in the human body?',
-		options: ['Heart', 'Liver', 'Skin', 'Brain'],
+		options: ['Heart', 'Liver', 'Skin (Integumentary system)', 'Brain'],
 		answer: 2,
 	},
 	{
+		id: 'bone-count',
 		question: 'How many bones are in the adult human body?',
 		options: ['186', '206', '226', '246'],
 		answer: 1,
 	},
 	{
+		id: 'central-nervous-system',
 		question: 'Which part of the nervous system includes the brain and spinal cord?',
-		options: ['Peripheral nervous system', 'Central nervous system', 'Autonomic nervous system', 'Sympathetic nervous system'],
+		options: ['Peripheral nervous system', 'Central nervous system (CNS)', 'Autonomic nervous system', 'Sympathetic nervous system'],
 		answer: 1,
 	},
 	{
+		id: 'body-temperature',
 		question: 'What is the normal body temperature in Fahrenheit?',
 		options: ['96.8°F', '97.6°F', '98.6°F', '99.6°F'],
 		answer: 2,
 	},
 	{
+		id: 'cardiac-muscle',
 		question: 'Which type of muscle is found in the heart?',
-		options: ['Skeletal muscle', 'Smooth muscle', 'Cardiac muscle', 'Voluntary muscle'],
+		options: ['Skeletal muscle', 'Smooth muscle', 'Cardiac muscle (Myocardium)', 'Voluntary muscle'],
 		answer: 2,
 	},
 	{
+		id: 'hypertension',
 		question: 'What is the medical term for high blood pressure?',
 		options: ['Hypotension', 'Hypertension', 'Tachycardia', 'Bradycardia'],
 		answer: 1,
 	},
 	{
+		id: 'insulin-organ',
 		question: 'Which organ produces insulin?',
-		options: ['Liver', 'Kidney', 'Pancreas', 'Spleen'],
+		options: ['Liver', 'Kidney', 'Pancreas (Islets of Langerhans)', 'Spleen'],
 		answer: 2,
 	},
 	{
+		id: 'nephron',
 		question: 'What is the basic functional unit of the kidney?',
 		options: ['Alveoli', 'Nephron', 'Neuron', 'Villus'],
 		answer: 1,
 	},
 	{
+		id: 'red-blood-cells',
 		question: 'Which blood cells are responsible for carrying oxygen?',
-		options: ['White blood cells', 'Platelets', 'Red blood cells', 'Plasma cells'],
+		options: ['White blood cells', 'Platelets', 'Red blood cells (Erythrocytes)', 'Plasma cells'],
 		answer: 2,
 	},
 ];
@@ -408,6 +484,12 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 	const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
 	// Track used priority questions to ensure we use them first
 	const [usedPriorityQuestions, setUsedPriorityQuestions] = useState<Set<number>>(new Set());
+	// New states for enhanced features
+	const [usedQuestionIds, setUsedQuestionIds] = useState<Set<string>>(new Set());
+	const [mistakes, setMistakes] = useState<MistakeQuestion[]>([]);
+	const [showMistakes, setShowMistakes] = useState(false);
+	const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+	const [practicingMistakes, setPracticingMistakes] = useState(false);
 
 	// Load accumulative score from localStorage
 	const loadAccumulativeScore = () => {
@@ -417,6 +499,18 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 				const { totalScore: savedTotalScore, gamesPlayed: savedGamesPlayed } = JSON.parse(savedData);
 				setTotalScore(savedTotalScore || 0);
 				setGamesPlayed(savedGamesPlayed || 0);
+			}
+			
+			// Load used question IDs
+			const savedUsedIds = localStorage.getItem('medicalAssistantUsedIds');
+			if (savedUsedIds) {
+				setUsedQuestionIds(new Set(JSON.parse(savedUsedIds)));
+			}
+			
+			// Load mistakes
+			const savedMistakes = localStorage.getItem('medicalAssistantMistakes');
+			if (savedMistakes) {
+				setMistakes(JSON.parse(savedMistakes));
 			}
 		} catch (error) {
 			console.error('Error loading accumulative score:', error);
@@ -437,19 +531,110 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 		}
 	};
 
+	// Save used question IDs
+	const saveUsedQuestionIds = (ids: Set<string>) => {
+		try {
+			localStorage.setItem('medicalAssistantUsedIds', JSON.stringify(Array.from(ids)));
+		} catch (error) {
+			console.error('Error saving used question IDs:', error);
+		}
+	};
+
+	// Save mistakes
+	const saveMistakes = (mistakeList: MistakeQuestion[]) => {
+		try {
+			localStorage.setItem('medicalAssistantMistakes', JSON.stringify(mistakeList));
+		} catch (error) {
+			console.error('Error saving mistakes:', error);
+		}
+	};
+
+	// Text-to-speech function for answer options
+	const speakAnswerOptions = () => {
+		if (isPlayingAudio || questions.length === 0) return;
+		
+		setIsPlayingAudio(true);
+		const question = questions[current];
+		const textToSpeak = `The answer options are: ${question.options.map((opt, idx) => 
+			`Option ${idx + 1}: ${opt.replace(/\([^)]*\)/g, '').trim()}`
+		).join('. ')}`;
+		
+		if ('speechSynthesis' in window) {
+			const utterance = new SpeechSynthesisUtterance(textToSpeak);
+			utterance.rate = 0.8;
+			utterance.pitch = 1;
+			utterance.volume = 0.8;
+			utterance.onend = () => setIsPlayingAudio(false);
+			utterance.onerror = () => setIsPlayingAudio(false);
+			speechSynthesis.speak(utterance);
+		} else {
+			setIsPlayingAudio(false);
+			alert('Text-to-speech is not supported in your browser.');
+		}
+	};
+
 	// Reset accumulative score
 	const resetAccumulativeScore = () => {
 		setTotalScore(0);
 		setGamesPlayed(0);
 		setUsedPriorityQuestions(new Set());
+		setUsedQuestionIds(new Set());
+		setMistakes([]);
 		localStorage.removeItem('medicalAssistantAccumulative');
+		localStorage.removeItem('medicalAssistantUsedIds');
+		localStorage.removeItem('medicalAssistantMistakes');
+	};
+
+	// Add mistake to tracking
+	const addMistake = (question: Question, userAnswer: number) => {
+		const existingMistakeIndex = mistakes.findIndex(m => m.id === question.id);
+		let newMistakes: MistakeQuestion[];
+		
+		if (existingMistakeIndex >= 0) {
+			// Increment times wrong for existing mistake
+			newMistakes = [...mistakes];
+			newMistakes[existingMistakeIndex].timesWrong += 1;
+		} else {
+			// Add new mistake
+			const newMistake: MistakeQuestion = {
+				...question,
+				userAnswer,
+				timesWrong: 1
+			};
+			newMistakes = [...mistakes, newMistake];
+		}
+		
+		setMistakes(newMistakes);
+		saveMistakes(newMistakes);
+	};
+
+	// Start practicing mistakes
+	const startMistakePractice = () => {
+		if (mistakes.length === 0) return;
+		
+		setPracticingMistakes(true);
+		setQuestions(mistakes);
+		setCurrent(0);
+		setScore(0);
+		setSelected(null);
+		setShowAnswer(false);
+		setFinished(false);
+		setLoadingQuestions(false);
 	};
 
 	const handleOption = (idx: number) => {
 		if (showAnswer || questions.length === 0) return;
 		setSelected(idx);
 		setShowAnswer(true);
-		if (idx === questions[current].answer) setScore(score + 1);
+		
+		if (idx === questions[current].answer) {
+			setScore(score + 1);
+		} else {
+			// Track mistake if not practicing mistakes and question has ID
+			if (!practicingMistakes && questions[current].id) {
+				addMistake(questions[current], idx);
+			}
+		}
 	};
 
 	const next = () => {
@@ -459,11 +644,21 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 			setShowAnswer(false);
 		} else {
 			// Game finished - update accumulative score
-			const newTotalScore = totalScore + score;
-			const newGamesPlayed = gamesPlayed + 1;
-			setTotalScore(newTotalScore);
-			setGamesPlayed(newGamesPlayed);
-			saveAccumulativeScore(newTotalScore, newGamesPlayed);
+			if (!practicingMistakes) {
+				const newTotalScore = totalScore + score;
+				const newGamesPlayed = gamesPlayed + 1;
+				setTotalScore(newTotalScore);
+				setGamesPlayed(newGamesPlayed);
+				saveAccumulativeScore(newTotalScore, newGamesPlayed);
+				
+				// Mark questions as used
+				const newUsedIds = new Set(usedQuestionIds);
+				questions.forEach(q => {
+					if (q.id) newUsedIds.add(q.id);
+				});
+				setUsedQuestionIds(newUsedIds);
+				saveUsedQuestionIds(newUsedIds);
+			}
 			setFinished(true);
 		}
 	};
@@ -474,20 +669,21 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 		setSelected(null);
 		setShowAnswer(false);
 		setFinished(false);
+		setPracticingMistakes(false);
 		// Generate new questions
 		const newQuestions = await generateQuestions(5);
 		setQuestions(newQuestions);
 	};
 
-	// Generate questions with priority for the 26 specific questions first
+	// Generate questions with priority for the specific questions first, avoiding repeats
 	const generateQuestions = async (numQuestions: number = 5): Promise<Question[]> => {
 		setLoadingQuestions(true);
 		try {
 			console.log(`Generating ${numQuestions} ${difficulty} Medical Assistant questions...`);
 
-			// First, use available priority questions
-			const availablePriorityQuestions = PRIORITY_MA_QUESTIONS.filter((_, index) => 
-				!usedPriorityQuestions.has(index)
+			// Filter out questions that have been used (by ID)
+			const availablePriorityQuestions = PRIORITY_MA_QUESTIONS.filter(q => 
+				q.id && !usedQuestionIds.has(q.id)
 			);
 
 			const selectedQuestions: Question[] = [];
@@ -497,21 +693,10 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 				const questionsToUse = Math.min(numQuestions, availablePriorityQuestions.length);
 				
 				// Randomly select from available priority questions
-				const shuffledIndices = Array.from({length: availablePriorityQuestions.length}, (_, i) => i);
-				for (let i = shuffledIndices.length - 1; i > 0; i--) {
-					const j = Math.floor(Math.random() * (i + 1));
-					[shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]];
-				}
+				const shuffledQuestions = [...availablePriorityQuestions].sort(() => Math.random() - 0.5);
+				selectedQuestions.push(...shuffledQuestions.slice(0, questionsToUse));
 
-				for (let i = 0; i < questionsToUse; i++) {
-					const availableIndex = shuffledIndices[i];
-					const priorityIndex = PRIORITY_MA_QUESTIONS.findIndex(q => q === availablePriorityQuestions[availableIndex]);
-					selectedQuestions.push(availablePriorityQuestions[availableIndex]);
-					// Mark this question as used
-					setUsedPriorityQuestions(prev => new Set(prev).add(priorityIndex));
-				}
-
-				console.log(`Using ${questionsToUse} priority MA questions`);
+				console.log(`Using ${questionsToUse} unused priority MA questions`);
 			}
 
 			// If we need more questions, try AI generation
@@ -534,7 +719,8 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 								q.correct >= 0 && 
 								q.correct < 4
 							)
-							.map(q => ({
+							.map((q, index) => ({
+								id: `ai-${Date.now()}-${index}`,
 								question: q.question,
 								options: q.options,
 								answer: q.correct
@@ -549,12 +735,24 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 				}
 			}
 
-			// If we still need more questions, use fallback questions
+			// If we still need more questions, use fallback questions (avoiding used ones)
 			if (selectedQuestions.length < numQuestions) {
+				const availableFallback = FALLBACK_MA_QUESTIONS.filter(q => 
+					!q.id || !usedQuestionIds.has(q.id)
+				);
 				const remainingNeeded = numQuestions - selectedQuestions.length;
-				const shuffledFallback = [...FALLBACK_MA_QUESTIONS].sort(() => Math.random() - 0.5);
+				const shuffledFallback = [...availableFallback].sort(() => Math.random() - 0.5);
 				selectedQuestions.push(...shuffledFallback.slice(0, remainingNeeded));
 				console.log(`Added ${Math.min(remainingNeeded, shuffledFallback.length)} fallback MA questions`);
+			}
+
+			// If we still can't get enough questions, reset used questions and try again
+			if (selectedQuestions.length < numQuestions && usedQuestionIds.size > 0) {
+				console.log('Ran out of unused questions, resetting question pool...');
+				setUsedQuestionIds(new Set());
+				saveUsedQuestionIds(new Set());
+				// Recursively try again with reset pool
+				return generateQuestions(numQuestions);
 			}
 
 			return selectedQuestions;
@@ -633,7 +831,7 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 							</div>
 							<div className="bg-white/70 rounded-lg p-3">
 								<div className="text-2xl font-bold text-orange-600">
-									{usedPriorityQuestions.size} / {PRIORITY_MA_QUESTIONS.length}
+									{usedQuestionIds.size} / {PRIORITY_MA_QUESTIONS.length}
 								</div>
 								<div className="text-gray-600">Questions Covered</div>
 							</div>
@@ -645,19 +843,37 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 							Reset All Progress
 						</button>
 					</div>
+
+					{/* Mistakes Section */}
+					{mistakes.length > 0 && (
+						<div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 mb-6 border-2 border-red-200">
+							<h3 className="text-lg font-bold text-gray-800 mb-3">❌ Practice Your Mistakes</h3>
+							<div className="text-sm text-gray-600 mb-3">
+								You have {mistakes.length} questions that need more practice
+							</div>
+							<button
+								onClick={startMistakePractice}
+								className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white font-bold px-4 py-2 rounded-xl shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105"
+							>
+								📚 Practice {mistakes.length} Mistake{mistakes.length > 1 ? 's' : ''}
+							</button>
+						</div>
+					)}
 					
-					<button
-						className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transform hover:scale-105 mr-4"
-						onClick={restart}
-					>
-						🔄 New Questions
-					</button>
-					<button
-						className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 transform hover:scale-105"
-						onClick={onExit}
-					>
-						← Back to Games
-					</button>
+					<div className="flex flex-wrap gap-3 justify-center">
+						<button
+							className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transform hover:scale-105"
+							onClick={restart}
+						>
+							🔄 New Questions
+						</button>
+						<button
+							className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 transform hover:scale-105"
+							onClick={onExit}
+						>
+							← Back to Games
+						</button>
+					</div>
 				</div>
 				
 				{/* Settings for next game */}
@@ -700,6 +916,22 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 					Question {current + 1} of {questions.length}
 				</div>
 				<div className="text-xl mb-4">{questions[current].question}</div>
+				
+				{/* Speech button for answer options */}
+				<div className="mb-4">
+					<button
+						onClick={speakAnswerOptions}
+						disabled={isPlayingAudio}
+						className={`px-4 py-2 rounded-lg font-bold text-sm shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105 ${
+							isPlayingAudio 
+								? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+								: 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-400'
+						}`}
+					>
+						{isPlayingAudio ? '🔊 Speaking...' : '🔊 Hear Options'}
+					</button>
+				</div>
+				
 				<div className="flex flex-col gap-2">
 					{questions[current].options.map((opt: string, idx: number) => (
 						<button
