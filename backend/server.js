@@ -574,7 +574,7 @@ const adminAuth = (req, res, next) => {
 
 // Game sessions storage (in-memory for now)
 let gameSessions = [];
-let userSessions = [];
+let gameUserSessions = [];
 
 // Endpoint to record game session data
 app.post('/api/admin/record-session', [
@@ -900,6 +900,456 @@ app.post('/api/admin/login', [
       });
     }, 1000);
   }
+});
+
+// =============================================================================
+// USER AUTHENTICATION API ENDPOINTS
+// =============================================================================
+
+// In-memory user storage (replace with proper database in production)
+const users = new Map();
+const userSessions = new Map();
+
+// Generate user ID
+const generateUserId = () => Math.random().toString(36).substr(2, 9);
+
+// Generate JWT-like token (base64 encoded session info)
+const generateUserToken = (user) => {
+  const session = {
+    userId: user.id,
+    email: user.email,
+    loginTime: Date.now(),
+    sessionId: Math.random().toString(36).substr(2, 9)
+  };
+  userSessions.set(session.sessionId, session);
+  return Buffer.from(JSON.stringify(session)).toString('base64');
+};
+
+// Middleware to authenticate user requests
+const authenticateUser = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - No token provided'
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+    let session;
+    
+    try {
+      const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+      session = JSON.parse(decodedToken);
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - Invalid token format'
+      });
+    }
+
+    const { userId, sessionId, loginTime } = session;
+    
+    if (!userId || !sessionId || !loginTime) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - Incomplete token data'
+      });
+    }
+
+    // Check if session exists
+    const storedSession = userSessions.get(sessionId);
+    if (!storedSession) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - Session not found'
+      });
+    }
+
+    // Check if session is expired (7 days)
+    const now = Date.now();
+    const sessionDuration = 7 * 24 * 60 * 60 * 1000; // 7 days
+    if (now - loginTime > sessionDuration) {
+      userSessions.delete(sessionId);
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - Session expired'
+      });
+    }
+
+    // Attach user session to request
+    req.userSession = storedSession;
+    next();
+  } catch (error) {
+    console.error('User auth error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during authentication'
+    });
+  }
+};
+
+// User Registration
+app.post('/api/user/register', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 8 }),
+  body('displayName').trim().isLength({ min: 1, max: 50 }),
+  body('accountType').isIn(['child', 'parent', 'educator']),
+  body('parentEmail').optional().isEmail().normalizeEmail(),
+  body('dateOfBirth').optional().isISO8601()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid input',
+      errors: errors.array()
+    });
+  }
+
+  const { email, password, displayName, accountType, parentEmail, dateOfBirth } = req.body;
+
+  // Check if user already exists
+  if (users.has(email)) {
+    return res.status(409).json({
+      success: false,
+      message: 'User already exists with this email address'
+    });
+  }
+
+  // Validate child account requirements
+  if (accountType === 'child' && !parentEmail) {
+    return res.status(400).json({
+      success: false,
+      message: 'Parent email is required for child accounts'
+    });
+  }
+
+  try {
+    // Hash password
+    const bcrypt = require('bcryptjs');
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create user object
+    const user = {
+      id: generateUserId(),
+      email,
+      displayName,
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+      accountType,
+      parentEmail: accountType === 'child' ? parentEmail : undefined,
+      hashedPassword,
+      isVerified: false, // Email verification required
+      createdAt: new Date(),
+      lastActive: new Date(),
+      preferences: {
+        theme: 'light',
+        soundEnabled: true,
+        difficulty: 'adaptive',
+        aiInteraction: true,
+        notificationsEnabled: false
+      },
+      gameStats: {
+        gamesPlayed: 0,
+        totalScore: 0,
+        averageScore: 0,
+        favoriteGames: [],
+        achievements: [],
+        streaks: { current: 0, longest: 0 },
+        skillLevels: {}
+      },
+      privacySettings: {
+        dataCollection: true,
+        analytics: true,
+        personalization: true,
+        shareProgress: false
+      }
+    };
+
+    // Add parental controls for child accounts
+    if (accountType === 'child') {
+      user.parentalControls = {
+        timeLimit: 60, // 60 minutes per day
+        allowedGames: [],
+        restrictedContent: [],
+        sessionReminders: true,
+        reportingEnabled: true
+      };
+    }
+
+    // Store user
+    users.set(email, user);
+
+    // Generate token
+    const token = generateUserToken(user);
+
+    // Remove sensitive data from response
+    const { hashedPassword: _, ...userResponse } = user;
+
+    res.json({
+      success: true,
+      message: 'Registration successful',
+      token,
+      user: userResponse
+    });
+
+    // TODO: Send verification email
+    console.log(`📧 Would send verification email to ${email}`);
+    if (accountType === 'child' && parentEmail) {
+      console.log(`📧 Would send parental consent email to ${parentEmail}`);
+    }
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Registration failed'
+    });
+  }
+});
+
+// User Login
+app.post('/api/user/login', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').notEmpty()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid input',
+      errors: errors.array()
+    });
+  }
+
+  const { email, password } = req.body;
+
+  // Find user
+  const user = users.get(email);
+  if (!user) {
+    // Delay response to prevent timing attacks
+    return setTimeout(() => {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }, 1000);
+  }
+
+  try {
+    // Verify password
+    const bcrypt = require('bcryptjs');
+    const isMatch = await bcrypt.compare(password, user.hashedPassword);
+    
+    if (!isMatch) {
+      return setTimeout(() => {
+        res.status(401).json({
+          success: false,
+          message: 'Invalid credentials'
+        });
+      }, 1000);
+    }
+
+    // Update last active
+    user.lastActive = new Date();
+
+    // Generate token
+    const token = generateUserToken(user);
+
+    // Remove sensitive data from response
+    const { hashedPassword, ...userResponse } = user;
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: userResponse
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Login failed'
+    });
+  }
+});
+
+// Validate User Token
+app.post('/api/user/validate', authenticateUser, (req, res) => {
+  const { userId } = req.userSession;
+  
+  // Find user by ID
+  const user = Array.from(users.values()).find(u => u.id === userId);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  // Remove sensitive data
+  const { hashedPassword, ...userResponse } = user;
+
+  res.json({
+    success: true,
+    user: userResponse
+  });
+});
+
+// Update User Profile
+app.put('/api/user/profile', authenticateUser, [
+  body('displayName').optional().trim().isLength({ min: 1, max: 50 }),
+  body('dateOfBirth').optional().isISO8601(),
+  body('avatar').optional().isURL()
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid input',
+      errors: errors.array()
+    });
+  }
+
+  const { userId } = req.userSession;
+  const updates = req.body;
+
+  // Find user
+  const user = Array.from(users.values()).find(u => u.id === userId);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  // Update allowed fields
+  const allowedFields = ['displayName', 'dateOfBirth', 'avatar'];
+  allowedFields.forEach(field => {
+    if (updates[field] !== undefined) {
+      if (field === 'dateOfBirth' && updates[field]) {
+        user[field] = new Date(updates[field]);
+      } else {
+        user[field] = updates[field];
+      }
+    }
+  });
+
+  // Remove sensitive data
+  const { hashedPassword, ...userResponse } = user;
+
+  res.json({
+    success: true,
+    message: 'Profile updated successfully',
+    user: userResponse
+  });
+});
+
+// Update User Preferences
+app.put('/api/user/preferences', authenticateUser, [
+  body('theme').optional().isIn(['light', 'dark', 'auto']),
+  body('soundEnabled').optional().isBoolean(),
+  body('difficulty').optional().isIn(['adaptive', 'easy', 'medium', 'hard']),
+  body('aiInteraction').optional().isBoolean(),
+  body('notificationsEnabled').optional().isBoolean()
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid input',
+      errors: errors.array()
+    });
+  }
+
+  const { userId } = req.userSession;
+  const preferences = req.body;
+
+  // Find user
+  const user = Array.from(users.values()).find(u => u.id === userId);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  // Update preferences
+  user.preferences = { ...user.preferences, ...preferences };
+
+  res.json({
+    success: true,
+    message: 'Preferences updated successfully',
+    preferences: user.preferences
+  });
+});
+
+// Forgot Password (placeholder - would integrate with email service)
+app.post('/api/user/forgot-password', [
+  body('email').isEmail().normalizeEmail()
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid email address'
+    });
+  }
+
+  const { email } = req.body;
+  
+  // Check if user exists (don't reveal this information for security)
+  const user = users.get(email);
+  
+  // Always respond with success to prevent email enumeration
+  res.json({
+    success: true,
+    message: 'If an account exists with this email, a password reset link has been sent.'
+  });
+
+  if (user) {
+    // TODO: Generate reset token and send email
+    console.log(`📧 Would send password reset email to ${email}`);
+  }
+});
+
+// Get User Profile
+app.get('/api/user/profile', authenticateUser, (req, res) => {
+  const { userId } = req.userSession;
+  
+  // Find user
+  const user = Array.from(users.values()).find(u => u.id === userId);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  // Remove sensitive data
+  const { hashedPassword, ...userResponse } = user;
+
+  res.json({
+    success: true,
+    user: userResponse
+  });
+});
+
+// User Logout
+app.post('/api/user/logout', authenticateUser, (req, res) => {
+  const { sessionId } = req.userSession;
+  
+  // Remove session
+  userSessions.delete(sessionId);
+  
+  res.json({
+    success: true,
+    message: 'Logged out successfully'
+  });
 });
 
 // Serve static files from the React app build folder (after API routes)
