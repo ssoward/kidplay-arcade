@@ -14,7 +14,7 @@ class AnalyticsService {
   private constructor() {
     this.baseUrl = process.env.NODE_ENV === 'production' 
       ? '' // Same origin in production
-      : 'http://localhost:5001'; // Development backend
+      : 'http://localhost:3001'; // Development backend
   }
 
   public static getInstance(): AnalyticsService {
