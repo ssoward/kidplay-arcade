@@ -23,9 +23,6 @@ interface AtzrisWorldState {
   showDefinition: boolean;
   currentDefinition: string;
   loadingDefinition: boolean;
-  showTranslation: boolean;
-  currentTranslation: string;
-  loadingTranslation: boolean;
 }
 
 export default function AtzrisWorld() {
@@ -47,9 +44,6 @@ export default function AtzrisWorld() {
     showDefinition: false,
     currentDefinition: '',
     loadingDefinition: false,
-    showTranslation: false,
-    currentTranslation: '',
-    loadingTranslation: false,
   });
 
   useEffect(() => {
@@ -309,7 +303,6 @@ export default function AtzrisWorld() {
         current: prev.current + 1,
         flipped: false,
         showDefinition: false,
-        showTranslation: false,
       }));
     } else {
       fetchWords();
@@ -350,7 +343,6 @@ export default function AtzrisWorld() {
       usedWords: [], // Will be loaded by useEffect
       showPracticeList: false,
       showDefinition: false,
-      showTranslation: false,
     }));
   };
 
@@ -363,7 +355,6 @@ export default function AtzrisWorld() {
       usedWords: [], // Will be loaded by useEffect
       showPracticeList: false,
       showDefinition: false,
-      showTranslation: false,
     }));
   };
 
@@ -427,8 +418,8 @@ export default function AtzrisWorld() {
     }
   };
 
-  const fetchWordTranslation = async (word: string) => {
-    setState(prev => ({ ...prev, loadingTranslation: true, showTranslation: true }));
+  const fetchSpanishDefinition = async (word: string) => {
+    setState(prev => ({ ...prev, loadingDefinition: true, showDefinition: true }));
     
     try {
       const response = await fetch('/api/ask-ai', {
@@ -440,34 +431,34 @@ export default function AtzrisWorld() {
           history: [
             {
               role: 'user',
-              content: `Provide translations of the English word "${word}" in Spanish, French, and one other common language. Format: Spanish: [translation], French: [translation], [Language]: [translation]`
+              content: `Provide the definition of the English word "${word}" in Spanish. Give a clear, simple explanation in Spanish that would help someone learning English understand what this word means.`
             }
           ]
         }),
       });
 
       const data = await response.json();
-      let translation = '';
+      let definition = '';
       
       if (data.message) {
-        translation = data.message.trim();
+        definition = data.message.trim();
       } else if (data.response) {
-        translation = data.response.trim();
+        definition = data.response.trim();
       } else {
-        translation = `Translation information for "${word}" is not available right now.`;
+        definition = `Definición para "${word}" no está disponible en este momento.`;
       }
 
       setState(prev => ({
         ...prev,
-        currentTranslation: translation,
-        loadingTranslation: false,
+        currentDefinition: definition,
+        loadingDefinition: false,
       }));
     } catch (error) {
-      console.error('Failed to fetch translation:', error);
+      console.error('Failed to fetch Spanish definition:', error);
       setState(prev => ({
         ...prev,
-        currentTranslation: `Translation information for "${word}" is not available right now.`,
-        loadingTranslation: false,
+        currentDefinition: `Definición para "${word}" no está disponible en este momento.`,
+        loadingDefinition: false,
       }));
     }
   };
@@ -477,7 +468,6 @@ export default function AtzrisWorld() {
       ...prev, 
       showPracticeList: !prev.showPracticeList,
       showDefinition: false,
-      showTranslation: false 
     }));
   };
 
@@ -490,7 +480,6 @@ export default function AtzrisWorld() {
         flipped: false,
         showPracticeList: false,
         showDefinition: false,
-        showTranslation: false,
       }));
     }
   };
@@ -509,6 +498,32 @@ export default function AtzrisWorld() {
     utterance.pitch = 1.0; // Normal pitch
     utterance.volume = 0.8;
     utterance.lang = 'en-US'; // Ensure English pronunciation
+    
+    utterance.onend = () => {
+      setState(prev => ({ ...prev, isPlaying: false }));
+    };
+    
+    utterance.onerror = () => {
+      setState(prev => ({ ...prev, isPlaying: false }));
+    };
+    
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const playSpanishAudio = () => {
+    const wordToSpeak = state.words[state.current];
+    if (!state.audioSupported || !wordToSpeak) return;
+    
+    setState(prev => ({ ...prev, isPlaying: true }));
+    
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(wordToSpeak);
+    utterance.rate = 0.7; // Slower rate for learners
+    utterance.pitch = 1.0; // Normal pitch
+    utterance.volume = 0.8;
+    utterance.lang = 'es-ES'; // Spanish pronunciation
     
     utterance.onend = () => {
       setState(prev => ({ ...prev, isPlaying: false }));
@@ -672,30 +687,7 @@ export default function AtzrisWorld() {
         </div>
       )}
 
-      {/* Translation Display */}
-      {state.showTranslation && (
-        <div className="translation-display mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-bold text-green-800">
-              🌐 Translations of "{currentWord}"
-            </h3>
-            <button
-              onClick={() => setState(prev => ({ ...prev, showTranslation: false }))}
-              className="text-green-600 hover:text-green-800 text-xl font-bold"
-            >
-              ×
-            </button>
-          </div>
-          {state.loadingTranslation ? (
-            <div className="flex items-center gap-2 text-green-600">
-              <div className="animate-spin w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full"></div>
-              Loading translations...
-            </div>
-          ) : (
-            <p className="text-green-700 whitespace-pre-line">{state.currentTranslation}</p>
-          )}
-        </div>
-      )}
+
 
       {state.loading ? (
         <div className="text-center py-12">
@@ -714,8 +706,10 @@ export default function AtzrisWorld() {
                 style={{ transformStyle: 'preserve-3d' }}
               >
                 <div 
-                  className="flip-card-front absolute w-full h-full bg-gradient-to-br from-purple-200 to-pink-200 border-2 border-purple-300 rounded-lg shadow-lg flex items-center justify-center"
+                  className="flip-card-front absolute w-full h-full bg-gradient-to-br from-purple-200 to-pink-200 border-2 border-purple-300 rounded-lg shadow-lg flex items-center justify-center cursor-pointer hover:from-purple-300 hover:to-pink-300 transition-all"
                   style={{ backfaceVisibility: 'hidden' }}
+                  onClick={() => setState(prev => ({ ...prev, flipped: true }))}
+                  title="Click to test yourself!"
                 >
                   <div className="text-center">
                     <div className="text-6xl font-bold text-purple-800 mb-2">
@@ -737,28 +731,52 @@ export default function AtzrisWorld() {
                     Do you know this word?
                   </div>
                   <div className="flex flex-col gap-3 items-center">
-                    {state.audioSupported && (
-                      <button
-                        onClick={playWordAudio}
-                        disabled={state.isPlaying}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                        title="Listen to pronunciation"
-                      >
-                        {state.isPlaying ? (
-                          <>
-                            <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                            Playing...
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.914 14H2a1 1 0 01-1-1V7a1 1 0 011-1h2.914l3.469-2.816a1 1 0 011.617.816zM16 10a1 1 0 01-.832.986 4.002 4.002 0 010-1.972A1 1 0 0116 10zm-4 3.75a1 1 0 01-.832.986 8.003 8.003 0 010-9.472A1 1 0 0112 6.25v7.5z" clipRule="evenodd" />
-                            </svg>
-                            🎧 Listen
-                          </>
-                        )}
-                      </button>
-                    )}
+                    <div className="flex gap-2">
+                      {state.audioSupported && (
+                        <>
+                          <button
+                            onClick={playWordAudio}
+                            disabled={state.isPlaying}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            title="Listen to English pronunciation"
+                          >
+                            {state.isPlaying ? (
+                              <>
+                                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                Playing...
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.914 14H2a1 1 0 01-1-1V7a1 1 0 011-1h2.914l3.469-2.816a1 1 0 011.617.816zM16 10a1 1 0 01-.832.986 4.002 4.002 0 010-1.972A1 1 0 0116 10zm-4 3.75a1 1 0 01-.832.986 8.003 8.003 0 010-9.472A1 1 0 0112 6.25v7.5z" clipRule="evenodd" />
+                                </svg>
+                                🇺🇸 English
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={playSpanishAudio}
+                            disabled={state.isPlaying}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            title="Listen to Spanish pronunciation"
+                          >
+                            {state.isPlaying ? (
+                              <>
+                                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                Playing...
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.914 14H2a1 1 0 01-1-1V7a1 1 0 011-1h2.914l3.469-2.816a1 1 0 011.617.816zM16 10a1 1 0 01-.832.986 4.002 4.002 0 010-1.972A1 1 0 0116 10zm-4 3.75a1 1 0 01-.832.986 8.003 8.003 0 010-9.472A1 1 0 0112 6.25v7.5z" clipRule="evenodd" />
+                                </svg>
+                                🇪🇸 Español
+                              </>
+                            )}
+                          </button>
+                        </>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => fetchWordDefinition(currentWord)}
@@ -778,19 +796,19 @@ export default function AtzrisWorld() {
                         )}
                       </button>
                       <button
-                        onClick={() => fetchWordTranslation(currentWord)}
-                        disabled={state.loadingTranslation}
+                        onClick={() => fetchSpanishDefinition(currentWord)}
+                        disabled={state.loadingDefinition}
                         className="flex items-center gap-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
-                        title="Get translations"
+                        title="Get Spanish definition"
                       >
-                        {state.loadingTranslation ? (
+                        {state.loadingDefinition ? (
                           <>
                             <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
                             Loading...
                           </>
                         ) : (
                           <>
-                            🌐 Translate
+                            🌐 Español
                           </>
                         )}
                       </button>
@@ -802,15 +820,7 @@ export default function AtzrisWorld() {
           </div>
 
           <div className="controls text-center space-y-4">
-            {!state.flipped ? (
-              <button
-                onClick={() => setState(prev => ({ ...prev, flipped: true }))}
-                className="px-8 py-3 bg-purple-500 text-white rounded-lg text-xl hover:bg-purple-600 disabled:opacity-50 transition-all"
-                disabled={!currentWord}
-              >
-                🚀 Test Yourself
-              </button>
-            ) : (
+            {state.flipped && (
               <div className="answer-buttons space-x-4">
                 <button
                   onClick={() => handleAnswer(true)}
