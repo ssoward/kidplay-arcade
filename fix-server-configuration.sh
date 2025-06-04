@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-SERVER_IP="3.81.165.163"
+SERVER_HOST="ec2-3-81-165-163.compute-1.amazonaws.com"
 SSH_KEY="~/.ssh/kidplay-arcade-key.pem"
 
 echo -e "${BLUE}🔧 Fixing KidPlay Arcade Server Configuration${NC}"
@@ -86,7 +86,7 @@ chmod 400 ~/.ssh/kidplay-arcade-key.pem
 
 # Connect and execute commands
 echo "Executing server configuration fix..."
-ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@$SERVER_IP "$SSH_COMMANDS"
+ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@$SERVER_HOST "$SSH_COMMANDS"
 
 echo ""
 echo -e "${YELLOW}⏳ Waiting for server to restart...${NC}"
@@ -112,5 +112,5 @@ else
     echo "   Response: $NEW_RESPONSE"
     echo ""
     echo "🔍 Manual debugging needed. Check server logs with:"
-    echo "   ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@$SERVER_IP 'pm2 logs kidplay-arcade'"
+    echo "   ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@$SERVER_HOST 'pm2 logs kidplay-arcade'"
 fi

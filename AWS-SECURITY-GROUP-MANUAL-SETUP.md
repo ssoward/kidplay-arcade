@@ -84,22 +84,22 @@ curl -X POST "http://3.81.165.163:3001/api/auth/login" \
 
 1. **Check Server Status**:
    ```bash
-   ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@3.81.165.163 "pm2 list"
+   ssh -i ~/.ssh/kidplay-arcade-key.pem ec2-user@ec2-3-81-165-163.compute-1.amazonaws.com "pm2 list"
    ```
 
 2. **Check Server Logs**:
    ```bash
-   ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@3.81.165.163 "pm2 logs kidplay-arcade --lines 20"
+   ssh -i ~/.ssh/kidplay-arcade-key.pem ec2-user@ec2-3-81-165-163.compute-1.amazonaws.com "pm2 logs kidplay-arcade --lines 20"
    ```
 
 3. **Restart Server**:
    ```bash
-   ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@3.81.165.163 "pm2 restart kidplay-arcade"
+   ssh -i ~/.ssh/kidplay-arcade-key.pem ec2-user@ec2-3-81-165-163.compute-1.amazonaws.com "pm2 restart kidplay-arcade"
    ```
 
 4. **Check Database**:
    ```bash
-   ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@3.81.165.163 "cd ~/kidplay-arcade && node backend/test-db-auth.js"
+   ssh -i ~/.ssh/kidplay-arcade-key.pem ec2-user@ec2-3-81-165-163.compute-1.amazonaws.com "cd ~/kidplay-arcade && node backend/test-db-auth.js"
    ```
 
 ### If SSH Connection Fails

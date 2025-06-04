@@ -10,7 +10,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # AWS Server configuration
-AWS_IP="3.81.165.163"  # You may need to update this
+AWS_HOST="ec2-3-81-165-163.compute-1.amazonaws.com"  # Updated to use hostname
 PEM_PATH="/Users/ssoward/.ssh/kidplay-arcade-key.pem"  # Path to your PEM file
 SSH_USER="ec2-user"  # Default user for Amazon Linux instances
 
@@ -156,11 +156,11 @@ echo -e "${BLUE}📤 Transferring files to AWS server...${NC}"
 scp -i "$PEM_PATH" -o StrictHostKeyChecking=no \
     kidplay-arcade-db-auth.tar.gz \
     remote-deploy.sh \
-    $SSH_USER@$AWS_IP:~
+    $SSH_USER@$AWS_HOST:~
 
 # Execute the remote deployment script on the AWS server
 echo -e "${BLUE}🚀 Starting remote deployment...${NC}"
-ssh -i "$PEM_PATH" -o StrictHostKeyChecking=no $SSH_USER@$AWS_IP "bash remote-deploy.sh"
+ssh -i "$PEM_PATH" -o StrictHostKeyChecking=no $SSH_USER@$AWS_HOST "bash remote-deploy.sh"
 
 # Clean up local files
 rm kidplay-arcade-db-auth.tar.gz

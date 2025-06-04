@@ -82,7 +82,7 @@ if [ -n "$EXISTING_RULE" ]; then
     else
         echo -e "${RED}❌ Server is not responding${NC}"
         echo "The port is open but the server may not be running."
-        echo "Check the server status with: ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@3.81.165.163 'pm2 list'"
+        echo "Check the server status with: ssh -i ~/.ssh/kidplay-arcade-key.pem ec2-user@ec2-3-81-165-163.compute-1.amazonaws.com 'pm2 list'"
     fi
     exit 0
 fi
@@ -136,7 +136,7 @@ else
     echo "3. There's a firewall on the server itself"
     echo ""
     echo "To check server status, run:"
-    echo "ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@3.81.165.163 'pm2 list && pm2 logs kidplay-arcade --lines 20'"
+    echo "ssh -i ~/.ssh/kidplay-arcade-key.pem ec2-user@ec2-3-81-165-163.compute-1.amazonaws.com 'pm2 list && pm2 logs kidplay-arcade --lines 20'"
 fi
 
 echo ""

@@ -161,13 +161,13 @@ curl -X POST "http://3.81.165.163:3001/api/auth/login" \
 ### Debugging Commands
 ```bash
 # Check server status
-ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@3.81.165.163 "pm2 list"
+ssh -i ~/.ssh/kidplay-arcade-key.pem ec2-user@ec2-3-81-165-163.compute-1.amazonaws.com "pm2 list"
 
 # Check server logs
-ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@3.81.165.163 "pm2 logs kidplay-arcade --lines 20"
+ssh -i ~/.ssh/kidplay-arcade-key.pem ec2-user@ec2-3-81-165-163.compute-1.amazonaws.com "pm2 logs kidplay-arcade --lines 20"
 
 # Test database
-ssh -i ~/.ssh/kidplay-arcade-key.pem ubuntu@3.81.165.163 "cd ~/kidplay-arcade && node backend/test-db-auth.js"
+ssh -i ~/.ssh/kidplay-arcade-key.pem ec2-user@ec2-3-81-165-163.compute-1.amazonaws.com "cd ~/kidplay-arcade && node backend/test-db-auth.js"
 ```
 
 ---

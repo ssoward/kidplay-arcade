@@ -20,17 +20,17 @@ NC='\033[0m' # No Color
 
 echo -e "${GREEN}🚀 Deploying Kidplay Arcade to AWS EC2 with Enhanced Verification...${NC}"
 
-# Default EC2 IP and key path
-DEFAULT_EC2_IP="3.81.165.163"
+# Default EC2 Host and key path
+DEFAULT_EC2_HOST="ec2-3-81-165-163.compute-1.amazonaws.com"
 KEY_PATH="/Users/ssoward/.ssh/kidplay-arcade-key.pem"
 
-# Use provided IP or default
+# Use provided host or default
 if [ -z "$1" ]; then
-    EC2_IP=$DEFAULT_EC2_IP
-    echo -e "${GREEN}Using default EC2 IP: $EC2_IP${NC}"
+    EC2_HOST=$DEFAULT_EC2_HOST
+    echo -e "${GREEN}Using default EC2 Host: $EC2_HOST${NC}"
 else
-    EC2_IP=$1
-    echo -e "${GREEN}Using provided EC2 IP: $EC2_IP${NC}"
+    EC2_HOST=$1
+    echo -e "${GREEN}Using provided EC2 Host: $EC2_HOST${NC}"
 fi
 
 # Check if key file exists
@@ -39,10 +39,10 @@ if [ ! -f "$KEY_PATH" ]; then
     exit 1
 fi
 
-echo -e "${GREEN}📡 Connecting to EC2 instance: $EC2_IP${NC}"
+echo -e "${GREEN}📡 Connecting to EC2 instance: $EC2_HOST${NC}"
 
 # SSH into EC2 and run enhanced deployment with verification
-ssh -i "$KEY_PATH" ec2-user@"$EC2_IP" << ENDSSH
+ssh -i "$KEY_PATH" ec2-user@"$EC2_HOST" << ENDSSH
     set -e  # Exit on any error
     
     echo -e "${BLUE}🔄 Pulling latest code from GitHub...${NC}"
@@ -184,10 +184,10 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}• Backend API: http://$EC2_IP:3001/api${NC}"
     echo ""
     echo -e "${BLUE}🔧 Management Commands:${NC}"
-    echo -e "${CYAN}• SSH Access: ssh -i $KEY_PATH ec2-user@$EC2_IP${NC}"
-    echo -e "${CYAN}• View Logs: ssh -i $KEY_PATH ec2-user@$EC2_IP 'cd kidplay-arcade && pm2 logs kidplay-arcade'${NC}"
-    echo -e "${CYAN}• Restart App: ssh -i $KEY_PATH ec2-user@$EC2_IP 'cd kidplay-arcade && pm2 restart kidplay-arcade'${NC}"
-    echo -e "${CYAN}• Check Status: ssh -i $KEY_PATH ec2-user@$EC2_IP 'cd kidplay-arcade && pm2 status'${NC}"
+    echo -e "${CYAN}• SSH Access: ssh -i $KEY_PATH ec2-user@$EC2_HOST${NC}"
+    echo -e "${CYAN}• View Logs: ssh -i $KEY_PATH ec2-user@$EC2_HOST 'cd kidplay-arcade && pm2 logs kidplay-arcade'${NC}"
+    echo -e "${CYAN}• Restart App: ssh -i $KEY_PATH ec2-user@$EC2_HOST 'cd kidplay-arcade && pm2 restart kidplay-arcade'${NC}"
+    echo -e "${CYAN}• Check Status: ssh -i $KEY_PATH ec2-user@$EC2_HOST 'cd kidplay-arcade && pm2 status'${NC}"
     echo ""
     echo -e "${BLUE}🎵 Disney Songs Feature:${NC}"
     echo -e "${GREEN}• Fully deployed and configured${NC}"
@@ -205,9 +205,9 @@ if [ $? -eq 0 ]; then
 else
     echo -e "${RED}❌ Deployment failed. Check the output above for errors.${NC}"
     echo -e "${YELLOW}🔧 Troubleshooting steps:${NC}"
-    echo -e "${CYAN}1. Check SSH connection: ssh -i $KEY_PATH ec2-user@$EC2_IP${NC}"
-    echo -e "${CYAN}2. Verify git repository: ssh -i $KEY_PATH ec2-user@$EC2_IP 'ls -la kidplay-arcade'${NC}"
-    echo -e "${CYAN}3. Check application logs: ssh -i $KEY_PATH ec2-user@$EC2_IP 'cd kidplay-arcade && pm2 logs'${NC}"
-    echo -e "${CYAN}4. Restart services manually: ssh -i $KEY_PATH ec2-user@$EC2_IP 'cd kidplay-arcade && pm2 restart kidplay-arcade'${NC}"
+    echo -e "${CYAN}1. Check SSH connection: ssh -i $KEY_PATH ec2-user@$EC2_HOST${NC}"
+    echo -e "${CYAN}2. Verify git repository: ssh -i $KEY_PATH ec2-user@$EC2_HOST 'ls -la kidplay-arcade'${NC}"
+    echo -e "${CYAN}3. Check application logs: ssh -i $KEY_PATH ec2-user@$EC2_HOST 'cd kidplay-arcade && pm2 logs'${NC}"
+    echo -e "${CYAN}4. Restart services manually: ssh -i $KEY_PATH ec2-user@$EC2_HOST 'cd kidplay-arcade && pm2 restart kidplay-arcade'${NC}"
     exit 1
 fi
