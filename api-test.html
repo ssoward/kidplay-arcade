@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Configuration Test</title>
+</head>
+<body>
+    <h1>API Configuration Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        // Simulate production environment
+        const mockEnv = {
+            NODE_ENV: 'production',
+            REACT_APP_API_BASE_URL: 'http://3.81.165.163:3001'
+        };
+        
+        // Simulate process.env for testing
+        window.process = { env: mockEnv };
+        
+        // Copy the getApiBaseUrl function from our API config
+        const getApiBaseUrl = () => {
+            // Check for environment variable first
+            if (process.env.REACT_APP_API_BASE_URL) {
+                console.log('Using REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
+                return process.env.REACT_APP_API_BASE_URL;
+            }
+            
+            // Check if we're in development
+            if (process.env.NODE_ENV === 'development') {
+                console.log('Using development URL: http://localhost:3001');
+                return 'http://localhost:3001';
+            }
+            
+            // Check if running on localhost (development/testing)
+            if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+                console.log('Running on localhost, using development URL');
+                return 'http://localhost:3001';
+            }
+            
+            // Production default - always include port
+            console.log('Using production URL: http://3.81.165.163:3001');
+            return 'http://3.81.165.163:3001';
+        };
+        
+        const apiUrl = getApiBaseUrl();
+        
+        document.getElementById('results').innerHTML = `
+            <p><strong>API Base URL:</strong> ${apiUrl}</p>
+            <p><strong>Environment:</strong> ${process.env.NODE_ENV}</p>
+            <p><strong>Hostname:</strong> ${window.location.hostname}</p>
+            <p><strong>REACT_APP_API_BASE_URL:</strong> ${process.env.REACT_APP_API_BASE_URL || 'undefined'}</p>
+        `;
+        
+        console.log('Final API URL:', apiUrl);
+    </script>
+</body>
+</html>

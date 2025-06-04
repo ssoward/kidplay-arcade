@@ -2,17 +2,26 @@
 // Automatically detects environment and uses appropriate API URL
 
 const getApiBaseUrl = (): string => {
-  // Check for environment variable first
+  // Check for environment variable first - this takes precedence
   if (process.env.REACT_APP_API_BASE_URL) {
+    console.log('Using REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
     return process.env.REACT_APP_API_BASE_URL;
   }
   
-  // Check if we're in development
+  // For production builds, use production URL even if served locally
+  if (process.env.NODE_ENV === 'production') {
+    console.log('Production mode - using production URL: http://3.81.165.163:3001');
+    return 'http://3.81.165.163:3001';
+  }
+  
+  // Development mode
   if (process.env.NODE_ENV === 'development') {
+    console.log('Development mode - using localhost URL: http://localhost:3001');
     return 'http://localhost:3001';
   }
   
-  // Production default
+  // Fallback - use production URL
+  console.log('Fallback - using production URL: http://3.81.165.163:3001');
   return 'http://3.81.165.163:3001';
 };
 
