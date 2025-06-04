@@ -798,7 +798,9 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 		if (mistakes.length === 0) return;
 		
 		setPracticingMistakes(true);
-		setQuestions(mistakes);
+		// Shuffle answers for mistake practice to ensure fair randomization
+		const shuffledMistakes = mistakes.map(mistake => shuffleAnswers(mistake));
+		setQuestions(shuffledMistakes);
 		setCurrent(0);
 		setScore(0);
 		setSelected(null);
@@ -877,6 +879,31 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 		setQuestions(newQuestions);
 	};
 
+	// Helper function to shuffle answer options and update the correct answer index
+	const shuffleAnswers = (question: Question): Question => {
+		const originalOptions = [...question.options];
+		const originalAnswer = question.answer;
+		
+		// Create an array of indices and shuffle them
+		const indices = [0, 1, 2, 3];
+		for (let i = indices.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[indices[i], indices[j]] = [indices[j], indices[i]];
+		}
+		
+		// Reorder options based on shuffled indices
+		const shuffledOptions = indices.map(index => originalOptions[index]);
+		
+		// Find the new position of the correct answer
+		const newAnswerIndex = indices.findIndex(index => index === originalAnswer);
+		
+		return {
+			...question,
+			options: shuffledOptions,
+			answer: newAnswerIndex
+		};
+	};
+
 	// Generate questions with priority for the specific questions first, avoiding repeats
 	const generateQuestions = async (numQuestions: number = 5): Promise<Question[]> => {
 		setLoadingQuestions(true);
@@ -949,8 +976,11 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 				console.log(`Added ${Math.min(remainingNeeded, shuffledFallback.length)} fallback MA questions`);
 			}
 
+			// Shuffle the answers for each selected question
+			const shuffledQuestions = selectedQuestions.map(q => shuffleAnswers(q));
+
 			// If we still can't get enough questions, reset used questions and try again
-			if (selectedQuestions.length < numQuestions && usedQuestionIds.size > 0) {
+			if (shuffledQuestions.length < numQuestions && usedQuestionIds.size > 0) {
 				console.log('Ran out of unused questions, resetting question pool...');
 				setUsedQuestionIds(new Set());
 				saveUsedQuestionIds(new Set());
@@ -958,7 +988,7 @@ const MedicalAssistant: React.FC<MedicalAssistantProps> = ({ onExit }) => {
 				return generateQuestions(numQuestions);
 			}
 
-			return selectedQuestions;
+			return shuffledQuestions;
 
 		} catch (error) {
 			console.error('Error generating Medical Assistant questions:', error);

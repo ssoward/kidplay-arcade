@@ -196,7 +196,12 @@ app.get('/api/status', (req, res) => {
 // Serve static files from the React app in production
 app.use(express.static(path.join(__dirname, '..', 'build')));
 
-// User authentication routes (in-memory version)
+// Import and configure database-backed user routes
+const configureUserRoutes = require('./user-auth-routes');
+const userRoutes = configureUserRoutes(userSessions);
+app.use('/api/user', userRoutes);
+
+// Legacy user authentication routes (in-memory version) - keeping for backwards compatibility
 app.post('/api/register', [
   body('email').isEmail(),
   body('password').isLength({ min: 8 }),
@@ -450,6 +455,42 @@ app.get('/api/itunes-search', [
     console.error('iTunes API error:', error.message);
     res.status(500).json({ error: 'Failed to fetch from iTunes API' });
   }
+});
+
+// Game sessions storage (in-memory for analytics)
+let gameSessions = [];
+
+// Analytics endpoint to record game session data
+app.post('/api/admin/record-session', [
+  body('gameType').isString().notEmpty(),
+  body('score').optional().isNumeric(),
+  body('duration').optional().isNumeric(),
+  body('completed').optional().isBoolean(),
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const sessionData = {
+    id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+    gameType: req.body.gameType,
+    score: req.body.score || 0,
+    duration: req.body.duration || 0,
+    completed: req.body.completed || false,
+    timestamp: new Date().toISOString(),
+    metadata: req.body.metadata || {}
+  };
+
+  gameSessions.push(sessionData);
+  
+  // Keep only last 1000 sessions to prevent memory issues
+  if (gameSessions.length > 1000) {
+    gameSessions = gameSessions.slice(-1000);
+  }
+
+  console.log(`📊 Analytics: Recorded ${sessionData.gameType} session (ID: ${sessionData.id})`);
+  res.json({ success: true, sessionId: sessionData.id });
 });
 
 // Start the server directly when this file is run
