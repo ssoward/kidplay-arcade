@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 echo -e "${GREEN}🚀 Deploying Kidplay Arcade to AWS EC2 with Enhanced Verification...${NC}"
 
 # Default EC2 Host and key path
-DEFAULT_EC2_HOST="ec2-3-81-165-163.compute-1.amazonaws.com"
+DEFAULT_EC2_HOST="ec2-3-144-6-45.us-east-2.compute.amazonaws.com"
 KEY_PATH="/Users/ssoward/.ssh/kidplay-arcade-key.pem"
 
 # Use provided host or default

@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 AWS_IP="3.81.165.163"
-AWS_HOST="ec2-3-81-165-163.compute-1.amazonaws.com"
+AWS_HOST="ec2-3-144-6-45.us-east-2.compute.amazonaws.com"
 AWS_USER="ec2-user"
 SSH_KEY_PATH="/Users/ssoward/.ssh/kidplay-arcade-key.pem"
 FRONTEND_DIR="/var/www/html"

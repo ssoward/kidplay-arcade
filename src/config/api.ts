@@ -10,8 +10,8 @@ const getApiBaseUrl = (): string => {
   
   // For production builds, use production URL even if served locally
   if (process.env.NODE_ENV === 'production') {
-    console.log('Production mode - using production URL: http://3.81.165.163:3001');
-    return 'http://3.81.165.163:3001';
+    console.log('Production mode - using production URL: http://3.144.6.45:3001');
+    return 'http://3.144.6.45:3001';
   }
   
   // Development mode
