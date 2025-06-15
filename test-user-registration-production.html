@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration Production Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .test-form { margin: 15px 0; }
+        .test-form input { margin: 5px; padding: 8px; width: 200px; }
+        .test-form button { margin: 5px; padding: 8px 15px; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>KidPlay Arcade - User Registration Production Test</h1>
+    
+    <div class="test-section info">
+        <h3>API Configuration</h3>
+        <div id="apiDetails"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test User Registration Flow</h3>
+        <div class="test-form">
+            <input type="email" id="email" placeholder="Email" value="testuser@example.com"><br>
+            <input type="password" id="password" placeholder="Password" value="TestPassword123!"><br>
+            <input type="text" id="displayName" placeholder="Display Name" value="Test User"><br>
+            <select id="accountType">
+                <option value="parent">Parent</option>
+                <option value="educator">Educator</option>
+                <option value="child">Child</option>
+            </select><br>
+            <button onclick="testRegistration()">Test Registration</button>
+            <button onclick="testLogin()">Test Login</button>
+            <button onclick="testValidation()">Test Token Validation</button>
+            <button onclick="runAllTests()">Run All Tests</button>
+        </div>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        // Production API Configuration
+        const API_CONFIG = {
+            BASE_URL: 'http://18.215.173.27:3001',
+            ENDPOINTS: {
+                REGISTER: '/api/user/register',
+                LOGIN: '/api/user/login',
+                VALIDATE: '/api/user/validate'
+            }
+        };
+
+        let authToken = null;
+
+        // Display API info
+        document.getElementById('apiDetails').innerHTML = `
+            <strong>Base URL:</strong> ${API_CONFIG.BASE_URL}<br>
+            <strong>Register Endpoint:</strong> ${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER}<br>
+            <strong>Login Endpoint:</strong> ${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}<br>
+            <strong>Validate Endpoint:</strong> ${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE}<br>
+            <strong>Environment:</strong> Production<br>
+            <strong>Test Time:</strong> ${new Date().toISOString()}
+        `;
+
+        function addResult(title, success, message, data = null) {
+            const resultsDiv = document.getElementById('results');
+            const resultClass = success ? 'success' : 'error';
+            
+            let resultHtml = `
+                <div class="test-section ${resultClass}">
+                    <h4>${title}</h4>
+                    <p>${message}</p>
+            `;
+            
+            if (data) {
+                resultHtml += `<details><summary>Response Data</summary><pre>${JSON.stringify(data, null, 2)}</pre></details>`;
+            }
+            
+            resultHtml += '</div>';
+            resultsDiv.innerHTML += resultHtml;
+        }
+
+        async function testRegistration() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const displayName = document.getElementById('displayName').value;
+            const accountType = document.getElementById('accountType').value;
+
+            // Add timestamp to email to avoid conflicts
+            const uniqueEmail = `test-${Date.now()}@example.com`;
+
+            const userData = {
+                email: uniqueEmail,
+                password: password,
+                displayName: displayName,
+                accountType: accountType
+            };
+
+            try {
+                const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER}`;
+                console.log('Testing registration at:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    authToken = data.token;
+                    addResult('✅ User Registration', true, 
+                        `Registration successful for ${uniqueEmail}. Token generated and stored.`, data);
+                    
+                    // Update email field for subsequent tests
+                    document.getElementById('email').value = uniqueEmail;
+                } else {
+                    addResult('❌ User Registration', false, 
+                        `Registration failed: ${data.message || 'Unknown error'}`, data);
+                }
+            } catch (error) {
+                addResult('❌ User Registration', false, 
+                    `Network error: ${error.message}`);
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const loginData = {
+                email: email,
+                password: password
+            };
+
+            try {
+                const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`;
+                console.log('Testing login at:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(loginData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    authToken = data.token;
+                    addResult('✅ User Login', true, 
+                        `Login successful for ${email}. New token generated.`, data);
+                } else {
+                    addResult('❌ User Login', false, 
+                        `Login failed: ${data.message || 'Unknown error'}`, data);
+                }
+            } catch (error) {
+                addResult('❌ User Login', false, 
+                    `Network error: ${error.message}`);
+            }
+        }
+
+        async function testValidation() {
+            if (!authToken) {
+                addResult('❌ Token Validation', false, 
+                    'No auth token available. Please register or login first.');
+                return;
+            }
+
+            try {
+                const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.VALIDATE}`;
+                console.log('Testing token validation at:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    addResult('✅ Token Validation', true, 
+                        `Token validation successful. User data retrieved.`, data);
+                } else {
+                    addResult('❌ Token Validation', false, 
+                        `Token validation failed: ${data.message || 'Unknown error'}`, data);
+                }
+            } catch (error) {
+                addResult('❌ Token Validation', false, 
+                    `Network error: ${error.message}`);
+            }
+        }
+
+        async function runAllTests() {
+            document.getElementById('results').innerHTML = '';
+            
+            addResult('🔄 Starting Tests', true, 'Running complete user authentication flow...');
+            
+            // Test 1: Registration
+            await testRegistration();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Test 2: Login
+            await testLogin();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Test 3: Token Validation
+            await testValidation();
+            
+            addResult('✅ Tests Complete', true, 'All user authentication tests completed!');
+        }
+    </script>
+</body>
+</html>

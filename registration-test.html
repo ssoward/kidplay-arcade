@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidPlay Arcade - Registration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #007cba; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #005a86; }
+        .result { margin-top: 20px; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .debug { background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>KidPlay Arcade - Registration Test</h1>
+    
+    <div id="apiInfo" class="info">
+        <h3>API Configuration</h3>
+        <div id="apiDetails"></div>
+    </div>
+    
+    <form id="registrationForm">
+        <div class="form-group">
+            <label for="displayName">Display Name:</label>
+            <input type="text" id="displayName" name="displayName" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="accountType">Account Type:</label>
+            <select id="accountType" name="accountType" required>
+                <option value="">Select...</option>
+                <option value="child">Child</option>
+                <option value="parent">Parent</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+        
+        <button type="submit">Register</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        // API Configuration - matching our production setup
+        const getApiBaseUrl = () => {
+            // For production builds, always use production URL
+            return 'http://3.81.165.163:3001';
+        };
+        
+        const API_CONFIG = {
+            BASE_URL: getApiBaseUrl(),
+            ENDPOINTS: {
+                REGISTER: '/api/user/register'
+            }
+        };
+        
+        // Display API info
+        document.getElementById('apiDetails').innerHTML = `
+            <strong>Base URL:</strong> ${API_CONFIG.BASE_URL}<br>
+            <strong>Register Endpoint:</strong> ${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER}<br>
+            <strong>Environment:</strong> ${typeof process !== 'undefined' && process.env ? process.env.NODE_ENV : 'browser'}<br>
+            <strong>Hostname:</strong> ${window.location.hostname}
+        `;
+        
+        // Handle form submission
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const userData = {
+                displayName: formData.get('displayName'),
+                username: formData.get('username'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                accountType: formData.get('accountType')
+            };
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">Registering user...</div>';
+            
+            try {
+                const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.REGISTER}`;
+                console.log('Making API call to:', url);
+                console.log('Request data:', userData);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
+                const responseText = await response.text();
+                console.log('Response body:', responseText);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>Error: Invalid JSON Response</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Response:</strong></p>
+                            <div class="debug">${responseText}</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>Registration Successful!</h3>
+                            <p><strong>User ID:</strong> ${data.data.id}</p>
+                            <p><strong>Username:</strong> ${data.data.username}</p>
+                            <p><strong>Email:</strong> ${data.data.email}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>Registration Failed</h3>
+                            <p><strong>Message:</strong> ${data.message || 'Unknown error'}</p>
+                            ${data.errors ? `<p><strong>Errors:</strong> ${JSON.stringify(data.errors, null, 2)}</p>` : ''}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Network error:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Network Error</h3>
+                        <p>${error.message}</p>
+                        <div class="debug">Check browser console for more details</div>
+                    </div>
+                `;
+            }
+        });
+        
+        // Pre-fill form with test data
+        document.getElementById('displayName').value = 'Test User';
+        document.getElementById('username').value = 'testuser' + Date.now();
+        document.getElementById('email').value = 'test' + Date.now() + '@example.com';
+        document.getElementById('password').value = 'testpass123';
+        document.getElementById('accountType').value = 'child';
+    </script>
+</body>
+</html>

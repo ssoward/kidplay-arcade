@@ -1,4 +1,6 @@
 // Simple analytics service to track game sessions
+import { API_CONFIG } from '../config/api';
+
 interface GameSession {
   gameType: string;
   score?: number;
@@ -12,9 +14,7 @@ class AnalyticsService {
   private baseUrl: string;
 
   private constructor() {
-    this.baseUrl = process.env.NODE_ENV === 'production' 
-      ? '' // Same origin in production
-      : 'http://localhost:3001'; // Development backend
+    this.baseUrl = API_CONFIG.BASE_URL;
   }
 
   public static getInstance(): AnalyticsService {

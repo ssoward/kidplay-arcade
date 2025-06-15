@@ -1,9 +1,9 @@
 module.exports = {
   apps: [{
     name: 'kidplay-arcade',
-    script: 'backend/server.js',
-    instances: 'max',
-    exec_mode: 'cluster',
+    script: 'backend/server-with-db-auth.js',
+    instances: 1,
+    exec_mode: 'fork',
     env: {
       NODE_ENV: 'production',
       PORT: 3001
