@@ -17,9 +17,9 @@ NC='\033[0m' # No Color
 # Configuration
 AWS_IP="3.81.165.163"
 AWS_USER="ec2-user"
-SSH_KEY_PATH="~/.ssh/kidplay-arcade-key.pem"
+SSH_KEY_PATH="$HOME/.ssh/kidplay-arcade-key.pem"
 REMOTE_APP_DIR="/home/ec2-user/kidplay-arcade"
-LOCAL_PROJECT_DIR="/Users/ssoward/sandbox/workspace/FamilySearch/kidplay-arcade"
+LOCAL_PROJECT_DIR="/Users/ssoward/sandbox/workspace/kidplay-arcade"
 
 echo -e "${BLUE}Checking prerequisites...${NC}"
 
