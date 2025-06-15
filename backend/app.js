@@ -500,33 +500,7 @@ app.post('/api/ask-ai', aiLimiter, aiValidationRules, validateRequest, async (re
 });
 
 // Admin endpoints for metrics and user data
-const adminAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized - Missing or invalid authorization header' });
-  }
-  
-  const token = authHeader.substring(7);
-  
-  try {
-    const session = JSON.parse(Buffer.from(token, 'base64').toString());
-    const now = Date.now();
-    const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours
-    
-    if (now - session.loginTime > sessionDuration) {
-      return res.status(401).json({ error: 'Session expired' });
-    }
-    
-    if (session.email !== process.env.ADMIN_EMAIL) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-    
-    req.adminSession = session;
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: 'Invalid session' });
-  }
-};
+// Note: adminAuth is imported from middlewares/admin-auth.js
 
 // Game sessions storage (in-memory for now)
 let gameSessions = [];

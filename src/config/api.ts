@@ -8,10 +8,10 @@ const getApiBaseUrl = (): string => {
     return process.env.REACT_APP_API_BASE_URL;
   }
   
-  // For production builds, use production URL even if served locally
+  // For production builds, use relative URLs (nginx proxy handles routing)
   if (process.env.NODE_ENV === 'production') {
-    console.log('Production mode - using production URL: http://3.144.6.45:3001');
-    return 'http://3.144.6.45:3001';
+    console.log('Production mode - using relative URLs with nginx proxy');
+    return '';
   }
   
   // Development mode
@@ -20,9 +20,9 @@ const getApiBaseUrl = (): string => {
     return 'http://localhost:3001';
   }
   
-  // Fallback - use production URL
-  console.log('Fallback - using production URL: http://3.81.165.163:3001');
-  return 'http://3.81.165.163:3001';
+  // Fallback - use relative URLs for production
+  console.log('Fallback - using relative URLs');
+  return '';
 };
 
 export const API_CONFIG = {
