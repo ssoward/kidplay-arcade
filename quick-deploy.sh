@@ -1,12 +1,19 @@
 #!/bin/bash
 
-# Quick deployment to existing instance
+# Quick deployment script for existing Amazon Linux 2 instance
+# Usage: ./quick-deploy.sh [IP_ADDRESS]
+
 set -e
 
-INSTANCE_IP="18.215.173.27"
-KEY_FILE="/Users/ssoward/.ssh/kidplay-key-1749063985.pem"
+IP="$1"
+PEM_KEY="kidplay-arcade-new-key.pem"
 
-echo "🚀 Deploying to $INSTANCE_IP..."
+if [ -z "$IP" ]; then
+    echo "Usage: $0 [IP_ADDRESS]"
+    exit 1
+fi
+
+echo "🚀 Deploying KidPlay Arcade to Amazon Linux 2 at $IP"
 
 # Test SSH
 echo "📡 Testing SSH connection..."

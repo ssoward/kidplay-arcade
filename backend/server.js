@@ -39,18 +39,34 @@ const aiLimiter = rateLimit({
 
 app.use(generalLimiter);
 
-// CORS configuration - restrict to known origins in production
+// CORS configuration - allow requests from same server and known origins
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : ['http://localhost:3000', 'http://localhost:5173', 'https://kidplay-arcade.vercel.app'];
 
 app.use(cors({
   origin: function(origin, callback) {
+    // Allow requests with no origin (same-origin requests, curl, etc.)
     if (!origin) return callback(null, true);
-    if (process.env.NODE_ENV === 'production' && allowedOrigins.indexOf(origin) === -1) {
+    
+    // In production, allow requests from the same server (for SPA served by nginx)
+    if (process.env.NODE_ENV === 'production') {
+      // Allow requests from EC2 instance IP addresses or localhost
+      if (origin.match(/^https?:\/\/(localhost|127\.0\.0\.1|[\d.]+)(?::\d+)?$/)) {
+        return callback(null, true);
+      }
+      
+      // Allow requests from known allowed origins
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      console.log('CORS blocked origin:', origin);
       const msg = 'CORS policy restricts access from this origin.';
       return callback(new Error(msg), false);
     }
+    
+    // In development, allow all origins
     return callback(null, true);
   },
   credentials: true
@@ -498,6 +514,19 @@ app.get('/api/itunes-search', [
     console.error('iTunes API error:', error.message);
     res.status(500).json({ error: 'Failed to fetch from iTunes API' });
   }
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    features: {
+      ai: !!(AZURE_API_KEY && AZURE_ENDPOINT),
+      demo_mode: DEMO_MODE
+    }
+  });
 });
 
 // Game sessions storage (in-memory for analytics)

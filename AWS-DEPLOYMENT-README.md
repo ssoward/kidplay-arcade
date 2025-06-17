@@ -2,20 +2,22 @@
 
 Deploy your KidPlay Arcade to AWS in minutes!
 
-## 🎯 Quick Start (Recommended)
+## � AWS Region Configuration
+**Important**: All KidPlay Arcade infrastructure uses **us-east-2 (Ohio)** region for consistency and optimal performance.
+
+## �🎯 Quick Start (Recommended)
 
 **One-command deployment:**
 ```bash
-./deploy-simple.sh
+./deploy-to-new-ec2.sh [IP_ADDRESS]
 ```
 
 This script will:
-- ✅ Create a new AWS EC2 instance
-- ✅ Generate SSH keys automatically  
-- ✅ Configure security groups
+- ✅ Connect to your EC2 instance in us-east-2
 - ✅ Deploy your KidPlay Arcade app
-- ✅ Set up nginx and backend services
-- ✅ Give you a working URL
+- ✅ Set up nginx and backend services with AI endpoints
+- ✅ Configure proper security and performance settings
+- ✅ Give you a working URL with full AI functionality
 
 **Total time: ~5 minutes**
 

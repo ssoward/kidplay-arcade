@@ -9,7 +9,8 @@
 ## 🚀 Deploy to AWS EC2
 
 ### Prerequisites
-- AWS EC2 instance (Amazon Linux 2 recommended)
+- AWS EC2 instance (Ubuntu Server 22.04 LTS recommended)
+- **Region**: us-east-2 (Ohio) - All KidPlay Arcade infrastructure uses this region
 - Security Group allowing HTTP (port 80) and SSH (port 22)
 - SSH key pair for accessing the instance
 
@@ -17,7 +18,7 @@
 
 1. **SSH into your EC2 instance:**
    ```bash
-   ssh -i your-key.pem ec2-user@your-ec2-public-ip
+   ssh -i your-key.pem ubuntu@your-ec2-public-ip
    ```
 
 2. **Clone/Update the repository:**
@@ -33,8 +34,11 @@
 
 3. **Run the deployment script:**
    ```bash
-   ./deploy-aws-ec2.sh
+   ./deploy-to-new-ec2.sh $(curl -s http://checkip.amazonaws.com/)
    ```
+
+4. **Note: All AWS resources should be created in us-east-2 region**
+   The deployment script automatically uses us-east-2 for consistency.
 
 4. **Configure AI credentials (IMPORTANT):**
    ```bash
