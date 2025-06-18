@@ -1,0 +1,18 @@
+KidPlay Arcade - Amazon Linux 2023 Deployment
+=============================================
+Date: Wed Jun 18 15:26:44 MDT 2025
+Frontend URL: http://3.88.41.133
+Backend API: http://3.88.41.133:3001
+SSH Access: ssh -i /Users/ssoward/.ssh/KidPlayArcade001.pem ec2-user@3.88.41.133
+Deployment Package: kidplay-al2023-1750281956.tar.gz
+
+Services:
+- Frontend: Nginx on port 80
+- Backend: PM2 managed Node.js on port 3001
+- Database: SQLite (local file)
+- OS: Amazon Linux 2023
+
+Key Features:
+- Modern dnf package manager
+- Built-in firewall configuration
+- Improved security and performance

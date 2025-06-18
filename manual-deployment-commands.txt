@@ -1,0 +1,31 @@
+# KidPlay Arcade Manual Deployment Commands
+# Generated: Wed Jun 18 14:23:55 MDT 2025
+
+KEY_NAME=kidplay-al2023-1750278235
+INSTANCE_NAME=kidplay-arcade-al2023-1750278235
+
+# 1. Create Key Pair
+aws ec2 create-key-pair --key-name kidplay-al2023-1750278235 --region us-east-1 --query 'KeyMaterial' --output text > kidplay-al2023-1750278235.pem
+chmod 400 kidplay-al2023-1750278235.pem
+
+# 2. Create Security Group
+aws ec2 create-security-group --group-name kidplay-sg-1750278235 --description 'KidPlay Arcade Security Group' --region us-east-1
+
+# 3. Add Security Group Rules (replace SG_ID with actual ID)
+export SG_ID=sg-xxxxxxxxx
+aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0 --region us-east-1
+aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0 --region us-east-1
+aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 3001 --cidr 0.0.0.0/0 --region us-east-1
+
+# 4. Launch Instance
+aws ec2 run-instances \
+  --image-id ami-0c02fb55956c7d316 \
+  --count 1 \
+  --instance-type t2.micro \
+  --key-name kidplay-al2023-1750278235 \
+  --security-group-ids $SG_ID \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=kidplay-arcade-al2023-1750278235},{Key=Project,Value=KidPlayArcade}]' \
+  --region us-east-1
+
+# 5. Get Instance Info
+aws ec2 describe-instances --filters 'Name=tag:Name,Values=kidplay-arcade-al2023-1750278235' --region us-east-1 --query 'Reservations[0].Instances[0].[InstanceId,PublicIpAddress,State.Name]' --output table

@@ -1,0 +1,28 @@
+KidPlay Arcade Micro EC2 Deployment
+===================================
+Date: Wed Jun 18 11:55:01 MDT 2025
+Instance ID: i-0ed5ceb573b273378
+Public IP: 34.207.127.208
+Key Name: kidplay-micro-1750269031
+Key File: kidplay-micro-1750269031.pem
+Region: us-east-1
+Instance Type: t2.micro
+
+SSH Command:
+ssh -i kidplay-micro-1750269031.pem ec2-user@34.207.127.208
+
+App URLs (after deployment):
+Frontend: http://34.207.127.208
+Backend API: http://34.207.127.208:3001
+Security Group ID: sg-0304f9e0205963717
+
+Application Deployment Complete
+==============================
+Frontend URL: http://34.207.127.208
+Backend API: http://34.207.127.208:3001
+Deployment Package: kidplay-micro-1750270605.tar.gz
+
+Services:
+- Frontend: Nginx on port 80
+- Backend: PM2 managed Node.js on port 3001
+- Database: SQLite (local file)
