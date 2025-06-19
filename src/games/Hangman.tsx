@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_CONFIG from '../config/api';
 // import './Chess.css';
 
 const getAIWord = async () => {
@@ -7,7 +8,7 @@ const getAIWord = async () => {
   const history = [
     { role: 'system', content: 'You are a word game master. Pick a random, fun, family-friendly word for a game of hangman. Respond ONLY with the word, no explanation.' }
   ];
-  const res = await axios.post('/api/ask-ai', { history });
+  const res = await axios.post(`${API_CONFIG.BASE_URL}/api/ask-ai`, { history });
   return (res.data.message || '').toLowerCase().replace(/[^a-z]/g, '');
 };
 
@@ -17,7 +18,7 @@ const getAIHint = async (word: string) => {
     { role: 'system', content: 'You are a helpful assistant for a hangman game.' },
     { role: 'user', content: `Give a clever, family-friendly hint for the word: "${word}". Do NOT reveal the word itself. Respond with only the hint.` }
   ];
-  const res = await axios.post('/api/ask-ai', { history });
+  const res = await axios.post(`${API_CONFIG.BASE_URL}/api/ask-ai`, { history });
   return res.data.message;
 };
 

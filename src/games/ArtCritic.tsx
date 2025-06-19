@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
+import API_CONFIG from '../config/api';
 
 interface ArtWork {
   title: string;
@@ -171,7 +172,7 @@ export default function ArtCritic() {
         ? `\n\nIMPORTANT: Do NOT choose any of these previously shown artworks:\n${state.artworkHistory.map(art => `- "${art.title}" by ${art.artist}`).join('\n')}\n\nPlease select a different artwork to ensure variety in the game.`
         : '';
 
-      const response = await fetch('/api/ask-ai', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

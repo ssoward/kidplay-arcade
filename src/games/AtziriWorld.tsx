@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import API_CONFIG from '../config/api';
 
 type Difficulty = 'beginner' | 'intermediate' | 'advanced';
 type Category = 'everyday' | 'animals' | 'food' | 'colors' | 'numbers' | 'verbs' | 'adjectives';
@@ -139,7 +140,7 @@ export default function AtziriWorld() {
       const categoryPrompt = getCategoryPrompt(state.category);
       const difficultyPrompt = getDifficultyPrompt(state.difficulty);
         
-      const response = await fetch('/api/ask-ai', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -379,7 +380,7 @@ export default function AtziriWorld() {
     setState(prev => ({ ...prev, loadingDefinition: true, showDefinition: true }));
     
     try {
-      const response = await fetch('/api/ask-ai', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -424,7 +425,7 @@ export default function AtziriWorld() {
     setState(prev => ({ ...prev, loadingDefinition: true, showDefinition: true }));
     
     try {
-      const response = await fetch('/api/ask-ai', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

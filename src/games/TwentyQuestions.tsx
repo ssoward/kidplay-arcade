@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import axios from 'axios';
+import API_CONFIG from '../config/api';
 
 // --- Knowledge base: objects and their properties ---
 const knowledgeBase = [
@@ -188,7 +189,7 @@ const TwentyQuestions: React.FC<TwentyQuestionsProps> = ({ onExit }) => {
 						{ role: 'user', content: q.answer === 'yes' ? 'Yes' : 'No' },
 					]).flat(),
 				];
-				const res = await axios.post('/api/ask-ai', { history });
+				const res = await axios.post(`${API_CONFIG.BASE_URL}/api/ask-ai`, { history });
 				// If the AI tries to guess, check certainty
 				if (isAICertain(res.data.message)) {
 					setAiGuess(res.data.message);
@@ -220,7 +221,7 @@ const TwentyQuestions: React.FC<TwentyQuestionsProps> = ({ onExit }) => {
 					content: q.answer === 'yes' ? 'Yes' : 'No',
 				})),
 			];
-			const res = await axios.post('/api/ask-ai', { history });
+			const res = await axios.post(`${API_CONFIG.BASE_URL}/api/ask-ai`, { history });
 			setAiGuess(res.data.message);
 			setCurrentQuestion('');
 		} catch {
