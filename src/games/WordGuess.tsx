@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { API_CONFIG } from '../config/api';
 
 type GuessResult = {
   letter: string;
@@ -59,22 +60,23 @@ const WordGuess: React.FC = () => {
       
       Examples for ${difficulty}: ${fallbackWordLists[difficulty].slice(0, 3).join(', ')}`;
 
-      const response = await fetch('/api/ask-ai', {
+      // Use the correct API format with history array like other games
+      const history = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Generate a single ${difficulty} difficulty word for the word guessing game.` }
+      ];
+
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          game: 'word-guess-generator',
-          difficulty: difficulty,
-          systemPrompt: systemPrompt,
-          userMessage: `Generate a single ${difficulty} difficulty word for the word guessing game.`
-        }),
+        body: JSON.stringify({ history }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        let aiWord = (data.response || data.word || '').trim().toUpperCase();
+        let aiWord = (data.message || '').trim().toUpperCase();
         
         // Clean the response to extract just the word
         aiWord = aiWord.replace(/[^A-Z]/g, '').trim();
