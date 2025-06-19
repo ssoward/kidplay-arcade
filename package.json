@@ -38,8 +38,8 @@
     "start:both": "concurrently \"PORT=3000 npm start\" \"npm run backend\"",
     "build:production": "npm run build && cd backend && npm install --production",
     "start:production": "cd backend && npm start",
-    "build:prod": "REACT_APP_API_BASE_URL=http://3.88.41.133 npm run build",
-    "start:prod": "REACT_APP_API_BASE_URL=http://3.88.41.133 npm start"
+    "build:prod": "REACT_APP_API_BASE_URL=https://amorvivir.com npm run build",
+    "start:prod": "REACT_APP_API_BASE_URL=https://amorvivir.com npm start"
   },
   "proxy": "http://localhost:3001",
   "browserslist": {

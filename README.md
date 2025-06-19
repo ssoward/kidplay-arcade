@@ -1,4 +1,8 @@
-# KidPlay Arcade
+# Ki## 🌐 **LIVE PRODUCTION DEPLOYMENT**
+**✅ Status:** FULLY OPERATIONAL  
+**🌐 URL:** https://amorvivir.com  
+**🔒 SSL:** Let's Encrypt Certificate  
+**🗓️ Deployed:** June 18, 2025y Arcade
 
 🎮 **A secure, interactive gaming platform featuring educational games powered by AI.**
 
@@ -88,7 +92,8 @@ For detailed security configuration, see [SECURITY-CONFIGURATION-GUIDE.md](./SEC
 
 ---
 
-**🔗 Live Application:** http://3.88.41.133  
+**🔗 Live Application:** https://amorvivir.com  
+**🔒 SSL Certificate:** Let's Encrypt (Auto-Renewal)  
 **🏗️ Infrastructure:** AWS EC2 (Secure & Scalable)  
 **🎯 Target Audience:** Children & Educators  
 **📜 License:** Educational Use
