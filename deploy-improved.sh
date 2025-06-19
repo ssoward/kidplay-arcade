@@ -15,7 +15,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration - Use environment variables for sensitive data
-AWS_IP="${AWS_EC2_IP:-35.175.171.184}"
+AWS_IP="${AWS_EC2_IP:-3.88.41.133}"
 AWS_USER="${AWS_EC2_USER:-ubuntu}"
 SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/kidplay-arcade-new-key.pem}"
 REMOTE_APP_DIR="${REMOTE_APP_DIR:-/var/www/kidplay-arcade}"
