@@ -1,28 +1,29 @@
-# Ki## 🌐 **LIVE PRODUCTION DEPLOYMENT**
-**✅ Status:** FULLY OPERATIONAL  
-**🌐 URL:** https://amorvivir.com  
-**🔒 SSL:** Let's Encrypt Certificate  
-**🗓️ Deployed:** June 18, 2025y Arcade
+# KidPlay Arcade
 
 🎮 **A secure, interactive gaming platform featuring educational games powered by AI.**
 
-## � **LIVE PRODUCTION DEPLOYMENT**
+## 🌐 **LIVE PRODUCTION DEPLOYMENT**
 **✅ Status:** FULLY OPERATIONAL  
-**🌐 URL:** http://3.88.41.133  
-**🗓️ Deployed:** June 18, 2025
+**🌐 URL:** https://amorvivir.com  
+**🔒 SSL:** Let's Encrypt Certificate  
+**🗓️ Last Updated:** June 19, 2025  
+**📊 Health Check:** https://amorvivir.com/api/health
 
 ### **🎯 Features**
 - 20+ Educational games for children
-- AI-powered interactive experiences (Twenty Questions, Storyteller, etc.)
+- AI-powered interactive experiences (TwentyQuestions, WordGuess, etc.)
 - User authentication and progress tracking
 - Admin dashboard and analytics
 - Responsive design for all devices
+- **NEW:** Enhanced error handling and fallback systems
 
 ### **🤖 AI Integration**
 - Powered by Azure OpenAI (GPT-4o)
 - Natural language interactions
 - Educational content generation
 - Safe, child-friendly responses
+- **FIXED:** CORS configuration for production domain
+- **IMPROVED:** 15-second timeouts and fallback content
 
 ## 🔒 Security Status
 ✅ **PRODUCTION-GRADE SECURITY** - Fully hardened AWS deployment

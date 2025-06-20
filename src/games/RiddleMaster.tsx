@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
+import { API_CONFIG } from '../config/api';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -125,7 +126,7 @@ export default function RiddleMaster() {
     setState(prev => ({ ...prev, loading: true, userAnswer: '', showAnswer: false, hintsUsed: 0 }));
     
     try {
-      const response = await fetch('/api/ask-ai', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

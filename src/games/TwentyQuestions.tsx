@@ -189,7 +189,9 @@ const TwentyQuestions: React.FC<TwentyQuestionsProps> = ({ onExit }) => {
 						{ role: 'user', content: q.answer === 'yes' ? 'Yes' : 'No' },
 					]).flat(),
 				];
-				const res = await axios.post(`${API_CONFIG.BASE_URL}/api/ask-ai`, { history });
+				const res = await axios.post(`${API_CONFIG.BASE_URL}/api/ask-ai`, { history }, {
+					timeout: 15000 // 15 second timeout
+				});
 				// If the AI tries to guess, check certainty
 				if (isAICertain(res.data.message)) {
 					setAiGuess(res.data.message);
@@ -197,10 +199,38 @@ const TwentyQuestions: React.FC<TwentyQuestionsProps> = ({ onExit }) => {
 				} else {
 					setCurrentQuestion(res.data.message);
 				}
-			} catch {
-				setCurrentQuestion(
-					'Sorry, I had trouble thinking of a question. Try again!'
+			} catch (error) {
+				console.error('AI service failed:', error);
+				// Provide a fallback question based on game state
+				const fallbackQuestions = [
+					"Is it something you can hold in your hand?",
+					"Is it bigger than a breadbox?",
+					"Is it something you use every day?",
+					"Is it alive?",
+					"Is it made of metal?",
+					"Is it found in a house?",
+					"Is it used for entertainment?",
+					"Is it something you can eat?",
+					"Is it electronic?",
+					"Is it used for transportation?"
+				];
+				
+				const usedQuestions = prevQuestions.map(q => q.text.toLowerCase());
+				const availableQuestions = fallbackQuestions.filter(q => 
+					!usedQuestions.some(used => used.includes(q.toLowerCase().slice(0, 10)))
 				);
+				
+				if (availableQuestions.length > 0) {
+					const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+					setCurrentQuestion(randomQuestion);
+				} else {
+					setCurrentQuestion('AI service is temporarily unavailable. Let me make a guess instead!');
+					// Trigger guess mode
+					setTimeout(() => {
+						setAiGuess("I think it might be something common that people use daily!");
+						setCurrentQuestion('');
+					}, 1000);
+				}
 			}
 		},
 		[questionsLeft]
@@ -221,7 +251,9 @@ const TwentyQuestions: React.FC<TwentyQuestionsProps> = ({ onExit }) => {
 					content: q.answer === 'yes' ? 'Yes' : 'No',
 				})),
 			];
-			const res = await axios.post(`${API_CONFIG.BASE_URL}/api/ask-ai`, { history });
+			const res = await axios.post(`${API_CONFIG.BASE_URL}/api/ask-ai`, { history }, {
+				timeout: 15000 // 15 second timeout
+			});
 			setAiGuess(res.data.message);
 			setCurrentQuestion('');
 		} catch {

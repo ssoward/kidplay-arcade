@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { API_CONFIG } from '../config/api';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -131,11 +132,15 @@ export default function SightWords() {
         ? `\n\nPreviously used words to avoid: ${usedWords.join(', ')}`
         : '';
         
-      const response = await fetch('/api/ask-ai', {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: controller.signal,
         body: JSON.stringify({
           history: [
             {
@@ -297,12 +302,18 @@ export default function SightWords() {
   const fetchWordDefinition = async (word: string) => {
     setState(prev => ({ ...prev, loadingDefinition: true, showDefinition: true }));
     
+    let timeoutId: NodeJS.Timeout | undefined;
+    
     try {
-      const response = await fetch('/api/ask-ai', {
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 15000);
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: controller.signal,
         body: JSON.stringify({
           history: [
             {

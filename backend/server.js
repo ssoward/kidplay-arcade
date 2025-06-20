@@ -1,5 +1,24 @@
-// All existing content
 require('dotenv').config();
+
+// Environment validation function
+function validateEnvironment() {
+  const required = ['AZURE_API_KEY', 'AZURE_ENDPOINT'];
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:', missing);
+    process.exit(1);
+  }
+  
+  console.log('✅ Environment variables validated');
+  console.log('🌐 CORS Origins:', process.env.ALLOWED_ORIGINS || 'Using defaults');
+  console.log('🤖 Azure Endpoint:', process.env.AZURE_ENDPOINT ? 
+    process.env.AZURE_ENDPOINT.substring(0, 50) + '...' : 'Not configured');
+}
+
+// Validate environment on startup
+validateEnvironment();
+
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -255,9 +274,50 @@ app.get('/api/status', (req, res) => {
     features: {
       userAuth: true,
       games: true,
-      aiIntegration: !!process.env.AZURE_OPENAI_KEY
+      aiIntegration: !!process.env.AZURE_API_KEY
     }
   });
+});
+
+// Enhanced health check endpoint
+app.get('/api/health', async (req, res) => {
+  try {
+    const healthData = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      cors_origins: process.env.ALLOWED_ORIGINS?.split(',') || [],
+      azure_api_configured: !!process.env.AZURE_API_KEY,
+      azure_endpoint_configured: !!process.env.AZURE_ENDPOINT
+    };
+
+    // Test Azure API connection if configured
+    if (process.env.AZURE_API_KEY && process.env.AZURE_ENDPOINT) {
+      try {
+        const testResponse = await axios.post(process.env.AZURE_ENDPOINT, {
+          messages: [{ role: 'user', content: 'health check' }],
+          max_tokens: 10
+        }, {
+          timeout: 5000,
+          headers: { 'api-key': process.env.AZURE_API_KEY }
+        });
+        healthData.azure_api_status = 'connected';
+      } catch (azureError) {
+        healthData.azure_api_status = 'failed';
+        healthData.azure_error = azureError.message;
+      }
+    } else {
+      healthData.azure_api_status = 'not_configured';
+    }
+    
+    res.json(healthData);
+  } catch (error) {
+    res.status(503).json({
+      status: 'unhealthy',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Serve static files from the React app in production

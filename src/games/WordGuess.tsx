@@ -251,7 +251,7 @@ const WordGuess: React.FC = () => {
       
       Keep the hint concise (1-2 sentences) and helpful but not too obvious.`;
 
-      const response = await fetch('/api/ask-ai', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

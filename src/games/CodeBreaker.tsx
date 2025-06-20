@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
+import { API_CONFIG } from '../config/api';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 type GameMode = 'number' | 'color' | 'pattern' | 'logic';
@@ -111,7 +112,7 @@ export default function CodeBreaker() {
 
     if (state.gameMode === 'logic') {
       try {
-        const response = await fetch('/api/ask-ai', {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

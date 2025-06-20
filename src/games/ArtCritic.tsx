@@ -159,6 +159,7 @@ export default function ArtCritic() {
     setState(prev => ({ ...prev, loading: true }));
     
     const currentDifficulty = difficulty || state.difficulty;
+    let timeoutId: NodeJS.Timeout | undefined;
     
     try {
       const difficultyPrompts = {
@@ -172,11 +173,15 @@ export default function ArtCritic() {
         ? `\n\nIMPORTANT: Do NOT choose any of these previously shown artworks:\n${state.artworkHistory.map(art => `- "${art.title}" by ${art.artist}`).join('\n')}\n\nPlease select a different artwork to ensure variety in the game.`
         : '';
 
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/ask-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: controller.signal,
         body: JSON.stringify({
           history: [
             {
@@ -284,6 +289,7 @@ The description should be vivid and help someone visualize the artwork. Hints sh
       const fallbackList = FALLBACK_ARTWORKS[currentDifficulty];
       return fallbackList[Math.floor(Math.random() * fallbackList.length)];
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setState(prev => ({ ...prev, loading: false }));
     }
   };
